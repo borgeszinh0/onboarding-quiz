@@ -1,29 +1,36 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
-function LoginInner() {
-  const { signInWithEmail, configured } = useAuth();
-  const params = useSearchParams();
+export default function LoginPage() {
+  const { signIn, signUp, configured } = useAuth();
+  const router = useRouter();
+
+  const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState<string | null>(
-    params.get("error") ? "Falha na autenticação. Tente de novo." : null
-  );
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email.trim() || password.length < 6) {
+      setError("Informe e-mail e senha (mín. 6 caracteres).");
+      return;
+    }
     setLoading(true);
     setError(null);
-    const { error } = await signInWithEmail(email.trim());
+    const fn = mode === "in" ? signIn : signUp;
+    const { error } = await fn(email.trim(), password);
     setLoading(false);
-    if (error) setError(error);
-    else setSent(true);
+    if (error) {
+      setError(translate(error));
+      return;
+    }
+    router.push("/");
   };
 
   return (
@@ -35,7 +42,9 @@ function LoginInner() {
           </span>
         </Link>
 
-        <h1 className="text-2xl font-bold text-center mb-1">Entrar</h1>
+        <h1 className="text-2xl font-bold text-center mb-1">
+          {mode === "in" ? "Entrar" : "Criar conta"}
+        </h1>
         <p className="text-sm text-[#8A7F75] text-center mb-8 leading-relaxed">
           Sincronize seus valores, metas e plano em todos os dispositivos.
         </p>
@@ -43,38 +52,62 @@ function LoginInner() {
         {!configured ? (
           <div className="rounded-2xl border border-[#D4C9B5] bg-white/50 p-5 text-sm text-[#4A433D] leading-relaxed">
             Backend não configurado. O app funciona offline neste dispositivo.
-            Configure o Supabase (veja o README) para ativar o login.
-          </div>
-        ) : sent ? (
-          <div className="rounded-2xl border border-[#2D7A4E]/30 bg-[#2D7A4E]/5 p-5 text-sm text-[#1A1715] leading-relaxed">
-            ✓ Link mágico enviado para <strong>{email}</strong>. Abra seu e-mail
-            e clique para entrar.
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              aria-label="E-mail"
-              className="w-full rounded-xl bg-white/60 border border-[#D4C9B5] px-4 py-3 text-sm text-[#1A1715] placeholder:text-[#8A7F75]/60 focus:border-[#B8392E] focus:ring-2 focus:ring-[#B8392E]/10 focus:outline-none transition-all"
-            />
-            {error && (
-              <p className="text-xs text-[#B8392E]" role="alert">
-                {error}
-              </p>
-            )}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full px-6 py-3 rounded-full bg-[#B8392E] text-[#F5F0E6] font-semibold tracking-wide hover:bg-[#8B2A22] disabled:opacity-50 transition-all"
-            >
-              {loading ? "Enviando…" : "Enviar link mágico"}
-            </button>
-          </form>
+          <>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                aria-label="E-mail"
+                className="w-full rounded-xl bg-white/60 border border-[#D4C9B5] px-4 py-3 text-sm text-[#1A1715] placeholder:text-[#8A7F75]/60 focus:border-[#B8392E] focus:ring-2 focus:ring-[#B8392E]/10 focus:outline-none transition-all"
+              />
+              <input
+                type="password"
+                required
+                minLength={6}
+                autoComplete={mode === "in" ? "current-password" : "new-password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Senha (mín. 6)"
+                aria-label="Senha"
+                className="w-full rounded-xl bg-white/60 border border-[#D4C9B5] px-4 py-3 text-sm text-[#1A1715] placeholder:text-[#8A7F75]/60 focus:border-[#B8392E] focus:ring-2 focus:ring-[#B8392E]/10 focus:outline-none transition-all"
+              />
+              {error && (
+                <p className="text-xs text-[#B8392E]" role="alert">
+                  {error}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full px-6 py-3 rounded-full bg-[#B8392E] text-[#F5F0E6] font-semibold tracking-wide hover:bg-[#8B2A22] disabled:opacity-50 transition-all"
+              >
+                {loading
+                  ? "Aguarde…"
+                  : mode === "in"
+                    ? "Entrar"
+                    : "Criar conta"}
+              </button>
+            </form>
+
+            <p className="text-center text-xs text-[#8A7F75] mt-5">
+              {mode === "in" ? "Ainda não tem conta?" : "Já tem conta?"}{" "}
+              <button
+                onClick={() => {
+                  setMode(mode === "in" ? "up" : "in");
+                  setError(null);
+                }}
+                className="font-semibold text-[#B8392E] hover:text-[#8B2A22] transition-colors"
+              >
+                {mode === "in" ? "Criar conta" : "Entrar"}
+              </button>
+            </p>
+          </>
         )}
 
         <p className="text-center mt-8">
@@ -90,10 +123,11 @@ function LoginInner() {
   );
 }
 
-export default function LoginPage() {
-  return (
-    <Suspense fallback={null}>
-      <LoginInner />
-    </Suspense>
-  );
+function translate(msg: string): string {
+  const m = msg.toLowerCase();
+  if (m.includes("invalid login")) return "E-mail ou senha incorretos.";
+  if (m.includes("already registered") || m.includes("already been"))
+    return "Este e-mail já tem conta. Faça login.";
+  if (m.includes("password")) return "Senha inválida (mín. 6 caracteres).";
+  return msg;
 }

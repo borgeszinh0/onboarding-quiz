@@ -14,7 +14,8 @@ interface AuthValue {
   user: User | null;
   loading: boolean;
   configured: boolean;
-  signInWithEmail: (email: string) => Promise<{ error: string | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -44,15 +45,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const signInWithEmail = async (email: string) => {
+  const signIn = async (email: string, password: string) => {
     const supabase = createClient();
     if (!supabase) return { error: "Backend não configurado." };
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/`,
-      },
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error?.message ?? null };
+  };
+
+  const signUp = async (email: string, password: string) => {
+    const supabase = createClient();
+    if (!supabase) return { error: "Backend não configurado." };
+    const { error } = await supabase.auth.signUp({ email, password });
     return { error: error?.message ?? null };
   };
 
@@ -68,7 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         loading,
         configured: isSupabaseConfigured,
-        signInWithEmail,
+        signIn,
+        signUp,
         signOut,
       }}
     >

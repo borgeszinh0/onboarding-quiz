@@ -4,11 +4,12 @@ import { useState } from "react";
 import { use12WY, getWeekCompletion, getOverallScore } from "@/lib/12wy-store";
 import { useQuiz } from "@/lib/store";
 import { DOMAINS } from "@/lib/data";
+import DayView from "./DayView";
 
 export default function PlanDashboard() {
   const { state: wyState, dispatch } = use12WY();
   const { state: quizState } = useQuiz();
-  const [view, setView] = useState<"week" | "overview">("week");
+  const [view, setView] = useState<"day" | "week" | "overview">("day");
 
   // If no start date, send to setup
   if (!wyState.startDate) {
@@ -58,7 +59,7 @@ export default function PlanDashboard() {
             12 WEEK YEAR
           </span>
           <h2 className="text-xl sm:text-2xl font-bold text-[#1A1715] leading-tight mt-0.5">
-            {view === "week" ? `Semana ${week}` : "Visão geral"}
+            {view === "day" ? "Dia" : view === "week" ? `Semana ${week}` : "Visão geral"}
           </h2>
           {view === "week" && (
             <p className="text-[10px] text-[#8A7F75] mt-0.5">
@@ -69,6 +70,16 @@ export default function PlanDashboard() {
 
         {/* View toggle */}
         <div className="flex rounded-full bg-[#D4C9B5]/40 p-0.5">
+          <button
+            onClick={() => setView("day")}
+            className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all ${
+              view === "day"
+                ? "bg-[#B8392E] text-[#F5F0E6]"
+                : "text-[#8A7F75] hover:text-[#1A1715]"
+            }`}
+          >
+            Dia
+          </button>
           <button
             onClick={() => setView("week")}
             className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all ${
@@ -87,10 +98,13 @@ export default function PlanDashboard() {
                 : "text-[#8A7F75] hover:text-[#1A1715]"
             }`}
           >
-            Visão geral
+            Visão
           </button>
         </div>
       </div>
+
+      {/* ============ DAY VIEW ============ */}
+      {view === "day" && <DayView />}
 
       {/* ============ WEEK VIEW ============ */}
       {view === "week" && (

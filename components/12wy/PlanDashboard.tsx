@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { use12WY, getWeekCompletion, getOverallScore } from "@/lib/12wy-store";
+import { useState, useEffect } from "react";
+import {
+  use12WY,
+  getWeekCompletion,
+  getOverallScore,
+  getWeekFromDate,
+} from "@/lib/12wy-store";
 import { useQuiz } from "@/lib/store";
 import { DOMAINS } from "@/lib/data";
 import DayView from "./DayView";
@@ -10,6 +15,17 @@ export default function PlanDashboard() {
   const { state: wyState, dispatch } = use12WY();
   const { state: quizState } = useQuiz();
   const [view, setView] = useState<"day" | "week" | "overview">("day");
+  const [editTacticId, setEditTacticId] = useState<string | null>(null);
+  const [editTacticText, setEditTacticText] = useState("");
+
+  // Sincroniza a semana atual com a data real de início (avança sozinha).
+  useEffect(() => {
+    const derived = getWeekFromDate(wyState.startDate);
+    if (derived && derived !== wyState.currentWeek) {
+      dispatch({ type: "SET_CURRENT_WEEK", week: derived });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wyState.startDate]);
 
   // If no start date, send to setup
   if (!wyState.startDate) {
@@ -161,9 +177,9 @@ export default function PlanDashboard() {
                 const g = goalMap.get(t.goalId);
                 const isDone = wyState.weeks[week]?.[t.id] ?? false;
                 return (
-                  <label
+                  <div
                     key={t.id}
-                    className="flex items-start gap-3 cursor-pointer group"
+                    className="flex items-start gap-3 group"
                   >
                     <button
                       onClick={() =>
@@ -173,7 +189,9 @@ export default function PlanDashboard() {
                           tacticId: t.id,
                         })
                       }
-                      className={`mt-0.5 w-5 h-5 rounded border-2 shrink-0 flex items-center justify-center transition-all ${
+                      aria-pressed={isDone}
+                      aria-label={`Concluir tática: ${t.description}`}
+                      className={`mt-0.5 w-5 h-5 rounded border-2 shrink-0 flex items-center justify-center transition-all cursor-pointer ${
                         isDone
                           ? "bg-[#B8392E] border-[#B8392E]"
                           : "border-[#D4C9B5] group-hover:border-[#B8392E]"
@@ -201,7 +219,7 @@ export default function PlanDashboard() {
                         </span>
                       )}
                     </div>
-                  </label>
+                  </div>
                 );
               })}
             </div>
@@ -323,14 +341,74 @@ export default function PlanDashboard() {
                       </span>
                     </div>
                     <div className="space-y-1.5 pl-6">
-                      {tactics.map((t) => (
-                        <div key={t.id} className="flex items-center gap-2">
-                          <span className="text-[#B8392E] text-xs">▸</span>
-                          <span className="text-xs text-[#4A433D]">
-                            {t.description}
-                          </span>
-                        </div>
-                      ))}
+                      {tactics.map((t) =>
+                        editTacticId === t.id ? (
+                          <div key={t.id} className="flex gap-2">
+                            <input
+                              value={editTacticText}
+                              autoFocus
+                              onChange={(e) => setEditTacticText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && editTacticText.trim()) {
+                                  dispatch({
+                                    type: "UPDATE_TACTIC",
+                                    tacticId: t.id,
+                                    description: editTacticText.trim(),
+                                  });
+                                  setEditTacticId(null);
+                                }
+                                if (e.key === "Escape") setEditTacticId(null);
+                              }}
+                              aria-label="Editar tática"
+                              className="flex-1 rounded-lg bg-[#F5F0E6] border border-[#D4C9B5] px-2 py-1 text-xs focus:border-[#B8392E] focus:outline-none"
+                            />
+                            <button
+                              onClick={() => {
+                                if (editTacticText.trim())
+                                  dispatch({
+                                    type: "UPDATE_TACTIC",
+                                    tacticId: t.id,
+                                    description: editTacticText.trim(),
+                                  });
+                                setEditTacticId(null);
+                              }}
+                              className="text-[11px] font-bold text-[#B8392E]"
+                            >
+                              OK
+                            </button>
+                          </div>
+                        ) : (
+                          <div
+                            key={t.id}
+                            className="flex items-center gap-2 group"
+                          >
+                            <span className="text-[#B8392E] text-xs">▸</span>
+                            <span className="text-xs text-[#4A433D] flex-1">
+                              {t.description}
+                            </span>
+                            <button
+                              onClick={() => {
+                                setEditTacticId(t.id);
+                                setEditTacticText(t.description);
+                              }}
+                              aria-label="Editar tática"
+                              className="text-[11px] text-[#8A7F75] hover:text-[#B8392E] opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm("Remover esta tática?"))
+                                  dispatch({ type: "REMOVE_TACTIC", tacticId: t.id });
+                              }}
+                              aria-label="Remover tática"
+                              className="text-[11px] text-[#8A7F75] hover:text-[#B8392E] opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                 );

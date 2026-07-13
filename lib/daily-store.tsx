@@ -28,20 +28,41 @@ function loadState(): State {
 type Action =
   | { type: "ADD_ITEM"; item: Omit<DailyItem, "id" | "createdAt" | "done"> }
   | { type: "TOGGLE_ITEM"; id: string }
+  | {
+      type: "UPDATE_ITEM";
+      id: string;
+      patch: Partial<Pick<DailyItem, "title" | "time" | "type">>;
+    }
+  | { type: "ADD_MANY"; items: Omit<DailyItem, "id" | "createdAt" | "done">[] }
   | { type: "REMOVE_ITEM"; id: string }
+  | { type: "HYDRATE"; state: Partial<State> }
   | { type: "RESET" };
+
+function makeItem(
+  item: Omit<DailyItem, "id" | "createdAt" | "done">
+): DailyItem {
+  return {
+    ...item,
+    id: `item_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    done: false,
+    createdAt: Date.now(),
+  };
+}
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case "ADD_ITEM": {
-      const item: DailyItem = {
-        ...action.item,
-        id: `item_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-        done: false,
-        createdAt: Date.now(),
+    case "HYDRATE":
+      return { items: action.state.items ?? [] };
+    case "UPDATE_ITEM":
+      return {
+        items: state.items.map((i) =>
+          i.id === action.id ? { ...i, ...action.patch } : i
+        ),
       };
-      return { items: [...state.items, item] };
-    }
+    case "ADD_MANY":
+      return { items: [...state.items, ...action.items.map(makeItem)] };
+    case "ADD_ITEM":
+      return { items: [...state.items, makeItem(action.item)] };
     case "TOGGLE_ITEM":
       return {
         items: state.items.map((i) =>

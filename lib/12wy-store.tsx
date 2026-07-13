@@ -33,10 +33,13 @@ type Action =
   | { type: "REMOVE_TACTIC"; tacticId: string }
   | { type: "TOGGLE_TACTIC"; weekNumber: number; tacticId: string }
   | { type: "SET_CURRENT_WEEK"; week: number }
+  | { type: "HYDRATE"; state: Partial<TwelveWeekState> }
   | { type: "RESET" };
 
 function reducer(state: TwelveWeekState, action: Action): TwelveWeekState {
   switch (action.type) {
+    case "HYDRATE":
+      return { ...initialTwelveWeekState, ...action.state };
     case "SET_START_DATE":
       return { ...state, startDate: action.date };
     case "ADD_TACTIC": {
@@ -113,6 +116,24 @@ export function use12WY() {
 }
 
 // ====== Helpers ======
+
+/**
+ * Semana atual (1-12) derivada da data de início vs hoje. Retorna null se ainda
+ * não começou, clamped em [1,12] mesmo depois das 12 semanas.
+ */
+export function getWeekFromDate(
+  startDate: string | null,
+  now: Date = new Date()
+): number | null {
+  if (!startDate) return null;
+  const start = new Date(startDate + "T00:00:00");
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffDays = Math.floor(
+    (today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  if (diffDays < 0) return 1;
+  return Math.min(12, Math.floor(diffDays / 7) + 1);
+}
 
 export function getWeekCompletion(
   state: TwelveWeekState,

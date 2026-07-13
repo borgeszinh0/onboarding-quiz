@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDaily, getItemsForDate, getItemsForMonth, getDayCompletion } from "@/lib/daily-store";
-import { use12WY } from "@/lib/12wy-store";
+import { use12WY, getWeekFromDate } from "@/lib/12wy-store";
+import { useQuiz } from "@/lib/store";
 import { DOMAINS } from "@/lib/data";
+import {
+  notificationPermission,
+  requestNotificationPermission,
+} from "@/lib/notifications";
 
 const WEEKDAYS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const MONTHS = [
@@ -18,6 +23,7 @@ function toDateStr(d: Date): string {
 export default function DayView() {
   const { state: dailyState, dispatch: dailyDispatch } = useDaily();
   const { state: wyState } = use12WY();
+  const { state: quizState } = useQuiz();
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(toDateStr(today));
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -27,6 +33,54 @@ export default function DayView() {
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState<"task" | "event">("task");
   const [newTime, setNewTime] = useState("");
+
+  // Edit item
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editTime, setEditTime] = useState("");
+
+  // Notification permission state
+  const [perm, setPerm] = useState<NotificationPermission | "unsupported">("default");
+  useEffect(() => setPerm(notificationPermission()), []);
+
+  const startEdit = (id: string, title: string, time?: string) => {
+    setEditId(id);
+    setEditTitle(title);
+    setEditTime(time ?? "");
+  };
+  const saveEdit = () => {
+    if (!editId || !editTitle.trim()) return;
+    dailyDispatch({
+      type: "UPDATE_ITEM",
+      id: editId,
+      patch: { title: editTitle.trim(), time: editTime || undefined },
+    });
+    setEditId(null);
+  };
+
+  // Pull this week's 12WY tactics into the selected day as linked tasks.
+  const pullTactics = () => {
+    const week = getWeekFromDate(wyState.startDate) ?? wyState.currentWeek;
+    const alreadyLinked = new Set(
+      dailyState.items
+        .filter((i) => i.date === selectedDate && i.linkedTacticId)
+        .map((i) => i.linkedTacticId)
+    );
+    const goalMap = new Map<string, string>();
+    quizState.goals.forEach((g, i) => {
+      const domain = DOMAINS.find((d) => d.id === g.linkedDomainId);
+      goalMap.set(`goal_${i}`, domain?.icon ?? "");
+    });
+    const toAdd = wyState.tactics
+      .filter((t) => !alreadyLinked.has(t.id))
+      .map((t) => ({
+        type: "task" as const,
+        title: `${goalMap.get(t.goalId) ?? "▸"} ${t.description} · Sem ${week}`,
+        date: selectedDate,
+        linkedTacticId: t.id,
+      }));
+    if (toAdd.length > 0) dailyDispatch({ type: "ADD_MANY", items: toAdd });
+  };
 
   const dayItems = getItemsForDate(dailyState, selectedDate);
   const monthCounts = getItemsForMonth(dailyState, viewYear, viewMonth);
@@ -115,6 +169,8 @@ export default function DayView() {
               <button
                 key={day}
                 onClick={() => setSelectedDate(dateStr)}
+                aria-label={`${day} de ${MONTHS[viewMonth]}${count > 0 ? `, ${count} ite${count > 1 ? "ns" : "m"}` : ""}`}
+                aria-pressed={isSelected}
                 className={`relative aspect-square rounded-lg flex flex-col items-center justify-center transition-all text-xs ${
                   isSelected
                     ? "bg-[#B8392E] text-[#F5F0E6] font-bold"
@@ -159,10 +215,74 @@ export default function DayView() {
           )}
         </div>
 
+        {/* Ações do dia */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {wyState.tactics.length > 0 && (
+            <button
+              onClick={pullTactics}
+              className="text-[11px] font-semibold text-[#B8392E] border border-[#D4C9B5] rounded-full px-3 py-1 hover:border-[#B8392E] transition-colors"
+            >
+              ↓ Puxar táticas da semana
+            </button>
+          )}
+          {perm !== "unsupported" && perm !== "granted" && (
+            <button
+              onClick={async () => setPerm(await requestNotificationPermission())}
+              className="text-[11px] font-semibold text-[#8A7F75] border border-[#D4C9B5] rounded-full px-3 py-1 hover:border-[#B8392E] hover:text-[#B8392E] transition-colors"
+            >
+              🔔 Ativar lembretes
+            </button>
+          )}
+          {perm === "granted" && (
+            <span className="text-[11px] text-[#2D7A4E] inline-flex items-center gap-1 px-1 py-1">
+              🔔 Lembretes ativos
+            </span>
+          )}
+        </div>
+
         {/* Items list */}
         {dayItems.length > 0 ? (
           <div className="space-y-2 mb-4">
-            {dayItems.map((item) => (
+            {dayItems.map((item) =>
+              editId === item.id ? (
+                <div
+                  key={item.id}
+                  className="flex gap-2 rounded-lg px-2 py-2 bg-[#B8392E]/5"
+                >
+                  <input
+                    type="time"
+                    value={editTime}
+                    onChange={(e) => setEditTime(e.target.value)}
+                    aria-label="Horário"
+                    className="w-24 rounded-lg bg-[#F5F0E6] border border-[#D4C9B5] px-2 py-1.5 text-xs focus:border-[#B8392E] focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={editTitle}
+                    autoFocus
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") saveEdit();
+                      if (e.key === "Escape") setEditId(null);
+                    }}
+                    aria-label="Título"
+                    className="flex-1 rounded-lg bg-[#F5F0E6] border border-[#D4C9B5] px-3 py-1.5 text-sm focus:border-[#B8392E] focus:outline-none"
+                  />
+                  <button
+                    onClick={saveEdit}
+                    className="px-3 rounded-lg bg-[#B8392E] text-[#F5F0E6] text-xs font-bold"
+                  >
+                    OK
+                  </button>
+                  <button
+                    onClick={() => setEditId(null)}
+                    aria-label="Cancelar edição"
+                    className="px-2 text-[#8A7F75] hover:text-[#B8392E] text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
               <div
                 key={item.id}
                 className={`flex items-center gap-2.5 group rounded-lg px-3 py-2 transition-colors ${
@@ -202,13 +322,22 @@ export default function DayView() {
                 </div>
 
                 <button
+                  onClick={() => startEdit(item.id, item.title, item.time)}
+                  aria-label={`Editar ${item.title}`}
+                  className="text-[11px] text-[#8A7F75] hover:text-[#B8392E] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                >
+                  ✎
+                </button>
+                <button
                   onClick={() => dailyDispatch({ type: "REMOVE_ITEM", id: item.id })}
+                  aria-label={`Remover ${item.title}`}
                   className="text-[10px] text-[#8A7F75] hover:text-[#B8392E] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                 >
                   ✕
                 </button>
               </div>
-            ))}
+              )
+            )}
           </div>
         ) : (
           <p className="text-xs text-[#8A7F75] italic mb-4">

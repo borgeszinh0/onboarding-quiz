@@ -72,10 +72,17 @@ type Action =
   | { type: "SET_NARRATIVE"; entries: NarrativeEntry[] }
   | { type: "SET_ENVIRONMENT"; entries: EnvironmentEntry[] }
   | { type: "SET_GOALS"; goals: SmartGoal[] }
+  | { type: "HYDRATE"; state: Partial<QuizState> }
   | { type: "RESET" };
 
 function reducer(state: QuizState, action: Action): QuizState {
   switch (action.type) {
+    case "HYDRATE":
+      return {
+        ...initialState,
+        ...action.state,
+        scores: { ...emptyScores(), ...(action.state.scores ?? {}) },
+      };
     case "SET_STEP":
       return { ...state, step: action.step };
     case "SET_USERNAME":

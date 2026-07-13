@@ -91,8 +91,36 @@ Scorecard do 12WY:
 - **Next.js 16** (App Router, Turbopack)
 - **TypeScript**
 - **Tailwind CSS v4**
-- **React Context + useReducer** — state management (zero dependências externas)
-- **localStorage** — persistência sem backend
+- **React Context + useReducer** — state management
+- **Supabase** — auth (magic link) + sync em nuvem (opcional)
+- **localStorage** — cache offline / fallback sem backend
+- **PWA** — instalável, offline, notificações de lembrete
+
+---
+
+## Novidades (v2 — app completo)
+
+- **Navegação global** — header fixo (Quiz · Mapa · Plano · Dados) em todas as telas.
+- **Landing inteligente** — detecta usuário recorrente e oferece continuar de onde parou.
+- **Mapa revisitável** — rota dedicada `/resultado`, não some mais após o quiz.
+- **Login + sync em nuvem** — Supabase magic link; dados sincronizam entre dispositivos.
+- **Backup local** — export/import JSON + auto-backup rotativo (7 dias) em `/dados`.
+- **Táticas no calendário** — botão "puxar táticas da semana" cria tarefas do dia ligadas ao 12WY.
+- **Semana automática** — a semana atual avança sozinha com base na data de início.
+- **Edição** — editar tarefas, eventos e táticas (antes só dava pra apagar tudo).
+- **PWA + lembretes** — instalável no celular; notificações para eventos com horário.
+- **Acessibilidade** — sem interativos aninhados, `aria-label` em calendário e checkboxes.
+
+### Configurar Supabase (opcional — sem isso roda 100% offline)
+
+1. Crie um projeto em [supabase.com](https://supabase.com).
+2. SQL Editor → cole e rode [`supabase/schema.sql`](supabase/schema.sql).
+3. Authentication → Providers → habilite **Email** (magic link já vem ligado).
+4. Authentication → URL Configuration → adicione a URL do site + `…/auth/callback` em Redirect URLs.
+5. Copie `.env.local.example` → `.env.local` e preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Project Settings → API).
+6. Na Vercel, adicione as mesmas duas env vars no projeto.
+
+Sem as env vars, o botão de login some e o app usa só localStorage.
 
 ## Estrutura do projeto
 

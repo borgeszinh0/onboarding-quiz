@@ -1,0 +1,32 @@
+{
+  "name": "Valores — Onboarding + 12 Week Year",
+  "short_name": "Valores",
+  "description": "Mapeie seus valores, audite seu ambiente e construa metas SMART.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F5F0E6",
+  "theme_color": "#F5F0E6",
+  "lang": "pt-BR",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

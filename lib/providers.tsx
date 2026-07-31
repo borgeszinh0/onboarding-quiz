@@ -2,9 +2,7 @@
 
 import { ReactNode } from "react";
 import { AuthProvider } from "./auth-context";
-import { QuizProvider } from "./store";
-import { TwelveWeekProvider } from "./12wy-store";
-import { DailyProvider } from "./daily-store";
+import { PlannerProvider } from "./planner-store";
 import { CloudSyncProvider } from "./cloud-sync";
 
 /**
@@ -14,13 +12,9 @@ import { CloudSyncProvider } from "./cloud-sync";
 export default function AppProviders({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
-      <QuizProvider>
-        <TwelveWeekProvider>
-          <DailyProvider>
-            <CloudSyncProvider>{children}</CloudSyncProvider>
-          </DailyProvider>
-        </TwelveWeekProvider>
-      </QuizProvider>
+      <PlannerProvider>
+        <CloudSyncProvider>{children}</CloudSyncProvider>
+      </PlannerProvider>
     </AuthProvider>
   );
 }

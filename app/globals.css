@@ -1,68 +1,156 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Design system — Apple-inspired.
+   Clareza (o conteúdo manda), deferência (a UI não compete),
+   profundidade (camadas criam hierarquia).
+   ============================================================ */
+
 @theme {
-  --color-cream: #F5F0E6;
-  --color-cream-dark: #EDE5D3;
-  --color-ink: #1A1715;
-  --color-ink-soft: #4A433D;
-  --color-ink-muted: #8A7F75;
-  --color-rust: #B8392E;
-  --color-rust-dark: #8B2A22;
-  --color-rust-light: #D4584C;
-  --color-sand: #D4C9B5;
-  --color-sand-light: #E8DFCC;
+  /* Superfícies e texto */
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f5f7;
+  --color-label: #1d1d1f;
+  --color-label-2: #86868b;
+
+  --color-accent: #0071e3;
+  --color-energia: #30d158;
+  --color-atencao: #ff9f0a;
+  --color-danger: #ff3b30;
 }
 
 :root {
-  --bg: #F5F0E6;
-  --ink: #1A1715;
+  /* Ritmo de espaçamento: 4 / 8 / 16 / 24 / 48 / 96.
+     Fora do @theme de propósito — `--spacing-*` é namespace reservado do
+     Tailwind 4 e sobrescrevê-lo quebra todas as utilities de padding/margem. */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 48px;
+  --space-2xl: 96px;
+
+  /* Curva padrão da Apple para micro-interações. */
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* Sem isso, o ícone do seletor de hora nativo e a seta do <select>
+     renderizam no chrome do SO (geralmente claro) mesmo com o app escuro —
+     ícone branco-no-branco, ilegível. */
+  color-scheme: light dark;
+
+  --bg: #ffffff;
+  --bg-elevated: #f5f5f7;
+  --label: #1d1d1f;
+  --label-secondary: #86868b;
+  --separator: rgba(0, 0, 0, 0.08);
+  --card-bg: rgba(255, 255, 255, 0.72);
+  --card-border: rgba(0, 0, 0, 0.06);
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.03);
+  --fill-subtle: rgba(0, 0, 0, 0.04);
+
+  /* var(--color-accent) usado como COR DE TEXTO (não preenchimento) em cima de
+     --bg ou de um tint sutil cai pra ~4.4:1 em telas escuras — abaixo do
+     mínimo AA de 4.5:1. Este token existe só pra texto; botões com fundo
+     sólido continuam usando --color-accent puro (texto branco em cima dele
+     já tem contraste de sobra, e clarear o azul quebraria isso). */
+  --accent-text: var(--color-accent);
 }
 
-html, body {
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --bg-elevated: #1d1d1f;
+    --label: #f5f5f7;
+    --label-secondary: #98989d;
+    --separator: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(28, 28, 30, 0.72);
+    --card-border: rgba(255, 255, 255, 0.09);
+    --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
+    --fill-subtle: rgba(255, 255, 255, 0.06);
+    --accent-text: #4da3ff;
+  }
+}
+
+html,
+body {
   background-color: var(--bg);
-  color: var(--ink);
+  color: var(--label);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
+    system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* Custom range slider */
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 6px;
-  border-radius: 999px;
-  background: #D4C9B5;
-  outline: none;
+/* ---------- Primitivas ---------- */
+
+/* Cartão: blur + borda de 1px + sombra rasa (nunca sombra difusa junto de borda). */
+.a-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: var(--card-shadow);
 }
 
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #B8392E;
-  cursor: pointer;
-  border: 3px solid #F5F0E6;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  transition: transform 0.15s;
+/* Botão pílula. Alvo de toque ≥ 44px garantido pelo padding + min-height. */
+.a-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px 24px;
+  border-radius: 980px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: transform 0.2s var(--ease-standard),
+    filter 0.2s var(--ease-standard), background-color 0.2s var(--ease-standard);
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
+.a-btn:active {
+  transform: scale(0.97);
 }
 
-input[type="range"]::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #B8392E;
-  cursor: pointer;
-  border: 3px solid #F5F0E6;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+.a-btn-primary {
+  background: var(--color-accent);
+  color: #ffffff;
 }
 
-/* Smooth page transitions */
+.a-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: scale(1.02);
+}
+
+.a-btn-secondary {
+  background: var(--fill-subtle);
+  color: var(--label);
+}
+
+.a-btn-secondary:hover:not(:disabled) {
+  background: var(--separator);
+}
+
+.a-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Foco visível para navegação por teclado — nunca remover sem substituir. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Números que não "dançam" ao atualizar (timer, contadores). */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ---------- Movimento ---------- */
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -75,10 +163,55 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .step-enter {
-  animation: fadeInUp 0.4s ease-out;
+  animation: fadeInUp 0.4s var(--ease-standard);
 }
 
-/* Scrollbar */
+.a-enter {
+  animation: fadeInUp 0.5s var(--ease-standard) both;
+}
+
+/* ---------- Campos de formulário ---------- */
+
+input[type="text"],
+input[type="time"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  color: var(--label);
+  border: 1px solid transparent;
+  transition: border-color 0.2s var(--ease-standard);
+}
+
+input[type="text"]:focus,
+input[type="time"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--label-secondary);
+}
+
+/* Some a seta padrão do navegador — o container já desenha o próprio chevron. */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--label-secondary) 50%),
+    linear-gradient(135deg, var(--label-secondary) 50%, transparent 50%);
+  background-position: calc(100% - 14px) center, calc(100% - 9px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+
+/* ---------- Scrollbar ---------- */
+
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -86,11 +219,11 @@ input[type="range"]::-moz-range-thumb {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D4C9B5;
+  background: var(--separator);
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #B8392E;
+  background: var(--label-secondary);
 }
 
 @media (prefers-reduced-motion: reduce) {

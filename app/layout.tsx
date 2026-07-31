@@ -17,14 +17,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Valores — Onboarding + 12 Week Year",
+  title: "Planner — Inbox, 1-3-5, Foco",
   description:
-    "Mapeie seus valores, audite seu ambiente e construa metas SMART que se sustentam no tempo.",
+    "1 tarefa grande, 3 médias, 5 pequenas. Sem projetos, sem pastas — só o dia de hoje.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Valores",
+    title: "Planner",
   },
   icons: {
     icon: "/icons/icon.svg",
@@ -33,7 +33,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F5F0E6",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

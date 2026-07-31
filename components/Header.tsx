@@ -6,36 +6,39 @@ import { useAuth } from "@/lib/auth-context";
 import { useSync } from "@/lib/cloud-sync";
 
 const NAV = [
-  { href: "/quiz", label: "Quiz" },
-  { href: "/resultado", label: "Mapa" },
-  { href: "/plano", label: "Plano" },
+  { href: "/", label: "Hoje" },
+  { href: "/inbox", label: "Inbox" },
+  { href: "/semana", label: "Semana" },
+  { href: "/mes", label: "Mês" },
+  { href: "/ano", label: "Ano" },
   { href: "/dados", label: "Dados" },
 ];
+
+const SYNC_LABELS: Record<string, { dot: string; label: string }> = {
+  synced: { dot: "#30d158", label: "Sincronizado" },
+  saving: { dot: "#ff9f0a", label: "Salvando…" },
+  pulling: { dot: "#ff9f0a", label: "Carregando…" },
+  error: { dot: "#ff3b30", label: "Erro de sync" },
+  idle: { dot: "transparent", label: "" },
+};
 
 function SyncBadge() {
   const { status } = useSync();
   const { user, configured } = useAuth();
   if (!configured || !user) return null;
 
-  const map: Record<string, { dot: string; label: string }> = {
-    synced: { dot: "#2D7A4E", label: "Sincronizado" },
-    saving: { dot: "#B8392E", label: "Salvando…" },
-    pulling: { dot: "#B8392E", label: "Carregando…" },
-    error: { dot: "#8A7F75", label: "Erro de sync" },
-    idle: { dot: "#8A7F75", label: "" },
-  };
-  const s = map[status] ?? map.idle;
+  const s = SYNC_LABELS[status] ?? SYNC_LABELS.idle;
   if (!s.label) return null;
 
   return (
     <span
-      className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-mono text-[#8A7F75]"
+      className="hidden items-center gap-1.5 text-[11px] text-[color:var(--label-secondary)] sm:inline-flex"
       title={s.label}
     >
       <span
-        className="w-1.5 h-1.5 rounded-full"
-        style={{ backgroundColor: s.dot }}
         aria-hidden
+        className="h-1.5 w-1.5 rounded-full"
+        style={{ backgroundColor: s.dot }}
       />
       {s.label}
     </span>
@@ -46,39 +49,47 @@ export default function Header() {
   const pathname = usePathname();
   const { user, configured, signOut } = useAuth();
 
-  // Hide chrome on the auth screen itself.
+  // Sem cromo na tela de autenticação.
   if (pathname === "/login") return null;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#D4C9B5]/60 bg-[#F5F0E6]/85 backdrop-blur-md">
+    <header
+      className="sticky top-0 z-40 border-b backdrop-blur-xl"
+      style={{
+        borderColor: "var(--separator)",
+        background: "color-mix(in oklab, var(--bg) 82%, transparent)",
+      }}
+    >
       <nav
         aria-label="Navegação principal"
-        className="max-w-2xl mx-auto flex items-center gap-3 px-5 h-14"
+        className="mx-auto flex h-14 max-w-xl items-center gap-2 px-5"
       >
-        <Link href="/" className="flex items-center gap-2 shrink-0 group">
-          <span className="w-7 h-7 rounded-full bg-[#B8392E] flex items-center justify-center text-sm group-hover:scale-105 transition-transform">
-            🧭
-          </span>
-          <span className="hidden sm:block text-sm font-bold tracking-tight text-[#1A1715]">
-            Valores
-          </span>
-        </Link>
-
-        <div className="flex items-center gap-1 ml-2 overflow-x-auto">
+        <div
+          className="flex items-center gap-1 overflow-x-auto"
+          style={{
+            maskImage: "linear-gradient(to right, black calc(100% - 20px), transparent)",
+            WebkitMaskImage:
+              "linear-gradient(to right, black calc(100% - 20px), transparent)",
+          }}
+        >
           {NAV.map((item) => {
             const active =
-              pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href));
+              item.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
-                  active
-                    ? "bg-[#B8392E] text-[#F5F0E6]"
-                    : "text-[#8A7F75] hover:text-[#1A1715] hover:bg-[#D4C9B5]/30"
+                className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-200 ${
+                  active ? "" : "hover:bg-[color:var(--fill-subtle)] hover:text-[color:var(--label)]"
                 }`}
+                style={
+                  active
+                    ? { background: "var(--color-accent)", color: "#fff" }
+                    : { color: "var(--label-secondary)" }
+                }
               >
                 {item.label}
               </Link>
@@ -86,20 +97,20 @@ export default function Header() {
           })}
         </div>
 
-        <div className="ml-auto flex items-center gap-3 shrink-0">
+        <div className="ml-auto flex shrink-0 items-center gap-3">
           <SyncBadge />
           {configured &&
             (user ? (
               <button
                 onClick={signOut}
-                className="text-[11px] font-medium text-[#8A7F75] hover:text-[#B8392E] transition-colors"
+                className="text-[13px] text-[color:var(--label-secondary)] transition-colors hover:text-[color:var(--label)]"
               >
                 Sair
               </button>
             ) : (
               <Link
                 href="/login"
-                className="text-[11px] font-semibold text-[#B8392E] hover:text-[#8B2A22] transition-colors"
+                className="text-[13px] font-medium text-[color:var(--accent-text)]"
               >
                 Entrar
               </Link>

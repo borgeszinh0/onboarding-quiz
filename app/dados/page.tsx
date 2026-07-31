@@ -1,9 +1,7 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { useQuiz } from "@/lib/store";
-import { use12WY } from "@/lib/12wy-store";
-import { useDaily } from "@/lib/daily-store";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
+import { usePlanner } from "@/lib/planner-store";
 import { useAuth } from "@/lib/auth-context";
 import {
   buildBackup,
@@ -13,35 +11,56 @@ import {
   readAutoBackup,
   type Backup,
 } from "@/lib/backup";
+import { Button, Card, PageTitle, SectionLabel } from "@/components/apple/ui";
+
+type AutoBackupEntry = { date: string; key: string };
+
+/** localStorage é store externo — ler durante o render seria impuro. */
+function useAutoBackups(version: number): AutoBackupEntry[] {
+  const cache = useRef<AutoBackupEntry[]>([]);
+  const cachedVersion = useRef(-1);
+
+  const subscribe = useCallback((onChange: () => void) => {
+    onChange();
+    return () => {};
+  }, []);
+
+  return useSyncExternalStore(
+    subscribe,
+    () => {
+      if (cachedVersion.current !== version) {
+        cache.current = listAutoBackups();
+        cachedVersion.current = version;
+      }
+      return cache.current;
+    },
+    () => cache.current
+  );
+}
 
 export default function DadosPage() {
-  const { state: quiz, dispatch: quizD } = useQuiz();
-  const { state: plan, dispatch: planD } = use12WY();
-  const { state: daily, dispatch: dailyD } = useDaily();
+  const { state: planner, dispatch, hydrated } = usePlanner();
   const { user, configured } = useAuth();
 
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
-  const [autoBackups, setAutoBackups] = useState<{ date: string; key: string }[]>([]);
-
-  useEffect(() => setAutoBackups(listAutoBackups()), []);
+  const [backupsVersion, setBackupsVersion] = useState(0);
+  const autoBackups = useAutoBackups(backupsVersion);
 
   const restore = (b: Backup) => {
-    quizD({ type: "HYDRATE", state: b.quiz });
-    planD({ type: "HYDRATE", state: b.plan });
-    dailyD({ type: "HYDRATE", state: b.daily });
+    dispatch({ type: "HYDRATE", state: b.planner });
     setMsg({ kind: "ok", text: "Dados restaurados com sucesso." });
   };
 
   const handleExport = () => {
-    downloadBackup(buildBackup(quiz, plan, daily));
+    downloadBackup(buildBackup(planner));
+    setBackupsVersion((v) => v + 1);
     setMsg({ kind: "ok", text: "Backup exportado." });
   };
 
   const handleImportFile = async (file: File) => {
     try {
-      const b = parseBackup(await file.text());
-      restore(b);
+      restore(parseBackup(await file.text()));
     } catch (e) {
       setMsg({
         kind: "err",
@@ -50,86 +69,71 @@ export default function DadosPage() {
     }
   };
 
-  const itemCount = daily.items.length;
-  const tacticCount = plan.tactics.length;
-  const goalCount = quiz.goals.length;
+  const taskCount = planner.tasks.length;
+  const habitCount = planner.habits.length;
+  const blockCount = planner.timeBlocks.length;
 
   return (
-    <div className="bg-[#F5F0E6] text-[#1A1715]">
-      <div className="max-w-2xl mx-auto px-5 py-8 sm:py-12 step-enter">
-        <span className="text-[10px] font-mono font-bold tracking-widest text-[#B8392E]">
-          DADOS
-        </span>
-        <h1 className="text-2xl font-bold mt-1 mb-6">Backup & sincronização</h1>
+    <main className="mx-auto w-full max-w-xl px-5 pb-20 pt-8">
+      <PageTitle eyebrow="Dados" title="Backup e sincronização" />
 
-        {msg && (
-          <div
-            role="status"
-            className={`rounded-xl px-4 py-3 text-sm mb-6 ${
-              msg.kind === "ok"
-                ? "bg-[#2D7A4E]/10 text-[#1A1715]"
-                : "bg-[#B8392E]/10 text-[#B8392E]"
-            }`}
-          >
-            {msg.text}
-          </div>
-        )}
-
-        {/* Resumo */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          {[
-            { n: goalCount, l: "metas" },
-            { n: tacticCount, l: "táticas" },
-            { n: itemCount, l: "itens" },
-          ].map((s) => (
-            <div
-              key={s.l}
-              className="rounded-2xl border border-[#D4C9B5] bg-white/50 p-4 text-center"
-            >
-              <p className="text-2xl font-bold text-[#1A1715] tabular-nums">{s.n}</p>
-              <p className="text-[10px] uppercase tracking-wide text-[#8A7F75]">
-                {s.l}
-              </p>
-            </div>
-          ))}
+      {msg && (
+        <div
+          role="status"
+          className="mb-6 rounded-2xl px-4 py-3 text-[15px]"
+          style={{
+            background: "var(--fill-subtle)",
+            color: msg.kind === "ok" ? "var(--label)" : "var(--color-danger)",
+          }}
+        >
+          {msg.text}
         </div>
+      )}
 
-        {/* Nuvem */}
-        <div className="rounded-2xl border border-[#D4C9B5] bg-white/50 p-5 mb-6">
-          <h2 className="text-sm font-bold mb-2">Nuvem</h2>
+      <div className="mb-8 grid grid-cols-3 gap-3">
+        {[
+          { n: taskCount, l: "tarefas" },
+          { n: blockCount, l: "blocos" },
+          { n: habitCount, l: "hábitos" },
+        ].map((s) => (
+          <Card key={s.l} className="p-4 text-center">
+            <p className="tabular text-[28px] font-semibold">
+              {hydrated ? s.n : "—"}
+            </p>
+            <p className="text-[13px] text-[color:var(--label-secondary)]">{s.l}</p>
+          </Card>
+        ))}
+      </div>
+
+      <section className="mb-6">
+        <SectionLabel>Nuvem</SectionLabel>
+        <Card className="mt-3 p-5">
           {!configured ? (
-            <p className="text-xs text-[#8A7F75] leading-relaxed">
-              Backend não configurado. Use export/import abaixo para mover seus
-              dados entre dispositivos.
+            <p className="text-[15px] leading-relaxed text-[color:var(--label-secondary)]">
+              Backend não configurado. Use exportar e importar abaixo para mover
+              seus dados entre dispositivos.
             </p>
           ) : user ? (
-            <p className="text-xs text-[#2D7A4E] leading-relaxed">
-              ✓ Conectado como <strong>{user.email}</strong>. Seus dados
-              sincronizam automaticamente.
+            <p className="text-[15px] leading-relaxed">
+              Conectado como <strong>{user.email}</strong>. Seus dados sincronizam
+              automaticamente.
             </p>
           ) : (
-            <p className="text-xs text-[#8A7F75] leading-relaxed">
+            <p className="text-[15px] leading-relaxed text-[color:var(--label-secondary)]">
               Entre para sincronizar em todos os dispositivos.
             </p>
           )}
-        </div>
+        </Card>
+      </section>
 
-        {/* Export / Import */}
-        <div className="rounded-2xl border border-[#D4C9B5] bg-white/50 p-5 mb-6">
-          <h2 className="text-sm font-bold mb-4">Arquivo local</h2>
+      <section className="mb-6">
+        <SectionLabel>Arquivo local</SectionLabel>
+        <Card className="mt-3 p-5">
           <div className="flex flex-wrap gap-3">
-            <button
-              onClick={handleExport}
-              className="px-5 py-2.5 rounded-full bg-[#B8392E] text-[#F5F0E6] text-sm font-semibold hover:bg-[#8B2A22] transition-colors"
-            >
-              ↓ Exportar JSON
-            </button>
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="px-5 py-2.5 rounded-full border border-[#D4C9B5] text-sm font-semibold text-[#1A1715] hover:border-[#B8392E] transition-colors"
-            >
-              ↑ Importar JSON
-            </button>
+            <Button onClick={handleExport}>Exportar JSON</Button>
+            <Button variant="secondary" onClick={() => fileRef.current?.click()}>
+              Importar JSON
+            </Button>
             <input
               ref={fileRef}
               type="file"
@@ -142,40 +146,42 @@ export default function DadosPage() {
               }}
             />
           </div>
-          <p className="text-[11px] text-[#8A7F75] mt-3 leading-relaxed">
+          <p className="mt-3 text-[13px] leading-relaxed text-[color:var(--label-secondary)]">
             Importar substitui os dados atuais deste dispositivo.
           </p>
-        </div>
+        </Card>
+      </section>
 
-        {/* Auto-backup */}
-        {autoBackups.length > 0 && (
-          <div className="rounded-2xl border border-[#D4C9B5] bg-white/50 p-5">
-            <h2 className="text-sm font-bold mb-1">Backups automáticos</h2>
-            <p className="text-[11px] text-[#8A7F75] mb-4">
-              Snapshots salvos localmente (últimos 7 dias).
+      {autoBackups.length > 0 && (
+        <section>
+          <SectionLabel>Backups automáticos</SectionLabel>
+          <Card className="mt-3 p-5">
+            <p className="mb-4 text-[13px] text-[color:var(--label-secondary)]">
+              Snapshots salvos localmente, últimos 7 dias.
             </p>
-            <div className="space-y-2">
+            <ul className="divide-y divide-[color:var(--separator)]">
               {autoBackups.map((b) => (
-                <div
+                <li
                   key={b.key}
-                  className="flex items-center justify-between border-b border-[#D4C9B5]/40 pb-2 last:border-0"
+                  className="flex min-h-[44px] items-center justify-between gap-3"
                 >
-                  <span className="text-xs font-mono text-[#4A433D]">{b.date}</span>
+                  <span className="tabular text-[15px]">{b.date}</span>
                   <button
+                    type="button"
                     onClick={() => {
                       const bk = readAutoBackup(b.key);
                       if (bk) restore(bk);
                     }}
-                    className="text-[11px] font-semibold text-[#B8392E] hover:text-[#8B2A22] transition-colors"
+                    className="text-[15px] font-medium text-[color:var(--accent-text)]"
                   >
                     Restaurar
                   </button>
-                </div>
+                </li>
               ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+            </ul>
+          </Card>
+        </section>
+      )}
+    </main>
   );
 }

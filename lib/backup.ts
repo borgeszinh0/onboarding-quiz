@@ -1,28 +1,26 @@
-import type { QuizState } from "./types";
-import type { TwelveWeekState } from "./12wy-types";
-import type { DailyItem } from "./daily-types";
+import type { PlannerState } from "./planner-types";
+
+/**
+ * v1/v2/v3 são legado (quiz de valores, 12 Week Year, TEA). Continuam sendo
+ * aceitos na importação, mas `daily`/`tea`/`quiz`/`plan` são ignorados: essas
+ * features não existem mais. v4 só carrega `planner`.
+ */
+const SUPPORTED_VERSIONS: readonly number[] = [1, 2, 3, 4];
+const CURRENT_VERSION = 4;
 
 export interface Backup {
-  version: 1;
+  version: number;
   app: "valores";
   exportedAt: string;
-  quiz: Partial<QuizState>;
-  plan: Partial<TwelveWeekState>;
-  daily: { items: DailyItem[] };
+  planner: Partial<PlannerState>;
 }
 
-export function buildBackup(
-  quiz: QuizState,
-  plan: TwelveWeekState,
-  daily: { items: DailyItem[] }
-): Backup {
+export function buildBackup(planner: PlannerState): Backup {
   return {
-    version: 1,
+    version: CURRENT_VERSION,
     app: "valores",
     exportedAt: new Date().toISOString(),
-    quiz,
-    plan,
-    daily,
+    planner,
   };
 }
 
@@ -33,7 +31,7 @@ export function downloadBackup(backup: Backup) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `valores-backup-${backup.exportedAt.slice(0, 10)}.json`;
+  a.download = `planner-backup-${backup.exportedAt.slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -41,16 +39,18 @@ export function downloadBackup(backup: Backup) {
 /** Valida e faz parse de um arquivo de backup. Lança em caso de formato inválido. */
 export function parseBackup(raw: string): Backup {
   const data = JSON.parse(raw);
-  if (!data || data.app !== "valores" || data.version !== 1) {
-    throw new Error("Arquivo não é um backup válido do Valores.");
+  if (
+    !data ||
+    data.app !== "valores" ||
+    !SUPPORTED_VERSIONS.includes(data.version)
+  ) {
+    throw new Error("Arquivo não é um backup válido.");
   }
   return {
-    version: 1,
+    version: data.version,
     app: "valores",
     exportedAt: data.exportedAt ?? new Date().toISOString(),
-    quiz: data.quiz ?? {},
-    plan: data.plan ?? {},
-    daily: data.daily ?? { items: [] },
+    planner: data.planner ?? {},
   };
 }
 

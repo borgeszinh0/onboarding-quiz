@@ -1,4 +1,4 @@
-import type { DailyItem } from "./daily-types";
+import type { Task, TimeBlock } from "./planner-types";
 
 export function notificationsSupported(): boolean {
   return typeof window !== "undefined" && "Notification" in window;
@@ -36,31 +36,34 @@ function todayStr(): string {
 }
 
 /**
- * Agenda notificações para os itens de HOJE que têm horário futuro. Retorna a
- * lista de timers para permitir limpeza. Só dispara com permissão concedida.
+ * Agenda notificações para os TimeBlocks de HOJE cuja tarefa ainda está
+ * pendente. Retorna a lista de timers para permitir limpeza. Só dispara com
+ * permissão concedida.
  */
-export function scheduleTodayReminders(items: DailyItem[]): number[] {
+export function scheduleTodayReminders(
+  blocks: TimeBlock[],
+  tasks: Task[]
+): number[] {
   if (notificationPermission() !== "granted") return [];
 
   const today = todayStr();
   const now = Date.now();
   const timers: number[] = [];
+  const taskById = new Map(tasks.map((t) => [t.id, t]));
 
-  for (const item of items) {
-    if (item.date !== today || !item.time) continue;
-    if (item.type === "task" && item.done) continue;
+  for (const block of blocks) {
+    if (block.date !== today) continue;
+    const task = taskById.get(block.taskId);
+    if (!task || task.status === "done") continue;
 
-    const [h, m] = item.time.split(":").map(Number);
+    const [h, m] = block.startTime.split(":").map(Number);
     const when = new Date();
     when.setHours(h, m, 0, 0);
     const delay = when.getTime() - now;
     if (delay <= 0 || delay > 24 * 60 * 60 * 1000) continue;
 
     const id = window.setTimeout(() => {
-      fire(
-        item.type === "event" ? "📅 Evento agora" : "✓ Tarefa agendada",
-        `${item.time} — ${item.title}`
-      );
+      fire("⏱ Bloco começando", `${block.startTime} — ${task.title}`);
     }, delay);
     timers.push(id);
   }

@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
-import { useDaily } from "@/lib/daily-store";
+import { usePlanner } from "@/lib/planner-store";
 import { scheduleTodayReminders } from "@/lib/notifications";
 
-/** Reagenda lembretes das tarefas/eventos de hoje sempre que a agenda muda. */
+/** Reagenda lembretes dos blocos de hoje sempre que a agenda muda. */
 export default function NotificationsRunner() {
-  const { state } = useDaily();
+  const { state } = usePlanner();
 
   useEffect(() => {
-    const timers = scheduleTodayReminders(state.items);
+    const timers = scheduleTodayReminders(state.timeBlocks, state.tasks);
     return () => timers.forEach((t) => clearTimeout(t));
-  }, [state.items]);
+  }, [state.timeBlocks, state.tasks]);
 
   return null;
 }

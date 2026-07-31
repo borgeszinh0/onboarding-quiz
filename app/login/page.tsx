@@ -36,7 +36,7 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-[#F5F0E6] text-[#1A1715] flex items-center justify-center px-4 py-12">
       <div className="max-w-sm w-full">
-        <Link href="/" className="flex items-center gap-2 justify-center mb-8">
+        <Link href="/" className="mb-8 flex min-h-[44px] items-center justify-center gap-2">
           <span className="w-12 h-12 rounded-full bg-[#B8392E] flex items-center justify-center text-xl">
             🧭
           </span>
@@ -64,7 +64,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com"
                 aria-label="E-mail"
-                className="w-full rounded-xl bg-white/60 border border-[#D4C9B5] px-4 py-3 text-sm text-[#1A1715] placeholder:text-[#8A7F75]/60 focus:border-[#B8392E] focus:ring-2 focus:ring-[#B8392E]/10 focus:outline-none transition-all"
+                className="min-h-[44px] w-full rounded-xl bg-white/60 border border-[#D4C9B5] px-4 text-sm text-[#1A1715] placeholder:text-[#8A7F75]/60 focus:border-[#B8392E] focus:ring-2 focus:ring-[#B8392E]/10 focus:outline-none transition-all"
               />
               <input
                 type="password"
@@ -75,7 +75,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Senha (mín. 6)"
                 aria-label="Senha"
-                className="w-full rounded-xl bg-white/60 border border-[#D4C9B5] px-4 py-3 text-sm text-[#1A1715] placeholder:text-[#8A7F75]/60 focus:border-[#B8392E] focus:ring-2 focus:ring-[#B8392E]/10 focus:outline-none transition-all"
+                className="min-h-[44px] w-full rounded-xl bg-white/60 border border-[#D4C9B5] px-4 text-sm text-[#1A1715] placeholder:text-[#8A7F75]/60 focus:border-[#B8392E] focus:ring-2 focus:ring-[#B8392E]/10 focus:outline-none transition-all"
               />
               {error && (
                 <p className="text-xs text-[#B8392E]" role="alert">
@@ -85,7 +85,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-6 py-3 rounded-full bg-[#B8392E] text-[#F5F0E6] font-semibold tracking-wide hover:bg-[#8B2A22] disabled:opacity-50 transition-all"
+                className="min-h-[44px] w-full rounded-full bg-[#B8392E] px-6 text-[#F5F0E6] font-semibold tracking-wide hover:bg-[#8B2A22] disabled:opacity-50 transition-all"
               >
                 {loading
                   ? "Aguarde…"
@@ -98,11 +98,12 @@ export default function LoginPage() {
             <p className="text-center text-xs text-[#8A7F75] mt-5">
               {mode === "in" ? "Ainda não tem conta?" : "Já tem conta?"}{" "}
               <button
+                type="button"
                 onClick={() => {
                   setMode(mode === "in" ? "up" : "in");
                   setError(null);
                 }}
-                className="font-semibold text-[#B8392E] hover:text-[#8B2A22] transition-colors"
+                className="a-hit-44 font-semibold text-[#B8392E] transition-colors hover:text-[#8B2A22]"
               >
                 {mode === "in" ? "Criar conta" : "Entrar"}
               </button>
@@ -113,7 +114,7 @@ export default function LoginPage() {
         <p className="text-center mt-8">
           <Link
             href="/"
-            className="text-xs text-[#8A7F75] hover:text-[#B8392E] transition-colors"
+            className="a-hit-44 text-xs text-[#8A7F75] transition-colors hover:text-[#B8392E]"
           >
             ← Voltar
           </Link>

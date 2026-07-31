@@ -15,10 +15,10 @@ const NAV = [
 ];
 
 const SYNC_LABELS: Record<string, { dot: string; label: string }> = {
-  synced: { dot: "#30d158", label: "Sincronizado" },
-  saving: { dot: "#ff9f0a", label: "Salvando…" },
-  pulling: { dot: "#ff9f0a", label: "Carregando…" },
-  error: { dot: "#ff3b30", label: "Erro de sync" },
+  synced: { dot: "var(--success-fill)", label: "Sincronizado" },
+  saving: { dot: "var(--color-atencao)", label: "Salvando…" },
+  pulling: { dot: "var(--color-atencao)", label: "Carregando…" },
+  error: { dot: "var(--color-danger)", label: "Erro de sync" },
   idle: { dot: "transparent", label: "" },
 };
 
@@ -82,7 +82,7 @@ export default function Header() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-200 ${
+                className={`flex min-h-[44px] items-center whitespace-nowrap rounded-full px-3.5 text-[13px] font-medium transition-colors duration-200 ${
                   active ? "" : "hover:bg-[color:var(--fill-subtle)] hover:text-[color:var(--label)]"
                 }`}
                 style={
@@ -102,15 +102,16 @@ export default function Header() {
           {configured &&
             (user ? (
               <button
+                type="button"
                 onClick={signOut}
-                className="text-[13px] text-[color:var(--label-secondary)] transition-colors hover:text-[color:var(--label)]"
+                className="a-hit-44 text-[13px] text-[color:var(--label-secondary)] transition-colors hover:text-[color:var(--label)]"
               >
                 Sair
               </button>
             ) : (
               <Link
                 href="/login"
-                className="text-[13px] font-medium text-[color:var(--accent-text)]"
+                className="a-hit-44 text-[13px] font-medium text-[color:var(--accent-text)]"
               >
                 Entrar
               </Link>

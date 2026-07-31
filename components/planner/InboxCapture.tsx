@@ -30,7 +30,7 @@ export function InboxCapture() {
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && capture()}
             placeholder="Despejar uma ideia"
-            className="min-w-0 flex-1 rounded-xl bg-[color:var(--fill-subtle)] px-3 py-2.5 text-[15px]"
+            className="min-h-[44px] min-w-0 flex-1 rounded-xl bg-[color:var(--fill-subtle)] px-3 text-[15px]"
           />
           <button
             type="button"
@@ -58,7 +58,7 @@ export function InboxCapture() {
                   type="button"
                   onClick={() => dispatch({ type: "REMOVE_TASK", id: task.id })}
                   aria-label={`Remover ${task.title}`}
-                  className="flex h-11 w-8 shrink-0 items-center justify-center text-[15px] text-[color:var(--label-secondary)] transition-colors hover:text-[color:var(--color-danger)]"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center text-[15px] text-[color:var(--label-secondary)] transition-colors hover:text-[color:var(--danger-text)]"
                 >
                   ✕
                 </button>

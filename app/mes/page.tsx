@@ -111,7 +111,11 @@ export default function MesPage() {
                 className="relative flex aspect-square flex-col items-center justify-center rounded-xl text-[15px]"
                 style={
                   perfect
-                    ? { background: "var(--color-energia)", color: "#fff", fontWeight: 600 }
+                    ? {
+                        background: "var(--success-fill)",
+                        color: "var(--success-label)",
+                        fontWeight: 600,
+                      }
                     : isToday
                       ? { color: "var(--accent-text)", fontWeight: 600 }
                       : undefined

@@ -37,7 +37,7 @@ export function HabitBar({ date }: { date: string }) {
             onClick={() => setManaging((v) => !v)}
             aria-expanded={managing}
             aria-label="Gerenciar hábitos"
-            className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[15px] text-[color:var(--label-secondary)] transition-colors hover:bg-[color:var(--fill-subtle)]"
+            className="ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[15px] text-[color:var(--label-secondary)] transition-colors hover:bg-[color:var(--fill-subtle)]"
           >
             ⚙
           </button>
@@ -64,10 +64,10 @@ function HabitChip({
       type="button"
       onClick={() => dispatch({ type: "TOGGLE_HABIT_LOG", habitId, date })}
       aria-pressed={done}
-      className="flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-colors duration-200"
+      className="flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition-colors duration-200"
       style={
         done
-          ? { background: "var(--color-energia)", color: "#fff" }
+          ? { background: "var(--success-fill)", color: "var(--success-label)" }
           : { background: "var(--fill-subtle)", color: "var(--label)" }
       }
     >
@@ -96,14 +96,14 @@ function HabitManager({ onClose }: { onClose: () => void }) {
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && add()}
           placeholder="Novo hábito"
-          className="min-w-0 flex-1 rounded-xl bg-[color:var(--fill-subtle)] px-3 py-2 text-[15px]"
+          className="min-h-[44px] min-w-0 flex-1 rounded-xl bg-[color:var(--fill-subtle)] px-3 text-[15px]"
         />
         <button
           type="button"
           onClick={add}
           disabled={!title.trim()}
           aria-label="Adicionar hábito"
-          className="min-h-[40px] shrink-0 rounded-xl px-4 text-[18px] font-medium leading-none text-[color:var(--accent-text)] disabled:opacity-30"
+          className="a-hit-44 shrink-0 rounded-xl px-4 text-[18px] font-medium leading-none text-[color:var(--accent-text)] disabled:opacity-30"
         >
           +
         </button>
@@ -112,11 +112,11 @@ function HabitManager({ onClose }: { onClose: () => void }) {
       {state.habits.length > 0 && (
         <ul className="space-y-1">
           {state.habits.map((habit) => (
-            <li key={habit.id} className="flex min-h-[40px] items-center gap-3">
+            <li key={habit.id} className="flex min-h-[44px] items-center gap-3">
               <button
                 type="button"
                 onClick={() => dispatch({ type: "TOGGLE_HABIT_ACTIVE", id: habit.id })}
-                className="min-w-0 flex-1 text-left text-[15px]"
+                className="min-h-[44px] min-w-0 flex-1 text-left text-[15px]"
                 style={
                   habit.isActive ? undefined : { color: "var(--label-secondary)" }
                 }
@@ -128,7 +128,7 @@ function HabitManager({ onClose }: { onClose: () => void }) {
                 type="button"
                 onClick={() => dispatch({ type: "REMOVE_HABIT", id: habit.id })}
                 aria-label={`Remover ${habit.title}`}
-                className="shrink-0 text-[13px] text-[color:var(--label-secondary)] hover:text-[color:var(--color-danger)]"
+                className="a-hit-44 shrink-0 px-2 text-[13px] text-[color:var(--label-secondary)] hover:text-[color:var(--danger-text)]"
               >
                 Remover
               </button>
@@ -140,7 +140,7 @@ function HabitManager({ onClose }: { onClose: () => void }) {
       <button
         type="button"
         onClick={onClose}
-        className="text-[13px] text-[color:var(--label-secondary)]"
+        className="a-hit-44 text-[13px] text-[color:var(--label-secondary)]"
       >
         Fechar
       </button>

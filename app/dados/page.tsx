@@ -83,7 +83,7 @@ export default function DadosPage() {
           className="mb-6 rounded-2xl px-4 py-3 text-[15px]"
           style={{
             background: "var(--fill-subtle)",
-            color: msg.kind === "ok" ? "var(--label)" : "var(--color-danger)",
+            color: msg.kind === "ok" ? "var(--label)" : "var(--danger-text)",
           }}
         >
           {msg.text}
@@ -172,7 +172,7 @@ export default function DadosPage() {
                       const bk = readAutoBackup(b.key);
                       if (bk) restore(bk);
                     }}
-                    className="text-[15px] font-medium text-[color:var(--accent-text)]"
+                    className="a-hit-44 text-[15px] font-medium text-[color:var(--accent-text)]"
                   >
                     Restaurar
                   </button>

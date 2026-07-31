@@ -48,12 +48,21 @@
   --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.03);
   --fill-subtle: rgba(0, 0, 0, 0.04);
 
+  --success-fill: #30d158;
+  --success-label: #1d1d1f;
+  --danger-text-light: #d70015;
+  --attention-text-light: #b25000;
+  --accent-text-light: #0071e3;
+  --accent-text-dark: #4da3ff;
+
   /* var(--color-accent) usado como COR DE TEXTO (não preenchimento) em cima de
      --bg ou de um tint sutil cai pra ~4.4:1 em telas escuras — abaixo do
      mínimo AA de 4.5:1. Este token existe só pra texto; botões com fundo
      sólido continuam usando --color-accent puro (texto branco em cima dele
      já tem contraste de sobra, e clarear o azul quebraria isso). */
-  --accent-text: var(--color-accent);
+  --accent-text: var(--accent-text-light);
+  --attention-text: var(--attention-text-light);
+  --danger-text: var(--danger-text-light);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -67,7 +76,9 @@
     --card-border: rgba(255, 255, 255, 0.09);
     --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 1px rgba(0, 0, 0, 0.3);
     --fill-subtle: rgba(255, 255, 255, 0.06);
-    --accent-text: #4da3ff;
+    --accent-text: var(--accent-text-dark);
+    --attention-text: var(--color-atencao);
+    --danger-text: var(--color-danger);
   }
 }
 
@@ -134,6 +145,15 @@ body {
 .a-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+/* Alvo mínimo Apple/WCAG para controles que não usam .a-btn. */
+.a-hit-44 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 /* Foco visível para navegação por teclado — nunca remover sem substituir. */

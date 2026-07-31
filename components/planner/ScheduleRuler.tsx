@@ -56,7 +56,7 @@ export function ScheduleRuler({
             if (!task) return null;
             const top = (minutesFromRulerStart(block.startTime) / 60) * HOUR_HEIGHT;
             const height = Math.max(
-              20,
+              44,
               ((minutesFromRulerStart(block.endTime) -
                 minutesFromRulerStart(block.startTime)) /
                 60) *

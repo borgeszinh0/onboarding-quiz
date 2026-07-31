@@ -29,7 +29,7 @@ export function ScheduleTaskControl({
         <button
           type="button"
           onClick={() => onFocus(taskId)}
-          className="tabular rounded-full bg-[color:var(--fill-subtle)] px-2.5 py-1 text-[13px] font-medium text-[color:var(--accent-text)]"
+          className="tabular min-h-[44px] rounded-full bg-[color:var(--fill-subtle)] px-2.5 text-[13px] font-medium text-[color:var(--accent-text)]"
         >
           {block.startTime}
         </button>
@@ -37,7 +37,7 @@ export function ScheduleTaskControl({
           type="button"
           onClick={() => dispatch({ type: "REMOVE_TIME_BLOCK", id: block.id })}
           aria-label="Remover agendamento"
-          className="flex h-6 w-6 shrink-0 items-center justify-center text-[13px] text-[color:var(--label-secondary)]"
+          className="flex h-11 w-11 shrink-0 items-center justify-center text-[13px] text-[color:var(--label-secondary)]"
         >
           ✕
         </button>
@@ -49,7 +49,7 @@ export function ScheduleTaskControl({
     <button
       type="button"
       onClick={onOpenSchedule}
-      className="shrink-0 rounded-full border px-2.5 py-1 text-[13px] font-medium transition-colors duration-200"
+      className="min-h-[44px] shrink-0 rounded-full border px-2.5 text-[13px] font-medium transition-colors duration-200"
       style={{ borderColor: "var(--separator)", color: "var(--label-secondary)" }}
     >
       Agendar
@@ -92,13 +92,13 @@ export function ScheduleForm({
         value={start}
         onChange={(e) => setStart(e.target.value)}
         aria-label="Horário de início"
-        className="min-h-[36px] w-[104px] rounded-lg bg-[color:var(--bg)] px-2 text-[14px]"
+        className="min-h-[44px] w-[104px] rounded-lg bg-[color:var(--bg)] px-2 text-[14px]"
       />
       <select
         value={duration}
         onChange={(e) => setDuration(Number(e.target.value))}
         aria-label="Duração"
-        className="min-h-[36px] rounded-lg bg-[color:var(--bg)] px-2 text-[14px]"
+        className="min-h-[44px] rounded-lg bg-[color:var(--bg)] px-2 text-[14px]"
       >
         {DURATIONS.map((d) => (
           <option key={d} value={d}>
@@ -110,14 +110,14 @@ export function ScheduleForm({
         <button
           type="button"
           onClick={onDone}
-          className="text-[13px] text-[color:var(--label-secondary)]"
+          className="a-hit-44 text-[13px] text-[color:var(--label-secondary)]"
         >
           Cancelar
         </button>
         <button
           type="button"
           onClick={confirm}
-          className="text-[15px] font-medium text-[color:var(--accent-text)]"
+          className="a-hit-44 text-[15px] font-medium text-[color:var(--accent-text)]"
         >
           Confirmar
         </button>

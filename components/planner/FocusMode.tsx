@@ -131,7 +131,7 @@ export function FocusMode({
       <button
         type="button"
         onClick={onClose}
-        className="mt-10 text-[15px] text-[color:var(--label-secondary)]"
+        className="a-hit-44 mt-10 text-[15px] text-[color:var(--label-secondary)]"
       >
         Sair do foco
       </button>

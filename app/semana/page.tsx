@@ -73,7 +73,7 @@ export default function SemanaPage() {
                 <span
                   aria-hidden
                   className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: perfect ? "var(--color-energia)" : "transparent" }}
+                  style={{ background: perfect ? "var(--success-fill)" : "transparent" }}
                 />
               </div>
             );

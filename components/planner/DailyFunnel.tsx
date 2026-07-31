@@ -20,8 +20,8 @@ const CATEGORY_ACCENT: Record<Exclude<TaskCategory, "inbox">, string> = {
 
 /** Mesmas cores, mas seguras como cor de TEXTO (ver --accent-text em globals.css). */
 const CATEGORY_TEXT_ACCENT: Record<Exclude<TaskCategory, "inbox">, string> = {
-  big: "var(--color-danger)",
-  medium: "var(--color-atencao)",
+  big: "var(--danger-text)",
+  medium: "var(--attention-text)",
   small: "var(--accent-text)",
 };
 
@@ -122,23 +122,27 @@ function SlotTaskRow({
           onClick={() => dispatch({ type: "TOGGLE_TASK_DONE", id: task.id })}
           aria-pressed={task.status === "done"}
           aria-label={task.title}
-          className="mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors duration-200"
-          style={{
-            borderColor: task.status === "done" ? accent : "var(--separator)",
-            background: task.status === "done" ? accent : "transparent",
-          }}
+          className="flex h-11 w-11 shrink-0 items-start justify-center pt-0.5"
         >
-          {task.status === "done" && (
-            <svg viewBox="0 0 14 14" className="h-3 w-3" fill="none">
-              <path
-                d="M2 7.5L5.5 11L12 3.5"
-                stroke="#fff"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
+          <span
+            className="flex h-[22px] w-[22px] items-center justify-center rounded-full border-[1.5px] transition-colors duration-200"
+            style={{
+              borderColor: task.status === "done" ? accent : "var(--separator)",
+              background: task.status === "done" ? accent : "transparent",
+            }}
+          >
+            {task.status === "done" && (
+              <svg viewBox="0 0 14 14" className="h-3 w-3" fill="none">
+                <path
+                  d="M2 7.5L5.5 11L12 3.5"
+                  stroke="#fff"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </span>
         </button>
         <span
           className="min-w-0 flex-1 pt-0.5 text-[17px] leading-tight"
@@ -164,7 +168,7 @@ function SlotTaskRow({
               dispatch({ type: "MOVE_TASK", id: task.id, category: "inbox", date: null })
             }
             aria-label={`Voltar ${task.title} para o Inbox`}
-            className="px-0.5 text-[13px] text-[color:var(--label-secondary)]"
+            className="a-hit-44 px-2 text-[13px] text-[color:var(--label-secondary)]"
           >
             Inbox
           </button>
@@ -213,7 +217,7 @@ function SlotPicker({
           onKeyDown={(e) => e.key === "Enter" && createAndPlace()}
           placeholder="Nova tarefa"
           autoFocus
-          className="min-w-0 flex-1 rounded-xl bg-[color:var(--fill-subtle)] px-3 py-2.5 text-[15px]"
+          className="min-h-[44px] min-w-0 flex-1 rounded-xl bg-[color:var(--fill-subtle)] px-3 text-[15px]"
         />
         <button
           type="button"
@@ -248,7 +252,7 @@ function SlotPicker({
       <button
         type="button"
         onClick={onDone}
-        className="text-[13px] text-[color:var(--label-secondary)]"
+        className="a-hit-44 text-[13px] text-[color:var(--label-secondary)]"
       >
         Fechar
       </button>

@@ -37,20 +37,20 @@ export default function LoginPage() {
     <main className="min-h-screen bg-[#F5F0E6] text-[#1A1715] flex items-center justify-center px-4 py-12">
       <div className="max-w-sm w-full">
         <Link href="/" className="mb-8 flex min-h-[44px] items-center justify-center gap-2">
-          <span className="w-12 h-12 rounded-full bg-[#B8392E] flex items-center justify-center text-xl">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#B8392E]">
             🧭
           </span>
         </Link>
 
-        <h1 className="text-2xl font-bold text-center mb-1">
+        <h1 className="a-title-2 mb-1 text-center">
           {mode === "in" ? "Entrar" : "Criar conta"}
         </h1>
-        <p className="text-sm text-[#8A7F75] text-center mb-8 leading-relaxed">
+        <p className="a-subheadline mb-8 text-center text-[#8A7F75]">
           Sincronize seus valores, metas e plano em todos os dispositivos.
         </p>
 
         {!configured ? (
-          <div className="rounded-2xl border border-[#D4C9B5] bg-white/50 p-5 text-sm text-[#4A433D] leading-relaxed">
+          <div className="a-subheadline rounded-2xl border border-[#D4C9B5] bg-white/50 p-5 text-[#4A433D]">
             Backend não configurado. O app funciona offline neste dispositivo.
           </div>
         ) : (
@@ -64,7 +64,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com"
                 aria-label="E-mail"
-                className="min-h-[44px] w-full rounded-xl bg-white/60 border border-[#D4C9B5] px-4 text-sm text-[#1A1715] placeholder:text-[#8A7F75]/60 focus:border-[#B8392E] focus:ring-2 focus:ring-[#B8392E]/10 focus:outline-none transition-all"
+                className="a-subheadline min-h-[44px] w-full rounded-xl border border-[#D4C9B5] bg-white/60 px-4 text-[#1A1715] placeholder:text-[#8A7F75]/60 focus:border-[#B8392E] focus:ring-2 focus:ring-[#B8392E]/10 focus:outline-none transition-all"
               />
               <input
                 type="password"
@@ -75,17 +75,17 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Senha (mín. 6)"
                 aria-label="Senha"
-                className="min-h-[44px] w-full rounded-xl bg-white/60 border border-[#D4C9B5] px-4 text-sm text-[#1A1715] placeholder:text-[#8A7F75]/60 focus:border-[#B8392E] focus:ring-2 focus:ring-[#B8392E]/10 focus:outline-none transition-all"
+                className="a-subheadline min-h-[44px] w-full rounded-xl border border-[#D4C9B5] bg-white/60 px-4 text-[#1A1715] placeholder:text-[#8A7F75]/60 focus:border-[#B8392E] focus:ring-2 focus:ring-[#B8392E]/10 focus:outline-none transition-all"
               />
               {error && (
-                <p className="text-xs text-[#B8392E]" role="alert">
+                <p className="a-caption text-[#B8392E]" role="alert">
                   {error}
                 </p>
               )}
               <button
                 type="submit"
                 disabled={loading}
-                className="min-h-[44px] w-full rounded-full bg-[#B8392E] px-6 text-[#F5F0E6] font-semibold tracking-wide hover:bg-[#8B2A22] disabled:opacity-50 transition-all"
+                className="a-subheadline min-h-[44px] w-full rounded-full bg-[#B8392E] px-6 text-[#F5F0E6] hover:bg-[#8B2A22] disabled:opacity-50 transition-all"
               >
                 {loading
                   ? "Aguarde…"
@@ -95,7 +95,7 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <p className="text-center text-xs text-[#8A7F75] mt-5">
+            <p className="a-caption mt-5 text-center text-[#8A7F75]">
               {mode === "in" ? "Ainda não tem conta?" : "Já tem conta?"}{" "}
               <button
                 type="button"
@@ -103,7 +103,7 @@ export default function LoginPage() {
                   setMode(mode === "in" ? "up" : "in");
                   setError(null);
                 }}
-                className="a-hit-44 font-semibold text-[#B8392E] transition-colors hover:text-[#8B2A22]"
+                className="a-caption a-hit-44 text-[#B8392E] transition-colors hover:text-[#8B2A22]"
               >
                 {mode === "in" ? "Criar conta" : "Entrar"}
               </button>
@@ -114,7 +114,7 @@ export default function LoginPage() {
         <p className="text-center mt-8">
           <Link
             href="/"
-            className="a-hit-44 text-xs text-[#8A7F75] transition-colors hover:text-[#B8392E]"
+            className="a-caption a-hit-44 text-[#8A7F75] transition-colors hover:text-[#B8392E]"
           >
             ← Voltar
           </Link>

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AppProviders from "@/lib/providers";
 import Header from "@/components/Header";
+import CommandBar from "@/components/CommandBar";
 import PwaRegister from "@/components/PwaRegister";
 import NotificationsRunner from "@/components/NotificationsRunner";
 
@@ -51,10 +52,12 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         <AppProviders>
           <Header />
+          <CommandBar />
           <div className="flex-1">{children}</div>
           <PwaRegister />
           <NotificationsRunner />

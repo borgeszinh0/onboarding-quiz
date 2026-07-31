@@ -62,12 +62,12 @@ export default function SemanaPage() {
                   />
                 </div>
                 <span
-                  className="text-[11px] font-medium uppercase"
+                  className="a-caption uppercase"
                   style={{ color: isToday ? "var(--accent-text)" : "var(--label-secondary)" }}
                 >
                   {WEEKDAY_LABEL[i]}
                 </span>
-                <span className="tabular text-[13px]">
+                <span className="a-caption tabular">
                   {total > 0 ? `${done}/${total}` : "—"}
                 </span>
                 <span
@@ -81,7 +81,7 @@ export default function SemanaPage() {
         </div>
       </Card>
 
-      <p className="mt-4 text-[13px] text-[color:var(--label-secondary)]">
+      <p className="a-caption mt-4 text-[color:var(--label-secondary)]">
         {perfectDays} de 7 dias com todos os hábitos cumpridos.
       </p>
     </main>

@@ -17,6 +17,7 @@ import {
   Task,
   TaskCategory,
   TimeBlock,
+  DayLog,
   initialPlannerState,
 } from "./planner-types";
 import { SLOT_LIMITS } from "./planner-data";
@@ -42,9 +43,11 @@ type Action =
   | { type: "HYDRATE"; state: Partial<PlannerState> }
   | {
       type: "ADD_TASK";
+      id?: string;
       title: string;
       category?: TaskCategory;
       date?: string | null;
+      estimatedMinutes?: number;
     }
   | { type: "MOVE_TASK"; id: string; category: TaskCategory; date: string | null }
   | { type: "UPDATE_TASK"; id: string; title: string }
@@ -57,6 +60,10 @@ type Action =
   | { type: "REMOVE_HABIT"; id: string }
   | { type: "TOGGLE_HABIT_LOG"; habitId: string; date: string }
   | { type: "SET_YEAR_FOCUS"; year: number; quarter: Quarter; text: string }
+  | { type: "PLAN_DAY"; date: string; payload: Omit<DayLog, "date" | "plannedAt" | "shutdownAt"> }
+  | { type: "SHUTDOWN_DAY"; date: string }
+  | { type: "MOVE_UNFINISHED_TO_INBOX"; date: string }
+  | { type: "SAVE_FOCUS_SESSION"; session: Omit<import("@/lib/planner-types").FocusSession, "id"> }
   | { type: "ROLLOVER"; today: string }
   | { type: "RESET" };
 
@@ -65,13 +72,68 @@ function reducer(state: PlannerState, action: Action): PlannerState {
     case "HYDRATE":
       return { ...initialPlannerState, ...action.state };
 
+    case "PLAN_DAY": {
+      const existingIdx = state.dayLogs.findIndex((l) => l.date === action.date);
+      const newLog: DayLog = {
+        date: action.date,
+        ...action.payload,
+        plannedAt: Date.now(),
+      };
+      if (existingIdx >= 0) {
+        const newLogs = [...state.dayLogs];
+        newLogs[existingIdx] = { ...newLogs[existingIdx], ...newLog };
+        return { ...state, dayLogs: newLogs };
+      }
+      return { ...state, dayLogs: [...state.dayLogs, newLog] };
+    }
+
+    case "SHUTDOWN_DAY": {
+      const existingIdx = state.dayLogs.findIndex((l) => l.date === action.date);
+      const newLog: DayLog = {
+        date: action.date,
+        shutdownAt: Date.now(),
+      };
+      if (existingIdx >= 0) {
+        const newLogs = [...state.dayLogs];
+        newLogs[existingIdx] = { ...newLogs[existingIdx], shutdownAt: Date.now() };
+        return { ...state, dayLogs: newLogs };
+      }
+      return { ...state, dayLogs: [...state.dayLogs, newLog] };
+    }
+
+    case "MOVE_UNFINISHED_TO_INBOX": {
+      const unfinished = state.tasks.filter(
+        (t) => t.date === action.date && t.category !== "inbox" && t.status === "pending"
+      );
+      if (unfinished.length === 0) return state;
+      const unfinishedIds = new Set(unfinished.map(t => t.id));
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          unfinishedIds.has(t.id) ? { ...t, category: "inbox", date: null } : t
+        ),
+        timeBlocks: state.timeBlocks.filter((b) => !unfinishedIds.has(b.taskId)),
+      };
+    }
+
+    case "SAVE_FOCUS_SESSION": {
+      return {
+        ...state,
+        focusSessions: [
+          ...state.focusSessions,
+          { id: makeId("focus"), ...action.session },
+        ],
+      };
+    }
+
     case "ADD_TASK": {
       const task: Task = {
-        id: makeId("task"),
+        id: action.id ?? makeId("task"),
         title: action.title,
         category: action.category ?? "inbox",
         status: "pending",
         date: action.category && action.category !== "inbox" ? action.date ?? null : null,
+        estimatedMinutes: action.estimatedMinutes,
         createdAt: Date.now(),
       };
       return { ...state, tasks: [...state.tasks, task] };

@@ -2,7 +2,7 @@
 
 import { ReactNode, ButtonHTMLAttributes } from "react";
 
-/** Cartão translúcido com blur. A profundidade vem da camada, não da borda. */
+/** Cartão comum sólido/elevado. Blur fica restrito ao cromo persistente e overlays. */
 export function Card({
   children,
   className = "",
@@ -63,7 +63,7 @@ export function Button({
 /** Título de seção: rótulo pequeno em caixa alta + espaço generoso. */
 export function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--label-secondary)]">
+    <p className="a-caption uppercase text-[color:var(--label-secondary)]">
       {children}
     </p>
   );
@@ -81,19 +81,18 @@ export function PageTitle({
   return (
     <header className="mb-8">
       {eyebrow && (
-        <p className="mb-2 text-[13px] font-medium text-[color:var(--label-secondary)]">
+        <p className="a-caption mb-2 text-[color:var(--label-secondary)]">
           {eyebrow}
         </p>
       )}
-      <h1 className="text-[32px] sm:text-[40px] font-semibold leading-[1.1] tracking-[-0.02em]">
+      <h1 className="a-large-title">
         {title}
       </h1>
       {subtitle && (
-        <p className="mt-3 max-w-xl text-[17px] leading-[1.5] text-[color:var(--label-secondary)]">
+        <p className="a-body mt-3 max-w-xl text-[color:var(--label-secondary)]">
           {subtitle}
         </p>
       )}
     </header>
   );
 }
-

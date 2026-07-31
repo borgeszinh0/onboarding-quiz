@@ -30,5 +30,5 @@ export const QUARTER_LABEL: Record<Quarter, string> = {
 };
 
 /** Início e fim da régua de horários no painel de cronograma. */
-export const SCHEDULE_START_HOUR = 6;
+export const SCHEDULE_START_HOUR = 7;
 export const SCHEDULE_END_HOUR = 22;

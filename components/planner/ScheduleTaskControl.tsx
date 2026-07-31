@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { usePlanner, addMinutes, getTimeBlockForTask } from "@/lib/planner-store";
+import type { TimeBlock } from "@/lib/planner-types";
 
 const DURATIONS = [15, 30, 45, 60, 90] as const;
 
@@ -29,7 +30,7 @@ export function ScheduleTaskControl({
         <button
           type="button"
           onClick={() => onFocus(taskId)}
-          className="tabular min-h-[44px] rounded-full bg-[color:var(--fill-subtle)] px-2.5 text-[13px] font-medium text-[color:var(--accent-text)]"
+          className="a-caption tabular min-h-[44px] rounded-full bg-[color:var(--fill-subtle)] px-2.5 text-[color:var(--accent-text)]"
         >
           {block.startTime}
         </button>
@@ -37,7 +38,7 @@ export function ScheduleTaskControl({
           type="button"
           onClick={() => dispatch({ type: "REMOVE_TIME_BLOCK", id: block.id })}
           aria-label="Remover agendamento"
-          className="flex h-11 w-11 shrink-0 items-center justify-center text-[13px] text-[color:var(--label-secondary)]"
+          className="a-caption flex h-11 w-11 shrink-0 items-center justify-center text-[color:var(--label-secondary)]"
         >
           ✕
         </button>
@@ -49,7 +50,7 @@ export function ScheduleTaskControl({
     <button
       type="button"
       onClick={onOpenSchedule}
-      className="min-h-[44px] shrink-0 rounded-full border px-2.5 text-[13px] font-medium transition-colors duration-200"
+      className="a-caption min-h-[44px] shrink-0 rounded-full border px-2.5 transition-colors duration-200"
       style={{ borderColor: "var(--separator)", color: "var(--label-secondary)" }}
     >
       Agendar
@@ -57,7 +58,6 @@ export function ScheduleTaskControl({
   );
 }
 
-/** Formulário de horário, renderizado abaixo da linha da tarefa quando aberto. */
 export function ScheduleForm({
   taskId,
   date,
@@ -67,20 +67,80 @@ export function ScheduleForm({
   date: string;
   onDone: () => void;
 }) {
-  const { dispatch } = usePlanner();
+  const { state, dispatch } = usePlanner();
+  const task = state.tasks.find((t) => t.id === taskId);
+  
   const [start, setStart] = useState("09:00");
-  const [duration, setDuration] = useState<number>(DURATIONS[1]);
+  const [duration, setDuration] = useState<number>(task?.estimatedMinutes || DURATIONS[1]);
+  const [conflict, setConflict] = useState<TimeBlock | null>(null);
 
-  const confirm = () => {
+  const end = addMinutes(start, duration);
+
+  const submit = () => {
     dispatch({
       type: "ADD_TIME_BLOCK",
       taskId,
       date,
       startTime: start,
-      endTime: addMinutes(start, duration),
+      endTime: end,
     });
     onDone();
   };
+
+  const confirm = () => {
+    const dateBlocks = state.timeBlocks.filter((b) => b.date === date && b.taskId !== taskId);
+    const overlapping = dateBlocks.find((b) => start < b.endTime && end > b.startTime);
+
+    if (overlapping) {
+      setConflict(overlapping);
+      return;
+    }
+    
+    submit();
+  };
+
+  const replaceConflict = () => {
+    if (conflict) {
+      dispatch({ type: "REMOVE_TIME_BLOCK", id: conflict.id });
+    }
+    submit();
+  };
+
+  if (conflict) {
+    return (
+      <div
+        className="flex flex-col gap-3 rounded-xl p-3"
+        style={{ background: "var(--fill-subtle)" }}
+      >
+        <p className="a-subheadline text-[color:var(--danger-text)]">
+          Conflita com {conflict.startTime}-{conflict.endTime}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={replaceConflict}
+            className="a-caption min-h-[36px] rounded-lg bg-[color:var(--color-danger)] px-3 text-white transition-opacity hover:opacity-90"
+          >
+            Substituir
+          </button>
+          <button
+            type="button"
+            onClick={submit}
+            className="a-caption min-h-[36px] rounded-lg border border-[color:var(--separator)] bg-[color:var(--bg)] px-3 text-[color:var(--label)] transition-colors hover:bg-[color:var(--fill-subtle)]"
+          >
+            Agendar mesmo
+          </button>
+          <button
+            type="button"
+            onClick={() => setConflict(null)}
+            className="a-caption min-h-[36px] rounded-lg px-3 text-[color:var(--label-secondary)] hover:text-[color:var(--label)]"
+          >
+            Outro horário
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -92,13 +152,13 @@ export function ScheduleForm({
         value={start}
         onChange={(e) => setStart(e.target.value)}
         aria-label="Horário de início"
-        className="min-h-[44px] w-[104px] rounded-lg bg-[color:var(--bg)] px-2 text-[14px]"
+        className="a-subheadline min-h-[44px] w-[104px] rounded-lg bg-[color:var(--bg)] px-2"
       />
       <select
         value={duration}
         onChange={(e) => setDuration(Number(e.target.value))}
         aria-label="Duração"
-        className="min-h-[44px] rounded-lg bg-[color:var(--bg)] px-2 text-[14px]"
+        className="a-subheadline min-h-[44px] rounded-lg bg-[color:var(--bg)] px-2"
       >
         {DURATIONS.map((d) => (
           <option key={d} value={d}>
@@ -110,14 +170,14 @@ export function ScheduleForm({
         <button
           type="button"
           onClick={onDone}
-          className="a-hit-44 text-[13px] text-[color:var(--label-secondary)]"
+          className="a-caption a-hit-44 text-[color:var(--label-secondary)]"
         >
           Cancelar
         </button>
         <button
           type="button"
           onClick={confirm}
-          className="a-hit-44 text-[15px] font-medium text-[color:var(--accent-text)]"
+          className="a-subheadline a-hit-44 text-[color:var(--accent-text)]"
         >
           Confirmar
         </button>

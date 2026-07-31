@@ -5,6 +5,7 @@ import {
   usePlanner,
   getTimeBlockForTask,
   minutesBetween,
+  todayISO,
 } from "@/lib/planner-store";
 import { Button } from "@/components/apple/ui";
 
@@ -60,8 +61,7 @@ export function FocusMode({
 
   const [status, setStatus] = useState<"running" | "paused">("running");
   const [accumulatedMs, setAccumulatedMs] = useState(0);
-  // Estado, não ref: precisa ser lido durante o render para o cronômetro
-  // atualizar a cada tick, e refs não podem ser lidos nesse momento.
+  const [sessionStartedAt] = useState(() => Date.now());
   const [resumeAt, setResumeAt] = useState<number | null>(null);
 
   useEffect(() => {
@@ -95,11 +95,29 @@ export function FocusMode({
     }
   };
 
+  const saveAndClose = (isCompleted: boolean) => {
+    const finalRunningMs = status === "running" && resumeAt && now ? now - resumeAt : 0;
+    const finalElapsedMs = accumulatedMs + finalRunningMs;
+
+    dispatch({
+      type: "SAVE_FOCUS_SESSION",
+      session: {
+        taskId: task.id,
+        date: task.date || todayISO(),
+        startedAt: sessionStartedAt,
+        endedAt: Date.now(),
+        elapsedMs: finalElapsedMs,
+        completed: isCompleted,
+      },
+    });
+    onClose();
+  };
+
   const complete = () => {
     if (task.status !== "done") {
       dispatch({ type: "TOGGLE_TASK_DONE", id: task.id });
     }
-    onClose();
+    saveAndClose(true);
   };
 
   const displaySeconds = reached
@@ -111,13 +129,13 @@ export function FocusMode({
       className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6"
       style={{ background: "var(--bg)" }}
     >
-      <p className="text-[15px] text-[color:var(--label-secondary)]">
+      <p className="a-subheadline text-[color:var(--label-secondary)]">
         {reached ? "Alvo batido" : status === "paused" ? "Pausado" : "Em foco"}
       </p>
-      <h1 className="mt-3 max-w-xs text-center text-[24px] font-semibold leading-tight">
+      <h1 className="a-title-2 mt-3 max-w-xs text-center">
         {task.title}
       </h1>
-      <p className="tabular mt-12 text-[72px] font-semibold leading-none">
+      <p className="a-large-title tabular mt-12">
         {formatClock(displaySeconds)}
       </p>
 
@@ -130,8 +148,8 @@ export function FocusMode({
 
       <button
         type="button"
-        onClick={onClose}
-        className="a-hit-44 mt-10 text-[15px] text-[color:var(--label-secondary)]"
+        onClick={() => saveAndClose(false)}
+        className="a-subheadline a-hit-44 mt-10 text-[color:var(--label-secondary)]"
       >
         Sair do foco
       </button>

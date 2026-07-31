@@ -8,6 +8,7 @@ import {
   isPerfectDay,
 } from "@/lib/planner-store";
 import { Card, PageTitle } from "@/components/apple/ui";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const WEEKDAYS = ["D", "S", "T", "Q", "Q", "S", "S"];
 const MONTHS = [
@@ -67,9 +68,9 @@ export default function MesPage() {
             aria-label="Mês anterior"
             className="flex h-11 w-11 items-center justify-center rounded-full text-[color:var(--label-secondary)] transition-colors hover:bg-[color:var(--fill-subtle)]"
           >
-            ‹
+            <ChevronLeft size={24} />
           </button>
-          <span className="text-[17px] font-medium">
+          <span className="a-headline">
             {MONTHS[viewMonth]} {viewYear}
           </span>
           <button
@@ -78,7 +79,7 @@ export default function MesPage() {
             aria-label="Próximo mês"
             className="flex h-11 w-11 items-center justify-center rounded-full text-[color:var(--label-secondary)] transition-colors hover:bg-[color:var(--fill-subtle)]"
           >
-            ›
+            <ChevronRight size={24} />
           </button>
         </div>
 
@@ -87,7 +88,7 @@ export default function MesPage() {
             <div
               key={i}
               aria-hidden
-              className="pb-1 text-center text-[11px] font-medium text-[color:var(--label-secondary)]"
+              className="a-caption pb-1 text-center text-[color:var(--label-secondary)]"
             >
               {d}
             </div>
@@ -108,17 +109,15 @@ export default function MesPage() {
               <div
                 key={dateStr}
                 title={perfect ? "Todos os hábitos cumpridos" : undefined}
-                className="relative flex aspect-square flex-col items-center justify-center rounded-xl text-[15px]"
-                style={
+                className={`a-subheadline relative flex aspect-square flex-col items-center justify-center ${
                   perfect
-                    ? {
-                        background: "var(--success-fill)",
-                        color: "var(--success-label)",
-                        fontWeight: 600,
-                      }
-                    : isToday
-                      ? { color: "var(--accent-text)", fontWeight: 600 }
-                      : undefined
+                    ? "rounded-full border-[1.5px] border-[color:var(--success-fill)] font-semibold text-[color:var(--label)]"
+                    : "rounded-xl"
+                }`}
+                style={
+                  isToday && !perfect
+                    ? { color: "var(--accent-text)", fontWeight: 600 }
+                    : undefined
                 }
               >
                 <span>{day}</span>
@@ -135,7 +134,7 @@ export default function MesPage() {
         </div>
       </Card>
 
-      <p className="mt-4 text-[13px] text-[color:var(--label-secondary)]">
+      <p className="a-caption mt-4 text-[color:var(--label-secondary)]">
         {perfectCount} {perfectCount === 1 ? "dia perfeito" : "dias perfeitos"} em{" "}
         {MONTHS[viewMonth].toLowerCase()}.
       </p>

@@ -4,6 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePlanner, todayISO } from "@/lib/planner-store";
 import { DailyFunnel } from "@/components/planner/DailyFunnel";
+import { DailySummary } from "@/components/planner/DailySummary";
+import { DailyProgress } from "@/components/planner/DailyProgress";
+import { DailyPlanning } from "@/components/planner/DailyPlanning";
+import { DailyShutdown } from "@/components/planner/DailyShutdown";
 import { ScheduleRuler } from "@/components/planner/ScheduleRuler";
 import { HabitBar } from "@/components/planner/HabitBar";
 import { FocusMode } from "@/components/planner/FocusMode";
@@ -39,21 +43,30 @@ export default function Home() {
 
   return (
     <>
-      <main className="mx-auto w-full max-w-xl px-5 pb-28 pt-8">
-        <header className="mb-8">
-          <p className="text-[15px] text-[color:var(--label-secondary)]">
+      <main className="mx-auto w-full max-w-xl px-5 pb-44 pt-8 sm:pb-28">
+        <header className="mb-6">
+          <p className="a-subheadline text-[color:var(--label-secondary)]">
             {WEEKDAYS[now.getDay()]}
           </p>
-          <h1 className="mt-1 text-[34px] font-semibold leading-tight tracking-[-0.02em]">
+          <h1 className="a-large-title mt-1">
             {greeting(now.getHours())}
           </h1>
+          <DailyProgress date={date} />
         </header>
 
-        <DailyFunnel date={date} onFocus={setFocusTaskId} />
+        <DailyPlanning date={date} />
+
+        <DailySummary date={date} />
 
         <div className="mt-6">
           <ScheduleRuler date={date} onFocus={setFocusTaskId} />
         </div>
+
+        <div className="mt-8">
+          <DailyFunnel date={date} onFocus={setFocusTaskId} />
+        </div>
+
+        <DailyShutdown date={date} />
 
         <nav className="mt-8">
           <Link href="/inbox" className="a-btn a-btn-secondary">

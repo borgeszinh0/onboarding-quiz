@@ -4,7 +4,7 @@ import { usePlanner, getTimeBlocksForDate } from "@/lib/planner-store";
 import { SCHEDULE_END_HOUR, SCHEDULE_START_HOUR } from "@/lib/planner-data";
 import { Card, SectionLabel } from "@/components/apple/ui";
 
-const HOUR_HEIGHT = 48;
+const HOUR_HEIGHT = 56;
 
 function minutesFromRulerStart(time: string): number {
   const [h, m] = time.split(":").map(Number);
@@ -33,9 +33,8 @@ export function ScheduleRuler({
       <SectionLabel>Cronograma</SectionLabel>
       <Card className="mt-3 overflow-hidden p-0">
         {blocks.length === 0 && (
-          <p className="p-5 text-[15px] text-[color:var(--label-secondary)]">
-            Nada agendado ainda. Toque em &quot;Agendar&quot; numa tarefa do
-            funil acima.
+          <p className="a-subheadline p-5 text-[color:var(--label-secondary)]">
+            Nenhum bloco protegido.
           </p>
         )}
         <div className="relative px-5 py-2" style={{ height: rulerHeight }}>
@@ -45,7 +44,7 @@ export function ScheduleRuler({
               className="absolute inset-x-5 border-t border-[color:var(--separator)]"
               style={{ top: i * HOUR_HEIGHT }}
             >
-              <span className="tabular -translate-y-1/2 inline-block bg-[color:var(--bg)] pr-2 text-[11px] text-[color:var(--label-secondary)]">
+              <span className="text-[11px] leading-[13px] tabular -translate-y-1/2 inline-block bg-[color:var(--bg)] pr-2 text-[color:var(--label-secondary)]">
                 {String(h).padStart(2, "0")}:00
               </span>
             </div>
@@ -68,7 +67,7 @@ export function ScheduleRuler({
                 key={block.id}
                 type="button"
                 onClick={() => onFocus(block.taskId)}
-                className="absolute inset-x-5 overflow-hidden rounded-lg px-2.5 py-1 text-left transition-opacity hover:opacity-90"
+                className="absolute inset-x-5 overflow-hidden rounded-[10px] px-2.5 py-1 text-left transition-opacity hover:opacity-90"
                 style={{
                   top,
                   height,
@@ -79,7 +78,7 @@ export function ScheduleRuler({
                 }}
               >
                 <span
-                  className="block truncate text-[13px] font-medium"
+                  className="a-caption block truncate"
                   style={{
                     color:
                       task.status === "done"

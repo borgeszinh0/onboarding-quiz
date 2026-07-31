@@ -13,6 +13,7 @@ export interface Task {
   status: TaskStatus;
   /** ISO date. Null quando category é "inbox" — regra: inbox nunca tem data. */
   date: string | null;
+  estimatedMinutes?: number;
   createdAt: number;
 }
 
@@ -24,6 +25,16 @@ export interface TimeBlock {
   startTime: string;
   /** "HH:MM" */
   endTime: string;
+}
+
+export interface FocusSession {
+  id: string;
+  taskId: string;
+  date: string;
+  startedAt: number;
+  endedAt: number;
+  elapsedMs: number;
+  completed: boolean;
 }
 
 export interface Habit {
@@ -40,6 +51,16 @@ export interface HabitLog {
   done: boolean;
 }
 
+export interface DayLog {
+  date: string;
+  intention?: string;
+  energy?: "low" | "medium" | "high";
+  plannedStart?: string;
+  plannedShutdown?: string;
+  plannedAt?: number;
+  shutdownAt?: number;
+}
+
 /** Q1–Q4. Cada trimestre guarda 1–2 frases de foco, texto livre. */
 export type Quarter = "Q1" | "Q2" | "Q3" | "Q4";
 
@@ -48,6 +69,8 @@ export interface PlannerState {
   timeBlocks: TimeBlock[];
   habits: Habit[];
   habitLogs: HabitLog[];
+  dayLogs: DayLog[];
+  focusSessions: FocusSession[];
   /** year -> quarter -> texto. */
   yearFocus: Record<number, Partial<Record<Quarter, string>>>;
   /** Última data em que a virada de dia rodou, para não repetir no mesmo dia. */
@@ -59,6 +82,8 @@ export const initialPlannerState: PlannerState = {
   timeBlocks: [],
   habits: [],
   habitLogs: [],
+  dayLogs: [],
+  focusSessions: [],
   yearFocus: {},
   lastRolloverDate: null,
 };

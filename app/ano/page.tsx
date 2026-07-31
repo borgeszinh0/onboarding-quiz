@@ -57,8 +57,8 @@ function QuarterCard({ year, quarter }: { year: number; quarter: Quarter }) {
 
   return (
     <Card className="p-5">
-      <h2 className="text-[15px] font-semibold">{quarter}</h2>
-      <p className="mb-3 text-[13px] text-[color:var(--label-secondary)]">
+      <h2 className="a-headline">{quarter}</h2>
+      <p className="a-caption mb-3 text-[color:var(--label-secondary)]">
         {QUARTER_LABEL[quarter]}
       </p>
       <textarea
@@ -66,7 +66,7 @@ function QuarterCard({ year, quarter }: { year: number; quarter: Quarter }) {
         onChange={(e) => dispatch({ type: "SET_YEAR_FOCUS", year, quarter, text: e.target.value })}
         placeholder="Uma ou duas frases de foco para este trimestre."
         rows={3}
-        className="w-full resize-none rounded-xl bg-[color:var(--fill-subtle)] px-3 py-2.5 text-[15px] leading-snug"
+        className="a-subheadline w-full resize-none rounded-xl bg-[color:var(--fill-subtle)] px-3 py-2.5"
       />
     </Card>
   );

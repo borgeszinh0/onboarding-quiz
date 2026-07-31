@@ -11,6 +11,7 @@ import { CATEGORY_LABEL, CATEGORY_ORDER, SLOT_LIMITS } from "@/lib/planner-data"
 import type { Task, TaskCategory } from "@/lib/planner-types";
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { ScheduleTaskControl, ScheduleForm } from "./ScheduleTaskControl";
+import { Plus, MoreHorizontal } from "lucide-react";
 
 const CATEGORY_ACCENT: Record<Exclude<TaskCategory, "inbox">, string> = {
   big: "var(--color-danger)",
@@ -50,10 +51,10 @@ export function DailyFunnel({
         return (
           <Card key={category} accent={CATEGORY_ACCENT[category]} className="p-5">
             <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="text-[17px] font-semibold">
+              <h2 className="a-headline">
                 {CATEGORY_LABEL[category]}
               </h2>
-              <span className="tabular text-[13px] text-[color:var(--label-secondary)]">
+              <span className="a-caption tabular text-[color:var(--label-secondary)]">
                 {tasks.length}/{limit}
               </span>
             </div>
@@ -71,8 +72,8 @@ export function DailyFunnel({
                 ))}
               </ul>
             ) : (
-              <p className="mb-2 text-[15px] text-[color:var(--label-secondary)]">
-                Vazio.
+              <p className="a-subheadline mb-2 text-[color:var(--label-secondary)]">
+                Escolha sua tarefa {CATEGORY_LABEL[category].toLowerCase()}.
               </p>
             )}
 
@@ -87,7 +88,7 @@ export function DailyFunnel({
                 <button
                   type="button"
                   onClick={() => setOpenSlot(category)}
-                  className="min-h-[44px] text-[15px] font-medium"
+                  className="a-subheadline min-h-[44px]"
                   style={{ color: CATEGORY_TEXT_ACCENT[category] }}
                 >
                   Planejar
@@ -145,7 +146,7 @@ function SlotTaskRow({
           </span>
         </button>
         <span
-          className="min-w-0 flex-1 pt-0.5 text-[17px] leading-tight"
+          className="a-body min-w-0 flex-1 pt-0.5"
           style={
             task.status === "done"
               ? { color: "var(--label-secondary)", textDecoration: "line-through" }
@@ -162,22 +163,49 @@ function SlotTaskRow({
               onOpenSchedule={() => setScheduling((v) => !v)}
             />
           )}
-          <button
-            type="button"
-            onClick={() =>
-              dispatch({ type: "MOVE_TASK", id: task.id, category: "inbox", date: null })
-            }
-            aria-label={`Voltar ${task.title} para o Inbox`}
-            className="a-hit-44 px-2 text-[13px] text-[color:var(--label-secondary)]"
-          >
-            Inbox
-          </button>
+          <TaskRowMenu task={task} />
         </div>
       </div>
       {scheduling && (
         <ScheduleForm taskId={task.id} date={date} onDone={() => setScheduling(false)} />
       )}
     </li>
+  );
+}
+
+function TaskRowMenu({ task }: { task: Task }) {
+  const { dispatch } = usePlanner();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-label="Ações da tarefa"
+        className="a-hit-44 flex items-center justify-center rounded-full text-[color:var(--label-secondary)] transition-colors hover:bg-[color:var(--fill-subtle)] hover:text-[color:var(--label)]"
+      >
+        <MoreHorizontal size={20} />
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
+          <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-xl border border-[color:var(--separator)] bg-[color:var(--bg-elevated)] p-1 shadow-lg">
+            <button
+              type="button"
+              onClick={() => {
+                dispatch({ type: "MOVE_TASK", id: task.id, category: "inbox", date: null });
+                setOpen(false);
+              }}
+              className="a-body w-full rounded-lg px-3 py-2 text-left text-[color:var(--label)] transition-colors hover:bg-[color:var(--fill-subtle)]"
+            >
+              Mover para Inbox
+            </button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -217,16 +245,16 @@ function SlotPicker({
           onKeyDown={(e) => e.key === "Enter" && createAndPlace()}
           placeholder="Nova tarefa"
           autoFocus
-          className="min-h-[44px] min-w-0 flex-1 rounded-xl bg-[color:var(--fill-subtle)] px-3 text-[15px]"
+          className="a-subheadline min-h-[44px] min-w-0 flex-1 rounded-xl bg-[color:var(--fill-subtle)] px-3"
         />
         <button
           type="button"
           onClick={createAndPlace}
           disabled={!title.trim()}
-          className="min-h-[44px] shrink-0 rounded-xl px-4 text-[20px] font-medium leading-none text-[color:var(--accent-text)] disabled:opacity-30"
+          className="a-hit-44 shrink-0 rounded-xl px-4 text-[color:var(--accent-text)] disabled:opacity-30"
           aria-label="Criar e planejar"
         >
-          +
+          <Plus size={24} />
         </button>
       </div>
 
@@ -239,7 +267,7 @@ function SlotPicker({
                 <button
                   type="button"
                   onClick={() => place(task.id)}
-                  className="min-h-[44px] w-full rounded-lg px-2 text-left text-[15px] transition-colors hover:bg-[color:var(--fill-subtle)]"
+                  className="a-subheadline min-h-[44px] w-full rounded-lg px-2 text-left transition-colors hover:bg-[color:var(--fill-subtle)]"
                 >
                   {task.title}
                 </button>
@@ -252,7 +280,7 @@ function SlotPicker({
       <button
         type="button"
         onClick={onDone}
-        className="a-hit-44 text-[13px] text-[color:var(--label-secondary)]"
+        className="a-caption a-hit-44 text-[color:var(--label-secondary)]"
       >
         Fechar
       </button>

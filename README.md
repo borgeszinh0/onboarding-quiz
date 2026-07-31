@@ -1,88 +1,29 @@
-# 🧭 Valores — Onboarding + 12 Week Year
+# Planner — Inbox, 1-3-5, Foco
 
-Sistema completo de autodesenvolvimento baseado na metodologia ACT (Terapia de Aceitação e Comprometimento) combinada com o sistema de execução **The 12 Week Year** (Brian Moran).
+Planejador diário local-first. Regra **1 tarefa grande, 3 médias, 5 pequenas** por dia, captura em Inbox, blocos de tempo agendáveis, Modo Foco em tela cheia e hábitos diários. Sem projetos, sem pastas, sem sincronização com calendário externo.
 
-**🔗 Ao vivo:** [onboarding-quiz-eight.vercel.app](https://onboarding-quiz-eight.vercel.app)
-
----
-
-## O que é
-
-Um app web que conduz o usuário por uma jornada de 3 fases:
-
-1. **Mapeamento de Valores** — 12 domínios da vida avaliados em 6 dimensões
-2. **Construção de Metas SMART** — os maiores gaps viram metas estruturadas
-3. **Plano de Execução de 12 Semanas** — metas viram táticas semanais com scorecard
-
-O sistema é baseado em dois PDFs do **Reservatório de Dopamina**:
-- *Meu Planejamento para 2026* — framework valores + ambiente + compromisso
-- *Avaliação dos Valores / Exercício sobre Valores* — exercícios de clareza de valores
+> Este app **substituiu por completo** um projeto anterior chamado "Valores" (quiz de valores ACT + 12 Week Year). Nada daquele fluxo existe mais no código — ver [Histórico e migração](#histórico-e-migração) antes de mexer em dados de usuários antigos.
 
 ---
 
-## Arquitetura
+## O que o app faz
 
-```
-Valores (quiz)
-  └── Metas SMART (quiz)
-        └── Táticas semanais (12 Week Year)
-              └── Execução semanal com scorecard
-```
-
-### Fluxo do quiz (5 etapas)
-
-| Etapa | O que faz | Metodologia |
+| Módulo | Rota | O que é |
 |---|---|---|
-| **01 · Avaliação Quantitativa** | 12 domínios × 6 dimensões (sliders 0-10) | BulMBProgressHUDIPTerapia de Aceitação e Comprometimento — Matrix de Valores |
-| **02 · Reflexão** | Top 5 domínios com maior gap → texto livre | ACT — Clareza de Valores |
-| **03 · Narrativa** | 1 frase-bússola por domínio (importância ≥ 5) | ACT — Valores como direção, não destino |
-| **04 · Ambiente** | 3 perguntas de auditoria ambiental | Context Theory — Ambiente como gatilho |
-| **05 · Metas SMART** | Top 3 gaps → meta montada automaticamente | SMART (Doran, 1981) |
-| **Resultado** | Dashboard: gap chart, prioridades, narrativas, metas, ambiente + export JSON | — |
+| **Hoje** | `/` | Funil 1-3-5 (Grande/Média/Pequena), cronograma do dia, barra de hábitos, ponto de entrada do Modo Foco |
+| **Inbox** | `/inbox` | Captura rápida de ideias/tarefas sem categoria nem data |
+| **Semana** | `/semana` | Ocupação de horário por dia da semana + conclusão do funil |
+| **Mês** | `/mes` | Grade mensal com destaque de dias "perfeitos" (todos os hábitos cumpridos) |
+| **Ano** | `/ano` | Mural de foco trimestral (Q1–Q4), texto livre, sem interação com o calendário |
+| **Dados** | `/dados` | Export/import de backup JSON, status de sync com Supabase, backups automáticos locais |
 
-### 12 Week Year (sistema de execução)
+### Regras de negócio centrais
 
-Depois do quiz, o usuário pode iniciar um plano de 12 semanas:
-
-1. **Setup:** cada meta SMART vira 3-5 táticas semanais
-2. **Dashboard semanal:** checklist de táticas + scorecard circular (% de conclusão)
-3. **Visão geral:** grid de 12 semanas com histórico de scores
-4. **Score geral:** % acumulado de execução
-
-Scorecard do 12WY:
-- **80%+** → Execução excelente (verde)
-- **50-79%** → Precisa acelerar (vermelho)
-- **<50%** → Refocar (cinza)
-
----
-
-## Os 12 Domínios da Vida
-
-| # | Domínio | Ícone | Descrição |
-|---|---|---|---|
-| 1 | Família | 👨‍👩‍👧 | Relações familiares |
-| 2 | Casamento / Relação Íntima | 💑 | Casamento, relacionamentos íntimos |
-| 3 | Parentalidade | 👶 | Maternidade / paternidade |
-| 4 | Amizades / Vida Social | 🤝 | Amizades, vida social |
-| 5 | Carreira / Trabalho | 💼 | Trabalho, carreira, vocação |
-| 6 | Educação / Crescimento | 📚 | Educação, desenvolvimento pessoal |
-| 7 | Recreação / Diversão | 🎮 | Hobbies, esportes, lazer |
-| 8 | Espiritualidade | 🧘 | Religião, natureza, propósito |
-|  Especialista | Vida em Comunidade | 🏘️ | Voluntariado, engajamento social |
-| 10 | Autocuidado Físico | 💪 | Saúde, dieta, exercício, sono |
-| 11 | Ambiente / Sustentabilidade | 🌍 | Preocupação com o planeta |
-| 12 | Arte / Estética | 🎨 | Arte, música, literatura, beleza |
-
-## As 6 Dimensões de Avaliação
-
-| Dimensão | Pergunta |
-|---|---|
-| Possibilidade | O quanto é possível que algo significativo aconteça nesta área? |
-| Importância atual | O quanto esta área é importante para você agora? |
-| Importância geral | O quanto esta área é importante como um todo na sua vida? |
-| Ação | O quanto você atuou nesta área na última semana? |
-| Satisfação | O quanto você está satisfeito com seu nível de ação? |
-| Preocupação | O quanto você está preocupado com a falta de progresso? |
+- **Funil 1-3-5**: cada dia tem exatamente 1 vaga "grande", 3 "médias", 5 "pequenas". Vaga cheia esconde o botão de planejar — o excedente fica no Inbox até haver espaço.
+- **Virada de dia automática**: ao abrir o app, qualquer tarefa de categoria não-inbox com data passada e ainda pendente volta pro Inbox e perde o bloco de tempo agendado. Roda uma vez por dia (`lastRolloverDate` no estado evita repetir).
+- **TimeBlock**: uma tarefa tem no máximo um bloco de horário ativo. Agendar de novo substitui o anterior.
+- **Modo Foco**: cronômetro regressivo baseado na duração do bloco (ou 25min padrão se a tarefa não tem bloco). Pausa de verdade — acumula tempo decorrido em vez de reiniciar. Ao bater o alvo, passa a contar tempo extra em vez de zerar.
+- **Hábitos**: lista simples com toggle diário. "Dia perfeito" = todos os hábitos ativos marcados naquela data — é o que acende o destaque verde no Mês.
 
 ---
 
@@ -91,85 +32,103 @@ Scorecard do 12WY:
 - **Next.js 16** (App Router, Turbopack)
 - **TypeScript**
 - **Tailwind CSS v4**
-- **React Context + useReducer** — state management
-- **Supabase** — auth (magic link) + sync em nuvem (opcional)
-- **localStorage** — cache offline / fallback sem backend
-- **PWA** — instalável, offline, notificações de lembrete
+- **React Context + useReducer** — todo o estado do app é um único reducer (`PlannerState`), sem lib externa de state management
+- **Supabase** — auth + sync em nuvem (opcional, ver abaixo)
+- **localStorage** — funciona 100% offline sem Supabase configurado
+- **PWA** — instalável, notificações de lembrete para blocos agendados
 
 ---
 
-## Novidades (v2 — app completo)
+## Arquitetura
 
-- **Navegação global** — header fixo (Quiz · Mapa · Plano · Dados) em todas as telas.
-- **Landing inteligente** — detecta usuário recorrente e oferece continuar de onde parou.
-- **Mapa revisitável** — rota dedicada `/resultado`, não some mais após o quiz.
-- **Login + sync em nuvem** — Supabase magic link; dados sincronizam entre dispositivos.
-- **Backup local** — export/import JSON + auto-backup rotativo (7 dias) em `/dados`.
-- **Táticas no calendário** — botão "puxar táticas da semana" cria tarefas do dia ligadas ao 12WY.
-- **Semana automática** — a semana atual avança sozinha com base na data de início.
-- **Edição** — editar tarefas, eventos e táticas (antes só dava pra apagar tudo).
-- **PWA + lembretes** — instalável no celular; notificações para eventos com horário.
-- **Acessibilidade** — sem interativos aninhados, `aria-label` em calendário e checkboxes.
+Estado único (`PlannerState`) num reducer, sem backend obrigatório — tudo funciona 100% em `localStorage`, com sync opcional pro Supabase quando o usuário está autenticado.
+
+```
+lib/planner-types.ts    Tipos: Task, TimeBlock, Habit, HabitLog, PlannerState
+lib/planner-data.ts     Constantes: limites de vaga (1/3/5), horário da régua, trimestres
+lib/planner-store.tsx   Reducer + Context + todos os seletores (getInboxTasks, dayCompletion, ...)
+
+components/planner/
+  DailyFunnel.tsx         Funil 1-3-5 (Hoje)
+  ScheduleTaskControl.tsx Chip de agendamento (trigger) + formulário de horário
+  ScheduleRuler.tsx       Régua de horário do dia com os blocos posicionados
+  FocusMode.tsx           Overlay de tela cheia do cronômetro
+  HabitBar.tsx            Barra fixa de hábitos no rodapé
+  InboxCapture.tsx        Captura + lista do Inbox
+
+components/apple/ui.tsx  Design system (ver abaixo) — Card, Button, PageTitle, SectionLabel
+```
+
+### Padrão de hidratação (importante)
+
+`PlannerProvider` e o resto dos providers **começam vazios nos dois lados** (servidor e cliente) e só carregam o `localStorage` depois de montar, expondo um flag `hydrated`. Isso existe porque ler `localStorage` direto no inicializador do `useReducer` quebra a hidratação do Next (o HTML do servidor nunca bate com o primeiro render do cliente — React descarta a árvore inteira). Toda página nova **deve** checar `hydrated` antes de renderizar conteúdo dependente de estado:
+
+```tsx
+const { hydrated } = usePlanner();
+if (!hydrated) return <main aria-busy="true" />;
+```
+
+O mesmo vale pra qualquer relógio de parede (timers): nunca ler `Date.now()` durante o render. Ver `useWallClock` em `FocusMode.tsx` — usa `useSyncExternalStore` com o valor lido só dentro do `subscribe` (que roda depois do commit).
+
+### Sync e backup
+
+- `lib/cloud-sync.tsx`: pull no login (remoto vence se tiver dado), push debounced (1.5s) a cada mudança. Sem Supabase configurado, funciona só localStorage.
+- `lib/backup.ts`: export/import JSON versionado. **v1–v3 são de versões anteriores do app** (quiz de valores, 12WY, TEA) e continuam sendo aceitos na importação só pra não quebrar quem tem backup antigo — os campos são ignorados. v4 é o formato atual (`{ planner: PlannerState }`).
+- `supabase/schema.sql`: a tabela `app_state` tem colunas legadas (`quiz`, `plan`, `daily`, `tea`) que o app **não lê nem escreve mais**. Ficaram de propósito pra não apagar dado de usuário de versões antigas. A coluna ativa é `planner` (jsonb).
 
 ### Configurar Supabase (opcional — sem isso roda 100% offline)
 
 1. Crie um projeto em [supabase.com](https://supabase.com).
 2. SQL Editor → cole e rode [`supabase/schema.sql`](supabase/schema.sql).
-3. Authentication → Providers → habilite **Email** (magic link já vem ligado).
+3. Authentication → Providers → habilite **Email** (magic link).
 4. Authentication → URL Configuration → adicione a URL do site + `…/auth/callback` em Redirect URLs.
-5. Copie `.env.local.example` → `.env.local` e preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Project Settings → API).
+5. Crie `.env.local` na raiz com:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=...
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+   ```
 6. Na Vercel, adicione as mesmas duas env vars no projeto.
 
 Sem as env vars, o botão de login some e o app usa só localStorage.
 
-## Estrutura do projeto
+---
 
-```
-onboarding-quiz/
-├── app/
-│   ├── layout.tsx               # Root layout (pt-BR)
-│   ├── page.tsx                 # Landing page
-│   ├── globals.css              # Design tokens (cream/rust palette)
-│   ├── quiz/
-│   │   ├── layout.tsx           # QuizProvider wrapper
-│   │   └── page.tsx
-│   └── plano/
-│       ├── layout.tsx           # TwelveWeekProvider + QuizProvider
-│       ├── page.tsx
-│       └── dashboard/
-│           └── page.tsx         # Redirect → /plano
-├── components/
-│   ├── ProgressBar.tsx
-│   ├── ui.tsx                   # Slider, TextBox, NavButtons, StepHeader
-│   ├── steps/
-│   │   ├── WelcomeStep.tsx
-│   │   ├── QuantitativeStep.tsx
-│   │   ├── QualitativeStep.tsx
-│   │   ├── NarrativeStep.tsx
-│   │   ├── EnvironmentStep.tsx
-│   │   ├── SmartStep.tsx
-│   │   └── ResultStep.tsx
-│   └── 12wy/
-│       ├── PlanSetup.tsx        # Setup de táticas
-│       └── PlanDashboard.tsx    # Dashboard semanal + scorecard
-└── lib/
-    ├── types.ts                 # Tipos do quiz
-    ├── data.ts                  # 12 domínios, 6 dimensões, SMART fields
-    ├── store.tsx                # QuizStore (Context + useReducer + localStorage)
-    ├── 12wy-types.ts            # Tipos do 12 Week Year
-    └── 12wy-store.tsx           # 12WY Store (Context + useReducer + localStorage)
-```
+## Design system
 
-## Design
+Construído do zero nesta sessão em cima da **skill `apple-ui-design`** (design Apple-like: clareza, deferência, profundidade) e depois revisado com a **skill `impeccable`** (comando `polish`, register "product") e a **skill `web-design-guidelines`** (Vercel).
 
-Identidade visual extraída do PDF original do Reservatório de Dopamina:
+### Tokens (`app/globals.css`)
 
-- **Paleta:** cream quente (`#F5F0E6`) + rust/vermelho (`#B8392E`)
-- **Tipografia:** editorial — títulos bold, eyebrows em uppercase tracking-wide
-- **Sliders customizados** com thumb rust e borda cream
-- **Animação** fadeInUp entre steps
-- **Scorecard circular** SVG com feedback de cor (verde/vermelho/cinza)
-- Totalmente responsivo
+- Cor: `--bg`, `--label`, `--label-secondary`, `--separator`, `--fill-subtle`, `--card-bg/border/shadow`, todos com variante escura via `@media (prefers-color-scheme: dark)` — **não existe toggle manual de tema**, segue o SO.
+- `--color-accent` / `--color-energia` / `--color-atencao` / `--color-danger`: acentos semânticos (azul, verde, laranja, vermelho).
+- `--accent-text`: **não é decoração, é correção de contraste.** `--color-accent` puro como cor de *texto* sobre fundo escuro mede ~4.4:1 (abaixo do mínimo AA de 4.5:1); como *preenchimento* de botão (texto branco em cima) está ótimo. Esse token separa os dois usos — sobrescreve pra um azul mais claro (`#4da3ff`, ~7.9:1) só em telas escuras, sem mexer no azul-marca usado em botões e bordas. **Regra pra quem for adicionar UI nova: `--color-accent` para preenchimento/borda, `--accent-text` para texto solto sobre `--bg` ou um tint sutil.**
+- Espaçamento (`--space-*`) e `--ease-standard` (curva de easing) ficam **fora do bloco `@theme`** de propósito — `--spacing-*` é namespace reservado do Tailwind 4 e colidir com ele quebra todas as utilities de padding/margem.
+- `color-scheme: light dark` no `:root` — sem isso, o ícone do seletor de hora nativo (`<input type="time">`) e a seta do `<select>` renderizam no chrome claro do SO mesmo com o app em modo escuro.
+
+### Componentes (`components/apple/ui.tsx`)
+
+`Card`, `Button` (variantes primary/secondary/plain), `PageTitle`, `SectionLabel`. Todo alvo de toque ≥44px. Cards usam blur + borda 1px + sombra **rasa** (nunca sombra difusa de blur alto junto com borda — é um padrão banido explicitamente pela skill impeccable, o "ghost-card", clichê reconhecível de UI gerada por IA).
+
+### O que foi revisado e corrigido no polish pass
+
+1. Ghost-card (borda + sombra difusa ≥16px blur no mesmo elemento) — trocado por sombra rasa.
+2. Contraste de texto accent em telas escuras (4.4:1 → 7.9:1, token `--accent-text`).
+3. `<input type="time">` / `<select>` sem estilo, chrome do navegador destoando do resto — `color-scheme` + seta customizada.
+4. Formulário de agendamento sobrepondo o título da tarefa quando o título era longo — reestruturado pra abrir como bloco abaixo da linha, não inline.
+5. Nav com itens fora da tela sem indicação (`overflow-x-auto` sem sinal visual) — fade de borda via `mask-image`.
+6. Nav sem estado de hover nos itens inativos.
+7. Token CSS morto (`--color-tempo`, sobra de uma versão anterior) removido.
+
+---
+
+## Histórico e migração
+
+Este repositório passou por **duas reescritas completas** na mesma sessão:
+
+1. **"Valores"** (quiz ACT + 12 Week Year) → **"TEA"** (Tempo/Energia/Atenção, framework de gestão de tempo) → **Planner atual** (Inbox + 1-3-5 + TimeBlocks + Foco + Hábitos).
+2. Nenhuma dessas reescritas foi um refactor incremental — cada uma removeu o código da anterior por completo (`git rm -f` nos arquivos, sem deprecar gradualmente). O motivo: eram produtos conceitualmente diferentes, não iterações do mesmo produto.
+
+**Dados de usuário de versões antigas não foram apagados do banco** — só o código que os lia/escrevia. Ver seção "Sync e backup" acima.
 
 ---
 
@@ -182,24 +141,47 @@ npm install
 npm run dev
 ```
 
-Abre em `http://localhost:3000`.
+Abre em `http://localhost:3000` (ou a próxima porta livre — o Next avisa no terminal se 3000 estiver ocupada).
+
+### Scripts
+
+```bash
+npm run dev      # dev server (Turbopack)
+npm run build    # build de produção
+npm run lint     # ESLint
+```
+
+---
 
 ## Deploy
 
-O app está deployado na Vercel (hobby tier — grátis). O deploy é automático a cada push na branch `main`.
+Configurado pra Vercel, deploy automático a cada push em `main`.
 
 ```bash
 vercel --prod
 ```
 
+> Não verificado nesta sessão se o projeto Vercel já linkado reflete este código — a reescrita foi grande, confirme o build lá antes de assumir que está no ar.
+
 ---
 
-## Metodologias de referência
+## Skills e processo usados nesta sessão
 
-- **ACT (Terapia de Aceitação e Comprometimento)** — Steven Hayes
-- **The 12 Week Year** — Brian Moran & Michael Lennington
-- **SMART Goals** — George T. Doran (1981)
-- **Reservatório de Dopamina** — material de origem dos exercícios
+Documentando porque quem pegar o projeto depois vai encontrar padrões que só fazem sentido conhecendo a origem.
+
+- **`apple-ui-design`** — base do design system (tokens, componentes, tipografia, motion).
+- **`impeccable`** (comando `polish`, register `product`) — pass de revisão sistemática: descoberta do design system existente antes de mexer, checklist de contraste/estados de interação/espaçamento, lista de padrões banidos (ghost-card, gradiente em texto, glassmorphism decorativo, grade de cards idêntica, etc.).
+- **`web-design-guidelines`** (Vercel, instalada via `npx skills add vercel-labs/agent-skills@web-design-guidelines`) — segunda referência de UI guidelines, usada em conjunto com a impeccable.
+- **Verificação real, não suposição**: todo bug de UI relatado nesta doc foi confirmado no navegador (screenshot, leitura de DOM, ou cálculo de contraste via canvas/luminância), não deduzido só lendo o CSS.
+- **Build em fases**: o Planner atual foi construído em 7 fases (schema/store → Inbox/funil → hábitos → TimeBlocks/Foco → Semana/Mês → Ano → integração final), cada uma com `tsc --noEmit` + `eslint` + `npm run build` limpos e verificação manual no navegador antes de seguir pra próxima.
+
+---
+
+## Metodologias de referência (produto)
+
+- **Regra 1-3-5** — framework de priorização diária (1 tarefa grande, 3 médias, 5 pequenas).
+- **Inbox / captura única** — GTD (David Allen), sem a complexidade de contextos/projetos.
+- **Timeboxing** — blocos de tempo protegidos por tarefa.
 
 ---
 

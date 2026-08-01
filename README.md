@@ -154,12 +154,15 @@ Cálculo atual do radar (`lib/life-areas.ts`):
    ```
    NEXT_PUBLIC_SUPABASE_URL=...
    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
    ```
 6. Na Vercel, adicione as mesmas duas env vars no projeto:
    ```
    npx vercel env add NEXT_PUBLIC_SUPABASE_URL production
    npx vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production
+   npx vercel env add NEXT_PUBLIC_APP_URL production
    ```
+   Em produção, use `NEXT_PUBLIC_APP_URL=https://tea-quiz-sooty.vercel.app`.
    Repita para `preview` se for testar deploys de preview.
 
 Sem as env vars, o botão de login some e o app usa só localStorage.

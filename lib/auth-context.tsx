@@ -24,6 +24,14 @@ interface AuthValue {
 
 const AuthContext = createContext<AuthValue | null>(null);
 
+function getAuthCallbackUrl() {
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (typeof window === "undefined" ? undefined : window.location.origin);
+
+  return appUrl ? `${appUrl.replace(/\/$/, "")}/auth/callback` : undefined;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(isSupabaseConfigured);
@@ -61,10 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
-        emailRedirectTo:
-          typeof window === "undefined"
-            ? undefined
-            : `${window.location.origin}/auth/callback`,
+        emailRedirectTo: getAuthCallbackUrl(),
       },
     });
     return {

@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import Link from "next/link";
 import { usePlanner } from "@/lib/planner-store";
 import { useAuth } from "@/lib/auth-context";
+import { useUserProfile } from "@/lib/user-profile";
 import { Card, Button } from "@/components/apple/ui";
 import { LifeAreasPanel } from "@/components/planner/LifeAreasPanel";
-import { Trophy, CheckCircle2, Timer, UserCircle2 } from "lucide-react";
+import { Camera, Trophy, CheckCircle2, Timer, UserCircle2 } from "lucide-react";
 
 export default function PerfilPage() {
   const { state } = usePlanner();
   const { user, signOut, configured, signIn, signUp } = useAuth();
+  const profileState = useUserProfile(user);
 
   // Métricas
   const tasksDone = state.tasks.filter((t) => t.status === "done").length;
@@ -27,10 +29,15 @@ export default function PerfilPage() {
         </Link>
 
         <div className="mb-8 flex flex-col items-center">
-          <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gemini text-white shadow-lg">
-            <UserCircle2 size={48} />
-          </div>
-          <h1 className="a-title-2 text-label">Seu Perfil</h1>
+          <ProfileAvatar
+            user={user}
+            avatarUrl={profileState.profile?.avatarUrl ?? null}
+            saving={profileState.saving}
+            onUpload={profileState.uploadAvatar}
+          />
+          <h1 className="a-title-2 text-label">
+            {profileState.profile?.displayName || "Seu Perfil"}
+          </h1>
           {user ? (
             <p className="a-subheadline text-label-secondary">{user.email}</p>
           ) : (
@@ -73,6 +80,18 @@ export default function PerfilPage() {
         <Card className="p-5">
           {user ? (
             <div className="flex flex-col items-center gap-4 text-center">
+              <ProfileNameForm
+                key={profileState.profile?.displayName ?? "empty-profile-name"}
+                initialName={profileState.profile?.displayName ?? ""}
+                loading={profileState.loading}
+                saving={profileState.saving}
+                onSave={profileState.updateDisplayName}
+              />
+              {profileState.error && (
+                <p className="a-caption w-full rounded-xl border border-[rgba(244,63,94,.28)] bg-[rgba(244,63,94,.08)] p-3 text-danger" role="alert">
+                  {profileState.error}
+                </p>
+              )}
               <p className="a-subheadline text-label-secondary">
                 Seus dados estão sincronizando com a nuvem em tempo real.
               </p>
@@ -90,6 +109,136 @@ export default function PerfilPage() {
         </Card>
       </section>
     </main>
+  );
+}
+
+function ProfileAvatar({
+  user,
+  avatarUrl,
+  saving,
+  onUpload,
+}: {
+  user: ReturnType<typeof useAuth>["user"];
+  avatarUrl: string | null;
+  saving: boolean;
+  onUpload: (file: File) => Promise<{ error: string | null }>;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setError(null);
+    const result = await onUpload(file);
+    if (result.error) setError(result.error);
+  };
+
+  return (
+    <div className="mb-4 flex flex-col items-center gap-3">
+      <div className="relative">
+        <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gemini text-white shadow-lg ring-1 ring-[var(--glass-border-strong)]">
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarUrl}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <UserCircle2 size={48} />
+          )}
+        </div>
+        {user && (
+          <>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="sr-only"
+              onChange={handleFile}
+            />
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => inputRef.current?.click()}
+              className="a-hit-44 absolute -bottom-1 -right-1 inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--glass-border-strong)] bg-[rgba(12,12,16,.86)] text-label shadow-lg transition-opacity disabled:opacity-50"
+              aria-label="Alterar foto do perfil"
+              title="Alterar foto"
+            >
+              <Camera size={18} />
+            </button>
+          </>
+        )}
+      </div>
+      {error && (
+        <p className="a-caption max-w-xs text-center text-danger" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ProfileNameForm({
+  initialName,
+  loading,
+  saving,
+  onSave,
+}: {
+  initialName: string;
+  loading: boolean;
+  saving: boolean;
+  onSave: (displayName: string) => Promise<{ error: string | null }>;
+}) {
+  const [name, setName] = useState(initialName);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setNotice(null);
+    setError(null);
+    const result = await onSave(name);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    setNotice("Perfil atualizado.");
+  };
+
+  return (
+    <form onSubmit={submit} className="w-full space-y-3 text-left">
+      <div>
+        <label htmlFor="displayName" className="a-caption text-label-secondary">
+          Nome de perfil
+        </label>
+        <input
+          id="displayName"
+          type="text"
+          maxLength={80}
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder={loading ? "Carregando..." : "Como você quer aparecer"}
+          className="a-subheadline mt-2 min-h-[44px] w-full rounded-xl border border-separator bg-fill-subtle px-4 text-label outline-none transition-colors focus:border-[var(--accent)]"
+        />
+      </div>
+      {error && (
+        <p className="a-caption text-danger" role="alert">
+          {error}
+        </p>
+      )}
+      {notice && (
+        <p className="a-caption text-label-secondary" role="status">
+          {notice}
+        </p>
+      )}
+      <Button type="submit" variant="secondary" full disabled={saving || loading}>
+        {saving ? "Salvando..." : "Salvar Perfil"}
+      </Button>
+    </form>
   );
 }
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { usePlanner, todayISO } from "@/lib/planner-store";
+import { todayISO } from "@/lib/planner-store";
 import { DailyFunnel } from "@/components/planner/DailyFunnel";
 import { DailySummary } from "@/components/planner/DailySummary";
 import { DailyProgress } from "@/components/planner/DailyProgress";
@@ -29,7 +29,6 @@ function greeting(hour: number): string {
 }
 
 export default function Home() {
-  const { hydrated } = usePlanner();
   const [focusTaskId, setFocusTaskId] = useState<string | null>(null);
   const [view, setView] = useState<"funnel" | "schedule">("funnel");
   const date = todayISO();

@@ -12,20 +12,12 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [mounted, setMounted] = useState(false);
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "system";
+    return (localStorage.getItem("theme-preference") as Theme | null) ?? "system";
+  });
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme-preference") as Theme | null;
-    if (saved) {
-      setThemeState(saved);
-    }
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    
     const root = document.documentElement;
     if (theme === "system") {
       localStorage.removeItem("theme-preference");
@@ -35,13 +27,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.remove("light", "dark");
       root.classList.add(theme);
     }
-  }, [theme, mounted]);
+  }, [theme]);
 
   const setTheme = (t: Theme) => {
     setThemeState(t);
   };
 
-  // Evita flash indesejado antes de montar o provedor.
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}

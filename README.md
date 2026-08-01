@@ -138,6 +138,8 @@ Cálculo atual do radar (`lib/life-areas.ts`):
 ### Sync e backup
 
 - `lib/cloud-sync.tsx`: pull no login (remoto vence se tiver dado), push debounced (1.5s) a cada mudança. Sem Supabase configurado, funciona só localStorage.
+- `public.profiles`: dados editáveis de apresentação da conta (`display_name`, `avatar_url`, `avatar_path`) ligados a `auth.users`. Auth continua no schema `auth`; esta tabela não guarda senha nem substitui usuário do Supabase.
+- `storage.buckets/avatars`: bucket público para foto de perfil, limitado a imagens de até 1 MB. RLS em `storage.objects` deixa qualquer pessoa ler avatars públicos, mas só o dono autenticado escreve na própria pasta.
 - `lib/backup.ts`: export/import JSON versionado. **v1–v3 são de versões anteriores do app** (quiz de valores, 12WY, TEA) e continuam sendo aceitos na importação só pra não quebrar quem tem backup antigo — os campos são ignorados. v4 é o formato atual (`{ planner: PlannerState }`).
 - `supabase/schema.sql`: a tabela `app_state` tem colunas legadas (`quiz`, `plan`, `daily`, `tea`) que o app **não lê nem escreve mais**. Ficaram de propósito pra não apagar dado de usuário de versões antigas. A coluna ativa é `planner` (jsonb).
 

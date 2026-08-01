@@ -186,6 +186,11 @@ export default function Header() {
         </nav>
       </header>
 
+      <div
+        aria-hidden
+        className="dock-underlay fixed inset-x-0 bottom-0 z-30 backdrop-blur-[18px] backdrop-saturate-[112%] sm:hidden"
+      />
+
       <nav
         aria-label="Navegação principal"
         className="liquid-dock fixed inset-x-4 bottom-dock-safe z-40 h-[80px] rounded-full backdrop-blur-[28px] backdrop-brightness-[1.02] backdrop-saturate-[190%] backdrop-contrast-[1.12] sm:hidden"

@@ -83,12 +83,13 @@ function reducer(state: PlannerState, action: Action): PlannerState {
 
     case "PLAN_DAY": {
       const existingIdx = state.dayLogs.findIndex((l) => l.date === action.date);
+      const existingLog = existingIdx >= 0 ? state.dayLogs[existingIdx] : undefined;
       const mode = action.payload.mode ?? action.payload.energy;
       const newLog: DayLog = {
         date: action.date,
         ...action.payload,
         ...(mode ? { mode, energy: mode, modeSource: "chosen" as const } : {}),
-        plannedAt: Date.now(),
+        plannedAt: existingLog?.plannedAt ?? Date.now(),
       };
       if (existingIdx >= 0) {
         const newLogs = [...state.dayLogs];

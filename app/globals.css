@@ -32,6 +32,14 @@
   --space-xl: 48px;
   --space-2xl: 96px;
 
+  --dock-height: 80px;
+  --dock-bottom-offset: 16px;
+  --dock-readability-gap: 48px;
+  --bottom-nav-clearance: calc(
+    var(--dock-height) + var(--dock-bottom-offset) +
+      var(--dock-readability-gap) + env(safe-area-inset-bottom)
+  );
+
   /* Curva padrão da Apple para micro-interações. */
   --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
 
@@ -55,6 +63,21 @@
   --energy-low-bg: rgba(52, 168, 83, 0.1);
   --energy-medium-bg: rgba(66, 133, 244, 0.1);
   --energy-high-bg: rgba(155, 114, 203, 0.12);
+  --metric-focus: #4285f4;
+  --metric-tasks: #9b72cb;
+  --metric-plan: #f97316;
+  --metric-habits: #34a853;
+  --metric-consistency: #22c55e;
+  --metric-energy: #8b5cf6;
+  --metric-energy-low: #34a853;
+  --metric-energy-medium: #4285f4;
+  --metric-energy-high: #9b72cb;
+  --metric-warning: #fbbc04;
+  --metric-danger: #ea4335;
+  --metric-track: rgba(0, 0, 0, 0.08);
+  --metric-muted: rgba(0, 0, 0, 0.18);
+  --metric-card-bg: var(--card-bg);
+  --metric-card-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
   --liquid-control-bg: rgba(255, 255, 255, 0.24);
   --liquid-control-border: rgba(255, 255, 255, 0.55);
   --liquid-control-shadow: 0 8px 24px rgba(0, 0, 0, 0.08),
@@ -118,6 +141,17 @@
       transparent 82%,
       rgba(255, 255, 255, 0.24)
     );
+  --dock-underlay-bg: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.54) 58%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  --dock-underlay-glow: radial-gradient(
+    76% 68% at 50% 48%,
+    rgba(0, 0, 0, 0.08),
+    transparent 72%
+  );
 
   --gemini-grad: linear-gradient(135deg, #4285f4 0%, #9b72cb 50%, #d96570 100%);
   --gemini-text: transparent;
@@ -148,6 +182,10 @@
     --energy-low-bg: rgba(52, 168, 83, 0.16);
     --energy-medium-bg: rgba(138, 180, 248, 0.16);
     --energy-high-bg: rgba(197, 138, 249, 0.18);
+    --metric-track: rgba(255, 255, 255, 0.12);
+    --metric-muted: rgba(255, 255, 255, 0.24);
+    --metric-card-bg: #111318;
+    --metric-card-shadow: none;
     --liquid-control-bg: rgba(255, 255, 255, 0.075);
     --liquid-control-border: rgba(255, 255, 255, 0.105);
     --liquid-control-shadow: 0 8px 28px rgba(0, 0, 0, 0.26),
@@ -211,6 +249,17 @@
         transparent 82%,
         rgba(255, 255, 255, 0.032)
       );
+    --dock-underlay-bg: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.42) 56%,
+      rgba(0, 0, 0, 0.82) 100%
+    );
+    --dock-underlay-glow: radial-gradient(
+      78% 70% at 50% 48%,
+      rgba(255, 255, 255, 0.045),
+      transparent 74%
+    );
     --accent-text: var(--accent-text-dark);
     --attention-text: #fdd663;
     --danger-text: #f28b82;
@@ -230,6 +279,10 @@
   --energy-low-bg: rgba(52, 168, 83, 0.16);
   --energy-medium-bg: rgba(138, 180, 248, 0.16);
   --energy-high-bg: rgba(197, 138, 249, 0.18);
+  --metric-track: rgba(255, 255, 255, 0.12);
+  --metric-muted: rgba(255, 255, 255, 0.24);
+  --metric-card-bg: #111318;
+  --metric-card-shadow: none;
   --liquid-control-bg: rgba(255, 255, 255, 0.075);
   --liquid-control-border: rgba(255, 255, 255, 0.105);
   --liquid-control-shadow: 0 8px 28px rgba(0, 0, 0, 0.26),
@@ -293,6 +346,17 @@
       transparent 82%,
       rgba(255, 255, 255, 0.032)
     );
+  --dock-underlay-bg: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.42) 56%,
+    rgba(0, 0, 0, 0.82) 100%
+  );
+  --dock-underlay-glow: radial-gradient(
+    78% 70% at 50% 48%,
+    rgba(255, 255, 255, 0.045),
+    transparent 74%
+  );
   --accent-text: var(--accent-text-dark);
   --attention-text: #fdd663;
   --danger-text: #f28b82;
@@ -314,6 +378,10 @@
   --energy-low-bg: rgba(52, 168, 83, 0.1);
   --energy-medium-bg: rgba(66, 133, 244, 0.1);
   --energy-high-bg: rgba(155, 114, 203, 0.12);
+  --metric-track: rgba(0, 0, 0, 0.08);
+  --metric-muted: rgba(0, 0, 0, 0.18);
+  --metric-card-bg: var(--card-bg);
+  --metric-card-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
   --liquid-control-bg: rgba(255, 255, 255, 0.24);
   --liquid-control-border: rgba(255, 255, 255, 0.55);
   --liquid-control-shadow: 0 8px 24px rgba(0, 0, 0, 0.08),
@@ -377,6 +445,17 @@
       transparent 82%,
       rgba(255, 255, 255, 0.24)
     );
+  --dock-underlay-bg: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.54) 58%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  --dock-underlay-glow: radial-gradient(
+    76% 68% at 50% 48%,
+    rgba(0, 0, 0, 0.08),
+    transparent 72%
+  );
   --accent-text: var(--accent-text-light);
   --attention-text: var(--attention-text-light);
   --danger-text: var(--danger-text-light);
@@ -401,6 +480,37 @@ body {
   border: 1px solid var(--card-border);
   border-radius: 32px;
   box-shadow: var(--card-shadow);
+}
+
+.metric-card {
+  min-height: 148px;
+  padding: 20px;
+  border-radius: 28px;
+  border-color: var(--separator);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
+}
+
+.metric-card-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 144px);
+  align-items: end;
+  gap: 16px;
+}
+
+.metric-chart {
+  justify-self: end;
+  width: min(144px, 100%);
+}
+
+@media (max-width: 359px) {
+  .metric-card-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-chart {
+    justify-self: stretch;
+    width: 100%;
+  }
 }
 
 /* Botão pílula. Alvo de toque ≥ 44px garantido pelo padding + min-height. */
@@ -549,12 +659,26 @@ body {
   --tw-ring-color: var(--accent-text);
 }
 
+.page-with-bottom-dock,
+.scroll-content-with-bottom-dock {
+  padding-bottom: var(--bottom-nav-clearance);
+}
+
+.scroll-content-with-bottom-dock {
+  scroll-padding-bottom: var(--bottom-nav-clearance);
+}
+
+.bottom-dock-spacer {
+  height: var(--bottom-nav-clearance);
+  flex-shrink: 0;
+}
+
 .pb-main-safe {
-  padding-bottom: calc(176px + env(safe-area-inset-bottom));
+  padding-bottom: var(--bottom-nav-clearance);
 }
 
 .bottom-dock-safe {
-  bottom: calc(16px + env(safe-area-inset-bottom));
+  bottom: calc(var(--dock-bottom-offset) + env(safe-area-inset-bottom));
 }
 
 .energy-option {
@@ -657,6 +781,28 @@ body {
     var(--dock-bg);
   border: 1px solid var(--dock-border);
   box-shadow: var(--dock-shadow);
+}
+
+.dock-underlay {
+  height: calc(var(--bottom-nav-clearance) + 56px);
+  background:
+    var(--dock-underlay-glow),
+    var(--dock-underlay-bg);
+  backdrop-filter: blur(18px) saturate(112%);
+  -webkit-backdrop-filter: blur(18px) saturate(112%);
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.62) 28%,
+    #000 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.62) 28%,
+    #000 100%
+  );
+  pointer-events: none;
 }
 
 .liquid-dock::before,
@@ -951,6 +1097,7 @@ select {
   .liquid-segment,
   .liquid-scrim,
   .liquid-topbar,
+  .dock-underlay,
   .a-btn-secondary {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;

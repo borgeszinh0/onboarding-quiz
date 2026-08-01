@@ -31,7 +31,7 @@ export default function ObjetivosPage() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
+    <main className="page-with-bottom-dock mx-auto w-full max-w-xl px-5 pt-8">
       <Link href="/mais" className="mb-8 inline-flex a-hit-44 items-center -ml-2 a-caption text-label-secondary hover-text-label">
         ← Voltar
       </Link>

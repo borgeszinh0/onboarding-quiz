@@ -4,6 +4,7 @@ import { useState } from "react";
 import { usePlanner } from "@/lib/planner-store";
 import { Card } from "@/components/apple/ui";
 import { DAY_MODE_RULES, type DayMode } from "@/lib/day-mode";
+import { Check, Pencil, X } from "lucide-react";
 
 const ENERGY_OPTIONS: Record<
   DayMode,
@@ -45,18 +46,27 @@ export function DailyPlanning({ date }: { date: string }) {
 
   const dayLog = state.dayLogs.find((l) => l.date === date);
   const isPlanned = !!dayLog?.plannedAt;
-  const selectedEnergy = energy ?? dayLog?.energy;
+  const selectedEnergy = energy ?? dayLog?.mode ?? dayLog?.energy;
 
   if (isPlanned) {
     return (
       <section className="mb-6">
         <Card className="p-5">
-          {dayLog.intention && (
-            <div className="mb-4">
-              <p className="a-subheadline text-label-secondary">Intenção do dia</p>
-              <p className="a-body mt-1 text-label">“{dayLog.intention}”</p>
-            </div>
-          )}
+          <PlannedIntentionEditor
+            key={`${date}:${dayLog.intention ?? ""}`}
+            intention={dayLog.intention ?? ""}
+            onSave={(nextIntention) => {
+              dispatch({
+                type: "PLAN_DAY",
+                date,
+                payload: {
+                  intention: nextIntention.trim() || undefined,
+                  mode: selectedEnergy,
+                  energy: selectedEnergy,
+                },
+              });
+            }}
+          />
           <DayModeSelector
             selectedEnergy={selectedEnergy}
             onSelect={(level) => {
@@ -125,6 +135,84 @@ export function DailyPlanning({ date }: { date: string }) {
         </div>
       </Card>
     </section>
+  );
+}
+
+function PlannedIntentionEditor({
+  intention,
+  onSave,
+}: {
+  intention: string;
+  onSave: (intention: string) => void;
+}) {
+  const [draft, setDraft] = useState(intention);
+  const [editing, setEditing] = useState(false);
+
+  const save = () => {
+    onSave(draft);
+    setEditing(false);
+  };
+
+  const cancel = () => {
+    setDraft(intention);
+    setEditing(false);
+  };
+
+  return (
+    <div className="mb-4">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <p className="a-subheadline text-label-secondary">Intenção do dia</p>
+        {!editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            aria-label={intention ? "Editar intenção do dia" : "Adicionar intenção do dia"}
+            className="a-hit-44 flex shrink-0 items-center justify-center rounded-full text-label-secondary transition-colors hover-bg-fill-subtle"
+          >
+            <Pencil size={18} />
+          </button>
+        )}
+      </div>
+
+      {editing ? (
+        <div className="space-y-2">
+          <input
+            id="planned-intention"
+            type="text"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") save();
+              if (event.key === "Escape") cancel();
+            }}
+            placeholder="Ex: Focar apenas no lançamento"
+            className="a-body min-h-[44px] w-full rounded-xl bg-fill-subtle px-4 py-3"
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={save}
+              className="a-btn a-btn-primary min-h-[44px] flex-1"
+            >
+              <Check size={18} />
+              Salvar
+            </button>
+            <button
+              type="button"
+              onClick={cancel}
+              className="a-btn a-btn-secondary min-h-[44px] flex-1 backdrop-blur-[18px] backdrop-brightness-[1.01] backdrop-saturate-[165%] backdrop-contrast-[1.08]"
+            >
+              <X size={18} />
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="a-body text-label">
+          {intention ? `“${intention}”` : "Nenhuma intenção definida."}
+        </p>
+      )}
+    </div>
   );
 }
 

@@ -7,8 +7,10 @@ import { PageTitle } from "@/components/apple/ui";
 export default function InboxPage() {
   const { hydrated } = usePlanner();
 
+  if (!hydrated) return <main aria-busy="true" />;
+
   return (
-    <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
+    <main className="page-with-bottom-dock mx-auto w-full max-w-xl px-5 pt-8">
       <PageTitle
         eyebrow="Inbox"
         title="Caixa de captura"

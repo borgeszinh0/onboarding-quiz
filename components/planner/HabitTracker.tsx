@@ -1,24 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   usePlanner,
   getActiveHabits,
   isHabitDone,
-  weekDates,
   todayISO,
 } from "@/lib/planner-store";
 import { Card, SectionLabel, BottomSheet } from "@/components/apple/ui";
 import { Plus } from "lucide-react";
-
-const WEEKDAY_LABEL = ["S", "T", "Q", "Q", "S", "S", "D"];
 
 export function HabitTracker() {
   const { state } = usePlanner();
   const [managing, setManaging] = useState(false);
   const habits = getActiveHabits(state);
   const today = todayISO();
-  const dates = weekDates(today);
 
   return (
     <section className="space-y-4">
@@ -35,7 +31,7 @@ export function HabitTracker() {
 
       <BottomSheet isOpen={managing} onClose={() => setManaging(false)}>
         <h2 className="a-title-2 mb-4">Gerenciar Hábitos</h2>
-        <HabitManager onClose={() => setManaging(false)} />
+        <HabitManager />
       </BottomSheet>
 
       {habits.length === 0 && !managing ? (
@@ -45,14 +41,24 @@ export function HabitTracker() {
       ) : (
         <div className="space-y-4">
           {habits.map((habit) => (
-            <Card key={habit.id} className="p-5">
+            <Card
+              key={habit.id}
+              className="metric-card"
+              style={{
+                minHeight: 148,
+                padding: 20,
+                borderRadius: 28,
+                borderColor: "var(--separator)",
+                background: "var(--metric-card-bg)",
+                boxShadow: "var(--metric-card-shadow)",
+              }}
+            >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <h3 className="a-headline truncate text-label">
                     {habit.title}
                   </h3>
                   
-                  {/* Gráfico de Consistência (últimos 14 dias) */}
                   <div className="mt-4">
                     <HabitChart habitId={habit.id} />
                   </div>
@@ -81,7 +87,7 @@ function CheckTodayButton({ habitId, date }: { habitId: string; date: string }) 
       aria-pressed={done}
       className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full transition-all duration-300 active:scale-95"
       style={{
-        background: done ? "var(--gemini-grad)" : "var(--fill-subtle)",
+        background: done ? "var(--metric-habits)" : "var(--fill-subtle)",
         color: done ? "var(--success-label)" : "var(--label-secondary)",
       }}
     >
@@ -102,7 +108,7 @@ function CheckTodayButton({ habitId, date }: { habitId: string; date: string }) 
   );
 }
 
-function HabitManager({ onClose }: { onClose: () => void }) {
+function HabitManager() {
   const { state, dispatch } = usePlanner();
   const [title, setTitle] = useState("");
 
@@ -195,35 +201,32 @@ function HabitChart({ habitId }: { habitId: string }) {
 
   return (
     <div>
-      <div className="mb-2 flex items-center gap-2">
+      <div className="mb-3 flex items-center gap-2">
         <span className="a-caption text-label-secondary">
           Últimos 7 dias
         </span>
         {streak > 0 && (
-          <span className="a-caption ml-auto flex items-center gap-1 rounded-full bg-fill-subtle px-2 py-0.5 font-medium text-label">
-            🔥 {streak} {streak === 1 ? "dia" : "dias"}
+          <span className="a-caption ml-auto rounded-full bg-fill-subtle px-2 py-0.5 font-medium text-label">
+            {streak} {streak === 1 ? "dia" : "dias"}
           </span>
         )}
       </div>
-      <div className="flex h-14 items-end justify-between gap-1">
+      <div className="flex items-end justify-between gap-[10px]">
         {days.map((day, i) => (
-          <div key={day.iso} className="flex flex-1 flex-col justify-end items-center gap-1.5 h-full">
-            <div
-              className="w-full rounded-sm transition-all duration-300"
+          <div key={day.iso} className="flex flex-col items-center gap-2">
+            <span
+              aria-hidden
+              className="h-[10px] w-[10px] rounded-full transition-colors duration-300"
               style={{
-                height: day.done ? "100%" : "20%",
                 background: day.done
-                  ? "var(--gemini-grad)"
-                  : "var(--fill-subtle)",
-                opacity: day.done ? 1 : 0.5,
+                  ? "var(--metric-habits)"
+                  : "var(--metric-track)",
               }}
             />
-            {/* Mostrar a letra de todos os dias */}
             <span
-              className="text-[11px] leading-none font-medium text-label-secondary w-full text-center"
+              className="a-caption block w-[10px] text-center uppercase"
               style={{
-                visibility: "visible",
-                color: i === days.length - 1 ? "var(--label)" : "var(--label-secondary)",
+                color: i === days.length - 1 ? "var(--accent-text)" : "var(--label-secondary)",
               }}
             >
               {day.label}

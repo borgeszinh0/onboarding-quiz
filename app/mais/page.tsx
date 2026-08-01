@@ -16,7 +16,7 @@ export default function MaisPage() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
+    <main className="page-with-bottom-dock mx-auto w-full max-w-xl px-5 pt-8">
       <PageTitle eyebrow="Mais" title="Mais" />
 
       <nav

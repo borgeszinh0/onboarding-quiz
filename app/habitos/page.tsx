@@ -10,7 +10,7 @@ export default function HabitosPage() {
   const activeCount = state.habits.filter((h) => h.isActive).length;
 
   return (
-    <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
+    <main className="page-with-bottom-dock mx-auto w-full max-w-xl px-5 pt-8">
       <PageTitle
         eyebrow="Hábitos"
         title="Consistência"

@@ -435,28 +435,37 @@ function DailyRings({ days, color }: { days: DayStats[]; color: string }) {
       <div className="flex h-14 items-center justify-between gap-[10px]">
         {days.map((day) => (
           <span key={day.date} className="flex flex-col items-center gap-1">
-            <span className="a-caption h-3 leading-none text-label-secondary">
-              {day.active ? "✓" : "×"}
+            <span
+              className="flex h-[14px] items-center justify-center text-[14px] leading-none"
+              style={{ color: day.active ? color : "var(--label-secondary)" }}
+              aria-hidden
+            >
+              {day.active ? "✓" : "·"}
             </span>
-            <svg viewBox="0 0 22 22" className="h-[22px] w-[22px] -rotate-90">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-6 w-6 -rotate-90"
+              role="img"
+              aria-label={`${day.fullLabel}: ${day.active ? "ritmo mantido" : "sem progresso registrado"}`}
+            >
               <circle
-                cx="11"
-                cy="11"
-                r="8"
+                cx="12"
+                cy="12"
+                r="8.5"
                 fill="none"
                 stroke="var(--metric-track)"
                 strokeWidth="3"
               />
               {day.active && (
                 <circle
-                  cx="11"
-                  cy="11"
-                  r="8"
+                  cx="12"
+                  cy="12"
+                  r="8.5"
                   fill="none"
                   stroke={color}
                   strokeWidth="3"
                   strokeLinecap="round"
-                  strokeDasharray="50.27 50.27"
+                  strokeDasharray="53.41 53.41"
                 />
               )}
             </svg>

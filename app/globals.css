@@ -67,6 +67,8 @@
   --metric-tasks: #9b72cb;
   --metric-plan: #f97316;
   --metric-habits: #34a853;
+  --metric-habits-soft: rgba(52, 168, 83, 0.12);
+  --metric-streak: #f97316;
   --metric-consistency: #22c55e;
   --metric-energy: #8b5cf6;
   --metric-energy-low: #34a853;
@@ -182,6 +184,7 @@
     --energy-low-bg: rgba(52, 168, 83, 0.16);
     --energy-medium-bg: rgba(138, 180, 248, 0.16);
     --energy-high-bg: rgba(197, 138, 249, 0.18);
+    --metric-habits-soft: rgba(52, 168, 83, 0.18);
     --metric-track: rgba(255, 255, 255, 0.12);
     --metric-muted: rgba(255, 255, 255, 0.24);
     --metric-card-bg: #111318;
@@ -279,6 +282,7 @@
   --energy-low-bg: rgba(52, 168, 83, 0.16);
   --energy-medium-bg: rgba(138, 180, 248, 0.16);
   --energy-high-bg: rgba(197, 138, 249, 0.18);
+  --metric-habits-soft: rgba(52, 168, 83, 0.18);
   --metric-track: rgba(255, 255, 255, 0.12);
   --metric-muted: rgba(255, 255, 255, 0.24);
   --metric-card-bg: #111318;
@@ -378,6 +382,7 @@
   --energy-low-bg: rgba(52, 168, 83, 0.1);
   --energy-medium-bg: rgba(66, 133, 244, 0.1);
   --energy-high-bg: rgba(155, 114, 203, 0.12);
+  --metric-habits-soft: rgba(52, 168, 83, 0.12);
   --metric-track: rgba(0, 0, 0, 0.08);
   --metric-muted: rgba(0, 0, 0, 0.18);
   --metric-card-bg: var(--card-bg);

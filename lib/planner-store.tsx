@@ -65,6 +65,7 @@ type Action =
     }
   | { type: "REMOVE_TIME_BLOCK"; id: string }
   | { type: "ADD_HABIT"; title: string }
+  | { type: "UPDATE_HABIT"; id: string; title: string }
   | { type: "TOGGLE_HABIT_ACTIVE"; id: string }
   | { type: "REMOVE_HABIT"; id: string }
   | { type: "TOGGLE_HABIT_LOG"; habitId: string; date: string }
@@ -224,6 +225,14 @@ function reducer(state: PlannerState, action: Action): PlannerState {
       };
       return { ...state, habits: [...state.habits, habit] };
     }
+
+    case "UPDATE_HABIT":
+      return {
+        ...state,
+        habits: state.habits.map((h) =>
+          h.id === action.id ? { ...h, title: action.title } : h
+        ),
+      };
 
     case "TOGGLE_HABIT_ACTIVE":
       return {

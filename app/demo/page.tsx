@@ -7,7 +7,7 @@ import { buildDemoPlannerState } from "@/lib/demo-data";
 import { PLANNER_STORAGE_KEY, usePlanner } from "@/lib/planner-store";
 
 export default function DemoPage() {
-  const { dispatch } = usePlanner();
+  const { dispatch, hydrated } = usePlanner();
   const [loaded, setLoaded] = useState(false);
 
   const loadDemo = () => {
@@ -38,8 +38,8 @@ export default function DemoPage() {
         </div>
 
         <div className="mt-6 flex flex-col gap-3">
-          <Button onClick={loadDemo} full>
-            Carregar dados demo
+          <Button onClick={loadDemo} disabled={!hydrated} full>
+            {hydrated ? "Carregar dados demo" : "Preparando demo"}
           </Button>
           <Link href="/" className="w-full">
             <Button variant="secondary" full>

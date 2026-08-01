@@ -167,6 +167,14 @@ export function getLifeAreaRadarRows(
   };
 }
 
+export function filterTasksByLifeArea<T extends Pick<Task, "lifeArea">>(
+  tasks: readonly T[],
+  area: LifeArea | null
+): T[] {
+  if (!area) return [...tasks];
+  return tasks.filter((task) => task.lifeArea === area);
+}
+
 function getTarget(state: PlannerState, area: LifeArea): number {
   const target = state.lifeAreaTargets?.[area];
   if (typeof target !== "number" || !Number.isFinite(target)) return DEFAULT_TARGET;

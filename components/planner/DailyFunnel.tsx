@@ -21,7 +21,7 @@ import {
 } from "@/lib/day-mode";
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { ScheduleTaskControl, ScheduleForm } from "./ScheduleTaskControl";
-import { LifeAreaBadge, LifeAreaPicker } from "./LifeAreaPicker";
+import { LifeAreaBadge, LifeAreaSelect } from "./LifeAreaField";
 import { Plus, MoreHorizontal } from "lucide-react";
 
 /** Mesmas cores, mas seguras como cor de TEXTO (ver --accent-text em globals.css). */
@@ -220,12 +220,12 @@ function TaskRowMenu({ task }: { task: Task }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
-          <div className="liquid-panel absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl p-1.5 backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08]">
+          <div className="liquid-panel absolute right-0 top-full z-50 mt-2 w-64 rounded-2xl p-1.5 backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08]">
             <div className="relative z-10 border-b border-separator p-2">
-              <LifeAreaPicker
+              <LifeAreaSelect
                 value={task.lifeArea}
                 onChange={(lifeArea) => dispatch({ type: "SET_TASK_AREA", id: task.id, lifeArea })}
-                compact
+                label={`Área de ${task.title}`}
               />
             </div>
             <button
@@ -307,7 +307,7 @@ function SlotPicker({
           <Plus size={24} />
         </button>
       </div>
-      <LifeAreaPicker value={lifeArea} onChange={setLifeArea} compact />
+      <LifeAreaSelect value={lifeArea} onChange={setLifeArea} label="Área da nova tarefa" />
 
       {inbox.length > 0 && (
         <div>

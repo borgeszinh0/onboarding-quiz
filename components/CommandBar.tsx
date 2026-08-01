@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePlanner } from "@/lib/planner-store";
 import { parseNaturalInput } from "@/lib/parser";
 import { Search } from "lucide-react";
-import { LifeAreaPicker } from "./planner/LifeAreaPicker";
+import { LifeAreaSelect } from "./planner/LifeAreaField";
 import type { LifeArea } from "@/lib/planner-types";
 
 export default function CommandBar() {
@@ -118,7 +118,7 @@ export default function CommandBar() {
             />
           </div>
           <div className="relative z-10 border-t border-separator px-4 py-3">
-            <LifeAreaPicker value={lifeArea} onChange={setLifeArea} compact />
+            <LifeAreaSelect value={lifeArea} onChange={setLifeArea} label="Área da nova tarefa" />
           </div>
           {query.trim() && (
             <div className="relative z-10 border-t border-separator p-2">

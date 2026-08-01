@@ -12,7 +12,7 @@ import {
 import { Card, SectionLabel, BottomSheet } from "@/components/apple/ui";
 import type { Habit, LifeArea } from "@/lib/planner-types";
 import { Check, Flame, MoreHorizontal, Plus } from "lucide-react";
-import { LifeAreaPicker } from "./LifeAreaPicker";
+import { LifeAreaSelect } from "./LifeAreaField";
 
 export function HabitTracker() {
   const { state } = usePlanner();
@@ -251,10 +251,10 @@ function HabitCard({
             className="a-subheadline mt-1 min-h-[44px] w-full rounded-xl bg-bg px-3 text-label"
           />
           <div className="mt-3">
-            <LifeAreaPicker
+            <LifeAreaSelect
               value={habit.lifeArea}
               onChange={(lifeArea) => dispatch({ type: "SET_HABIT_AREA", id: habit.id, lifeArea })}
-              compact
+              label={`Área de ${habit.title}`}
             />
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2">
@@ -312,7 +312,7 @@ function HabitManager() {
           <Plus size={24} />
         </button>
       </div>
-      <LifeAreaPicker value={lifeArea} onChange={setLifeArea} compact />
+      <LifeAreaSelect value={lifeArea} onChange={setLifeArea} label="Área do novo hábito" />
 
       {state.habits.length > 0 && (
         <ul className="space-y-1">

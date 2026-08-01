@@ -5,7 +5,7 @@ import { usePlanner, getInboxTasks } from "@/lib/planner-store";
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { parseNaturalInput } from "@/lib/parser";
 import { Plus, X } from "lucide-react";
-import { LifeAreaPicker } from "./LifeAreaPicker";
+import { LifeAreaSelect } from "./LifeAreaField";
 import type { LifeArea } from "@/lib/planner-types";
 import {
   DAY_MODE_RULES,
@@ -100,7 +100,7 @@ export function InboxCapture() {
           </button>
         </div>
         <div className="mb-4">
-          <LifeAreaPicker value={lifeArea} onChange={setLifeArea} compact />
+          <LifeAreaSelect value={lifeArea} onChange={setLifeArea} label="Área da nova tarefa" />
         </div>
 
         {items.length === 0 ? (
@@ -172,11 +172,11 @@ function InboxGroup({
                 {getFitLabel(mode, group)}
               </span>
               <div className="mt-2">
-                <LifeAreaPicker
+                <LifeAreaSelect
                   value={task.lifeArea}
                   onChange={(area) => onSetArea(task.id, area)}
+                  label={`Área de ${task.title}`}
                   compact
-                  showLabel={false}
                 />
               </div>
             </div>

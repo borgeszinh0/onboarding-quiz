@@ -24,12 +24,12 @@ import { SLOT_LIMITS } from "./planner-data";
 
 export type { Quarter } from "./planner-types";
 
-const STORAGE_KEY = "onboarding-quiz-planner";
+export const PLANNER_STORAGE_KEY = "onboarding-quiz-planner";
 
 function loadState(): PlannerState {
   if (typeof window === "undefined") return initialPlannerState;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(PLANNER_STORAGE_KEY);
     if (!raw) return initialPlannerState;
     return { ...initialPlannerState, ...JSON.parse(raw) };
   } catch {
@@ -302,7 +302,7 @@ function reducer(state: PlannerState, action: Action): PlannerState {
 
     case "RESET":
       try {
-        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(PLANNER_STORAGE_KEY);
       } catch {}
       return initialPlannerState;
 
@@ -339,7 +339,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(PLANNER_STORAGE_KEY, JSON.stringify(state));
     } catch {}
   }, [state, hydrated]);
 

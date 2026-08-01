@@ -21,7 +21,7 @@ export default function MaisPage() {
 
       <nav
         aria-label="Rotas secundárias"
-        className="divide-y divide-[color:var(--separator)]"
+        className="divide-y divide-separator"
       >
         {MORE_ITEMS.map((item) => (
           <Link
@@ -30,7 +30,7 @@ export default function MaisPage() {
             className="a-body flex h-[52px] items-center justify-between"
           >
             <span>{item.label}</span>
-            <span aria-hidden className="a-body text-[color:var(--label-secondary)]">
+            <span aria-hidden className="a-body text-label-secondary">
               ›
             </span>
           </Link>
@@ -39,15 +39,17 @@ export default function MaisPage() {
 
       <div className="mt-8">
         <SectionLabel>Aparência</SectionLabel>
-        <div className="mt-2 flex overflow-hidden rounded-xl bg-[color:var(--fill-subtle)] p-1">
+        <div className="liquid-segment mt-2 flex overflow-hidden rounded-full p-1 backdrop-blur-[20px] backdrop-brightness-[1.01] backdrop-saturate-[170%] backdrop-contrast-[1.08]">
           {(["system", "light", "dark"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTheme(t)}
-              className="a-body flex-1 rounded-lg py-2 capitalize transition-colors duration-200"
+              className={`a-body min-h-[44px] flex-1 rounded-full capitalize transition-colors duration-200 ${
+                theme === t ? "liquid-segment-active" : ""
+              }`}
               style={
                 theme === t
-                  ? { background: "var(--bg)", color: "var(--label)", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }
+                  ? { color: "var(--label)" }
                   : { color: "var(--label-secondary)" }
               }
             >

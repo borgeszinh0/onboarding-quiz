@@ -9,15 +9,18 @@ import {
 } from "@/lib/planner-store";
 import { CATEGORY_LABEL, CATEGORY_ORDER, SLOT_LIMITS } from "@/lib/planner-data";
 import type { Task, TaskCategory } from "@/lib/planner-types";
+import {
+  DAY_MODE_RULES,
+  getDayMode,
+  getFitGroup,
+  getFitLabel,
+  getRecommendedBudgetCopy,
+  getTaskFitScore,
+  sortTasksForMode,
+} from "@/lib/day-mode";
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { ScheduleTaskControl, ScheduleForm } from "./ScheduleTaskControl";
 import { Plus, MoreHorizontal } from "lucide-react";
-
-const CATEGORY_ACCENT: Record<Exclude<TaskCategory, "inbox">, string> = {
-  big: "var(--color-danger)",
-  medium: "var(--color-atencao)",
-  small: "var(--color-accent)",
-};
 
 /** Mesmas cores, mas seguras como cor de TEXTO (ver --accent-text em globals.css). */
 const CATEGORY_TEXT_ACCENT: Record<Exclude<TaskCategory, "inbox">, string> = {
@@ -41,23 +44,49 @@ export function DailyFunnel({
   const [openSlot, setOpenSlot] = useState<Exclude<TaskCategory, "inbox"> | null>(
     null
   );
+  const dayMode = getDayMode(state, date);
+  const modeRules = DAY_MODE_RULES[dayMode];
+  const hasBigTask = getTasksForSlot(state, date, "big").length > 0;
 
   return (
     <section className="space-y-4">
+      <p className="a-caption text-label-secondary" role="status">
+        {modeRules.summary}
+      </p>
       {CATEGORY_ORDER.map((category) => {
         const tasks = getTasksForSlot(state, date, category);
         const limit = SLOT_LIMITS[category];
+        const recommended = modeRules.recommendedTasks[category];
 
         return (
-          <Card key={category} accent={CATEGORY_ACCENT[category]} className="p-5">
+          <Card
+            key={category}
+            allowOverflow
+            className="p-5"
+          >
             <div className="mb-3 flex items-baseline justify-between">
               <h2 className="a-headline">
                 {CATEGORY_LABEL[category]}
               </h2>
-              <span className="a-caption tabular text-[color:var(--label-secondary)]">
+              <span className="a-caption tabular text-label-secondary">
                 {tasks.length}/{limit}
               </span>
             </div>
+            <p className="a-caption mb-3 text-label-secondary">
+              Recomendado hoje: {recommended}. {getRecommendedBudgetCopy(state, date, dayMode, category)}
+            </p>
+
+            {dayMode === "high" && category === "big" && !hasBigTask && (
+              <p className="a-caption mb-3 text-accent" role="status">
+                Escolha sua tarefa grande antes de preencher o resto.
+              </p>
+            )}
+
+            {dayMode === "high" && category === "small" && !hasBigTask && (
+              <p className="a-caption mb-3 text-label-secondary">
+                Pequenas cabem melhor depois do bloco principal.
+              </p>
+            )}
 
             {tasks.length > 0 ? (
               <ul className="mb-2 space-y-1">
@@ -66,13 +95,12 @@ export function DailyFunnel({
                     key={task.id}
                     task={task}
                     date={date}
-                    accent={CATEGORY_ACCENT[category]}
                     onFocus={onFocus}
                   />
                 ))}
               </ul>
             ) : (
-              <p className="a-subheadline mb-2 text-[color:var(--label-secondary)]">
+              <p className="a-subheadline mb-2 text-label-secondary">
                 Escolha sua tarefa {CATEGORY_LABEL[category].toLowerCase()}.
               </p>
             )}
@@ -82,6 +110,7 @@ export function DailyFunnel({
                 <SlotPicker
                   date={date}
                   category={category}
+                  mode={dayMode}
                   onDone={() => setOpenSlot(null)}
                 />
               ) : (
@@ -104,12 +133,10 @@ export function DailyFunnel({
 function SlotTaskRow({
   task,
   date,
-  accent,
   onFocus,
 }: {
   task: Task;
   date: string;
-  accent: string;
   onFocus: (taskId: string) => void;
 }) {
   const { dispatch } = usePlanner();
@@ -183,7 +210,7 @@ function TaskRowMenu({ task }: { task: Task }) {
         type="button"
         onClick={() => setOpen(!open)}
         aria-label="Ações da tarefa"
-        className="a-hit-44 shrink-0 flex items-center justify-center rounded-full text-[color:var(--label-secondary)] transition-colors hover:bg-[color:var(--fill-subtle)] hover:text-[color:var(--label)]"
+        className="a-hit-44 shrink-0 flex items-center justify-center rounded-full text-label-secondary transition-colors hover-bg-fill-subtle hover-text-label"
       >
         <MoreHorizontal size={20} />
       </button>
@@ -191,14 +218,14 @@ function TaskRowMenu({ task }: { task: Task }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
-          <div className="absolute right-0 top-full z-50 mt-1 w-48 rounded-xl border border-[color:var(--separator)] bg-[color:var(--bg-elevated)] p-1 shadow-lg">
+          <div className="liquid-panel absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl p-1.5 backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08]">
             <button
               type="button"
               onClick={() => {
                 dispatch({ type: "MOVE_TASK", id: task.id, category: "inbox", date: null });
                 setOpen(false);
               }}
-              className="a-body w-full rounded-lg px-3 py-2 text-left text-[color:var(--label)] transition-colors hover:bg-[color:var(--fill-subtle)]"
+              className="a-body relative z-10 min-h-[44px] w-full rounded-xl px-3 text-left text-label transition-colors hover-bg-fill-subtle"
             >
               Mover para Inbox
             </button>
@@ -212,18 +239,30 @@ function TaskRowMenu({ task }: { task: Task }) {
 function SlotPicker({
   date,
   category,
+  mode,
   onDone,
 }: {
   date: string;
   category: Exclude<TaskCategory, "inbox">;
+  mode: ReturnType<typeof getDayMode>;
   onDone: () => void;
 }) {
   const { state, dispatch } = usePlanner();
   const [title, setTitle] = useState("");
+  const [overrideTaskId, setOverrideTaskId] = useState<string | null>(null);
   const inbox = getInboxTasks(state);
+  const sortedInbox = sortTasksForMode(inbox, state, date, mode, category);
 
-  const place = (taskId: string) => {
+  const place = (taskId: string, force = false) => {
     if (!canPlanTask(state, date, category)) return;
+    const task = inbox.find((item) => item.id === taskId);
+    if (task && !force) {
+      const score = getTaskFitScore({ state, date, mode, task, category });
+      if (getFitGroup(score) === "saveForLater") {
+        setOverrideTaskId(taskId);
+        return;
+      }
+    }
     dispatch({ type: "MOVE_TASK", id: taskId, category, date });
     onDone();
   };
@@ -236,7 +275,7 @@ function SlotPicker({
   };
 
   return (
-    <div className="space-y-3 border-t border-[color:var(--separator)] pt-3">
+    <div className="space-y-3 border-t border-separator pt-3">
       <div className="flex gap-2">
         <input
           type="text"
@@ -245,13 +284,13 @@ function SlotPicker({
           onKeyDown={(e) => e.key === "Enter" && createAndPlace()}
           placeholder="Nova tarefa"
           autoFocus
-          className="a-subheadline min-h-[44px] min-w-0 flex-1 rounded-xl bg-[color:var(--fill-subtle)] px-3"
+          className="a-subheadline min-h-[44px] min-w-0 flex-1 rounded-xl bg-fill-subtle px-3"
         />
         <button
           type="button"
           onClick={createAndPlace}
           disabled={!title.trim()}
-          className="a-hit-44 shrink-0 rounded-xl px-4 text-[color:var(--accent-text)] disabled:opacity-30"
+          className="a-hit-44 shrink-0 rounded-xl px-4 text-accent disabled:opacity-30"
           aria-label="Criar e planejar"
         >
           <Plus size={24} />
@@ -262,15 +301,42 @@ function SlotPicker({
         <div>
           <SectionLabel>Do Inbox</SectionLabel>
           <ul className="mt-1.5 space-y-1">
-            {inbox.map((task) => (
+            {sortedInbox.map(({ task, group }) => (
               <li key={task.id}>
-                <button
-                  type="button"
-                  onClick={() => place(task.id)}
-                  className="a-subheadline min-h-[44px] w-full rounded-lg px-2 text-left transition-colors hover:bg-[color:var(--fill-subtle)]"
-                >
-                  {task.title}
-                </button>
+                {overrideTaskId === task.id ? (
+                  <div className="rounded-xl bg-fill-subtle p-3">
+                    <p className="a-caption mb-2 text-label-secondary">
+                      Essa tarefa foge do modo de hoje, mas você pode planejá-la.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => place(task.id, true)}
+                        className="a-caption min-h-[36px] rounded-lg bg-system-accent px-3 text-white"
+                      >
+                        Planejar mesmo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setOverrideTaskId(null)}
+                        className="a-caption min-h-[36px] rounded-lg px-3 text-label-secondary"
+                      >
+                        Guardar no Inbox
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => place(task.id)}
+                    className="min-h-[44px] w-full rounded-lg px-2 py-2 text-left transition-colors hover-bg-fill-subtle"
+                  >
+                    <span className="a-subheadline block text-label">{task.title}</span>
+                    <span className="a-caption text-label-secondary">
+                      {getFitLabel(mode, group)}
+                    </span>
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -280,7 +346,7 @@ function SlotPicker({
       <button
         type="button"
         onClick={onDone}
-        className="a-caption a-hit-44 text-[color:var(--label-secondary)]"
+        className="a-caption a-hit-44 text-label-secondary"
       >
         Fechar
       </button>

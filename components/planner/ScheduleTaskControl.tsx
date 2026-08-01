@@ -3,8 +3,14 @@
 import { useState } from "react";
 import { usePlanner, addMinutes, getTimeBlockForTask } from "@/lib/planner-store";
 import type { TimeBlock } from "@/lib/planner-types";
+import {
+  DAY_MODE_RULES,
+  getDayMode,
+  getScheduleSuggestion,
+  inferTaskFitCategory,
+} from "@/lib/day-mode";
 
-const DURATIONS = [15, 30, 45, 60, 90] as const;
+const DURATIONS = [15, 25, 30, 45, 60, 90] as const;
 
 /**
  * Gatilho de agendamento, sempre em linha com o título: sem bloco, um chip
@@ -30,15 +36,20 @@ export function ScheduleTaskControl({
         <button
           type="button"
           onClick={() => onFocus(taskId)}
-          className="a-caption tabular min-h-[44px] rounded-full bg-[color:var(--fill-subtle)] px-2.5 text-[color:var(--accent-text)]"
+          className="a-caption liquid-control tabular min-h-[44px] rounded-full px-2.5 text-accent backdrop-blur-[18px] backdrop-brightness-[1.01] backdrop-saturate-[165%] backdrop-contrast-[1.08]"
         >
           {block.startTime}
         </button>
+        {block.protected && (
+          <span className="a-caption hidden rounded-full bg-fill-subtle px-2 py-1 text-accent sm:inline-flex">
+            Foco protegido
+          </span>
+        )}
         <button
           type="button"
           onClick={() => dispatch({ type: "REMOVE_TIME_BLOCK", id: block.id })}
           aria-label="Remover agendamento"
-          className="a-caption flex h-11 w-11 shrink-0 items-center justify-center text-[color:var(--label-secondary)]"
+          className="a-caption flex h-11 w-11 shrink-0 items-center justify-center text-label-secondary"
         >
           ✕
         </button>
@@ -50,8 +61,8 @@ export function ScheduleTaskControl({
     <button
       type="button"
       onClick={onOpenSchedule}
-      className="a-caption min-h-[44px] shrink-0 rounded-full border px-2.5 transition-colors duration-200"
-      style={{ borderColor: "var(--separator)", color: "var(--label-secondary)" }}
+      className="a-caption liquid-control min-h-[44px] shrink-0 rounded-full px-2.5 backdrop-blur-[18px] backdrop-brightness-[1.01] backdrop-saturate-[165%] backdrop-contrast-[1.08] transition-colors duration-200"
+      style={{ color: "var(--label-secondary)" }}
     >
       Agendar
     </button>
@@ -69,9 +80,13 @@ export function ScheduleForm({
 }) {
   const { state, dispatch } = usePlanner();
   const task = state.tasks.find((t) => t.id === taskId);
+  const dayMode = getDayMode(state, date);
+  const taskCategory = task ? inferTaskFitCategory(task) : "medium";
+  const suggestedDuration = DAY_MODE_RULES[dayMode].defaultBlockMinutes[taskCategory];
+  const isProtectedFocus = dayMode === "high" && taskCategory === "big";
   
   const [start, setStart] = useState("09:00");
-  const [duration, setDuration] = useState<number>(task?.estimatedMinutes || DURATIONS[1]);
+  const [duration, setDuration] = useState<number>(task?.estimatedMinutes || suggestedDuration);
   const [conflict, setConflict] = useState<TimeBlock | null>(null);
 
   const end = addMinutes(start, duration);
@@ -83,6 +98,7 @@ export function ScheduleForm({
       date,
       startTime: start,
       endTime: end,
+      protected: isProtectedFocus,
     });
     onDone();
   };
@@ -108,32 +124,29 @@ export function ScheduleForm({
 
   if (conflict) {
     return (
-      <div
-        className="flex flex-col gap-3 rounded-xl p-3"
-        style={{ background: "var(--fill-subtle)" }}
-      >
-        <p className="a-subheadline text-[color:var(--danger-text)]">
+      <div className="liquid-panel relative flex flex-col gap-3 rounded-xl p-3 backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08]">
+        <p className="a-subheadline text-danger">
           Conflita com {conflict.startTime}-{conflict.endTime}
         </p>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={replaceConflict}
-            className="a-caption min-h-[36px] rounded-lg bg-[color:var(--color-danger)] px-3 text-white transition-opacity hover:opacity-90"
+            className="a-caption min-h-[36px] rounded-lg bg-danger-fill px-3 text-white transition-opacity hover:opacity-90"
           >
             Substituir
           </button>
           <button
             type="button"
             onClick={submit}
-            className="a-caption min-h-[36px] rounded-lg border border-[color:var(--separator)] bg-[color:var(--bg)] px-3 text-[color:var(--label)] transition-colors hover:bg-[color:var(--fill-subtle)]"
+            className="a-caption min-h-[36px] rounded-lg border border-separator bg-page px-3 text-label transition-colors hover-bg-fill-subtle"
           >
             Agendar mesmo
           </button>
           <button
             type="button"
             onClick={() => setConflict(null)}
-            className="a-caption min-h-[36px] rounded-lg px-3 text-[color:var(--label-secondary)] hover:text-[color:var(--label)]"
+            className="a-caption min-h-[36px] rounded-lg px-3 text-label-secondary hover-text-label"
           >
             Outro horário
           </button>
@@ -143,22 +156,22 @@ export function ScheduleForm({
   }
 
   return (
-    <div
-      className="flex flex-wrap items-center gap-2 rounded-xl p-2.5"
-      style={{ background: "var(--fill-subtle)" }}
-    >
+    <div className="liquid-panel relative flex flex-wrap items-center gap-2 rounded-xl p-2.5 backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08]">
+      <p className="a-caption relative z-10 w-full text-label-secondary" role="status">
+        {getScheduleSuggestion(dayMode, taskCategory)}
+      </p>
       <input
         type="time"
         value={start}
         onChange={(e) => setStart(e.target.value)}
         aria-label="Horário de início"
-        className="a-subheadline min-h-[44px] w-[104px] rounded-lg bg-[color:var(--bg)] px-2"
+        className="a-subheadline min-h-[44px] w-[104px] rounded-lg bg-page px-2"
       />
       <select
         value={duration}
         onChange={(e) => setDuration(Number(e.target.value))}
         aria-label="Duração"
-        className="a-subheadline min-h-[44px] rounded-lg bg-[color:var(--bg)] px-2"
+        className="a-subheadline min-h-[44px] rounded-lg bg-page px-2"
       >
         {DURATIONS.map((d) => (
           <option key={d} value={d}>
@@ -170,14 +183,14 @@ export function ScheduleForm({
         <button
           type="button"
           onClick={onDone}
-          className="a-caption a-hit-44 text-[color:var(--label-secondary)]"
+          className="a-caption a-hit-44 text-label-secondary"
         >
           Cancelar
         </button>
         <button
           type="button"
           onClick={confirm}
-          className="a-subheadline a-hit-44 text-[color:var(--accent-text)]"
+          className="a-subheadline a-hit-44 text-accent"
         >
           Confirmar
         </button>

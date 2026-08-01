@@ -3,27 +3,78 @@
 import { useState } from "react";
 import { usePlanner } from "@/lib/planner-store";
 import { Card } from "@/components/apple/ui";
+import { DAY_MODE_RULES, type DayMode } from "@/lib/day-mode";
+
+const ENERGY_OPTIONS: Record<
+  DayMode,
+  {
+    label: string;
+    mode: string;
+    description: string;
+    className: string;
+    consequence: string;
+  }
+> = {
+  low: {
+    label: DAY_MODE_RULES.low.label,
+    mode: DAY_MODE_RULES.low.strategy,
+    description: "Pendências leves, revisão e tarefas pequenas.",
+    className: "energy-option-low",
+    consequence: "Hoje o app vai favorecer tarefas pequenas e blocos curtos.",
+  },
+  medium: {
+    label: DAY_MODE_RULES.medium.label,
+    mode: DAY_MODE_RULES.medium.strategy,
+    description: "Médias importantes e uma rotina bem protegida.",
+    className: "energy-option-medium",
+    consequence: "Hoje o app vai favorecer tarefas médias e rotina protegida.",
+  },
+  high: {
+    label: DAY_MODE_RULES.high.label,
+    mode: DAY_MODE_RULES.high.strategy,
+    description: "Trabalho profundo, tarefa grande e decisões difíceis.",
+    className: "energy-option-high",
+    consequence: "Hoje o app vai favorecer uma tarefa grande com foco protegido.",
+  },
+};
 
 export function DailyPlanning({ date }: { date: string }) {
   const { state, dispatch } = usePlanner();
   const [intention, setIntention] = useState("");
-  const [energy, setEnergy] = useState<"low" | "medium" | "high" | undefined>();
+  const [energy, setEnergy] = useState<DayMode | undefined>();
 
   const dayLog = state.dayLogs.find((l) => l.date === date);
   const isPlanned = !!dayLog?.plannedAt;
+  const selectedEnergy = energy ?? dayLog?.energy;
 
   if (isPlanned) {
-    if (!dayLog.intention) return null;
     return (
       <section className="mb-6">
-        <p className="a-subheadline text-[color:var(--label-secondary)]">Intenção do dia</p>
-        <p className="a-body mt-1 text-[color:var(--label)]">“{dayLog.intention}”</p>
+        <Card className="p-5">
+          {dayLog.intention && (
+            <div className="mb-4">
+              <p className="a-subheadline text-label-secondary">Intenção do dia</p>
+              <p className="a-body mt-1 text-label">“{dayLog.intention}”</p>
+            </div>
+          )}
+          <DayModeSelector
+            selectedEnergy={selectedEnergy}
+            onSelect={(level) => {
+              setEnergy(level);
+              dispatch({
+                type: "PLAN_DAY",
+                date,
+                payload: { intention: dayLog.intention, energy: level },
+              });
+            }}
+          />
+        </Card>
       </section>
     );
   }
 
   const handlePlan = () => {
-    dispatch({ type: "PLAN_DAY", date, payload: { intention, energy } });
+    dispatch({ type: "PLAN_DAY", date, payload: { intention, mode: energy, energy } });
   };
 
   const handleSkip = () => {
@@ -33,38 +84,28 @@ export function DailyPlanning({ date }: { date: string }) {
   return (
     <section className="mb-6">
       <Card className="p-5">
-        <h2 className="a-headline mb-4 text-[color:var(--label)]">Planejar hoje</h2>
+        <h2 className="a-headline mb-4 text-label">Planejar hoje</h2>
         <div className="space-y-4">
           <div>
-            <label htmlFor="intention" className="a-subheadline mb-1.5 block text-[color:var(--label-secondary)]">Qual a intenção principal?</label>
+            <label
+              htmlFor="intention"
+              className="a-subheadline mb-1.5 block text-label-secondary"
+            >
+              Qual a intenção principal?
+            </label>
             <input
               id="intention"
               type="text"
               value={intention}
               onChange={(e) => setIntention(e.target.value)}
               placeholder="Ex: Focar apenas no lançamento"
-              className="a-body w-full rounded-xl bg-[color:var(--fill-subtle)] px-4 py-3"
+              className="a-body w-full rounded-xl bg-fill-subtle px-4 py-3"
             />
           </div>
-          <div>
-            <span className="a-subheadline mb-1.5 block text-[color:var(--label-secondary)]">Nível de energia</span>
-            <div className="flex gap-2">
-              {(["low", "medium", "high"] as const).map((level) => (
-                <button
-                  key={level}
-                  type="button"
-                  onClick={() => setEnergy(level)}
-                  className="a-body flex-1 rounded-lg py-2 transition-colors duration-200"
-                  style={{
-                    backgroundColor: energy === level ? "var(--color-accent)" : "var(--fill-subtle)",
-                    color: energy === level ? "#fff" : "var(--label)",
-                  }}
-                >
-                  {level === "low" ? "Baixa" : level === "medium" ? "Média" : "Alta"}
-                </button>
-              ))}
-            </div>
-          </div>
+          <DayModeSelector
+            selectedEnergy={selectedEnergy}
+            onSelect={setEnergy}
+          />
           <div className="mt-6 flex flex-col gap-2 pt-2">
             <button
               type="button"
@@ -76,7 +117,7 @@ export function DailyPlanning({ date }: { date: string }) {
             <button
               type="button"
               onClick={handleSkip}
-              className="a-btn a-btn-secondary w-full"
+              className="a-btn a-btn-secondary w-full backdrop-blur-[18px] backdrop-brightness-[1.01] backdrop-saturate-[165%] backdrop-contrast-[1.08]"
             >
               Pular
             </button>
@@ -84,5 +125,61 @@ export function DailyPlanning({ date }: { date: string }) {
         </div>
       </Card>
     </section>
+  );
+}
+
+function DayModeSelector({
+  selectedEnergy,
+  onSelect,
+}: {
+  selectedEnergy?: DayMode;
+  onSelect: (level: DayMode) => void;
+}) {
+  return (
+    <div>
+      <span className="a-subheadline mb-2 block text-label-secondary">Modo do dia</span>
+      <div className="grid gap-2.5">
+        {(["low", "medium", "high"] as const).map((level) => {
+          const option = ENERGY_OPTIONS[level];
+          const selected = selectedEnergy === level;
+
+          return (
+            <button
+              key={level}
+              type="button"
+              onClick={() => onSelect(level)}
+              aria-pressed={selected}
+              className={`energy-option ${option.className} min-h-[88px] rounded-[18px] border p-3.5 text-left transition-colors duration-200`}
+              style={
+                selected
+                  ? {
+                      backgroundColor: "var(--energy-selected-bg)",
+                      borderColor:
+                        "color-mix(in oklab, var(--energy-color) 42%, transparent)",
+                    }
+                  : undefined
+              }
+            >
+              <span className="flex items-baseline justify-between gap-3">
+                <span className="text-[15px] font-medium leading-5 text-label">
+                  {option.label}
+                </span>
+                <span className="text-[13px] font-medium leading-[18px] text-energy">
+                  {option.mode}
+                </span>
+              </span>
+              <span className="mt-1 block text-[13px] leading-[18px] text-label-secondary">
+                {option.description}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {selectedEnergy && (
+        <p className="mt-2 text-[13px] leading-[18px] text-label-secondary">
+          {ENERGY_OPTIONS[selectedEnergy].consequence}
+        </p>
+      )}
+    </div>
   );
 }

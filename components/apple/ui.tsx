@@ -1,27 +1,26 @@
 "use client";
 
-import { ReactNode, ButtonHTMLAttributes } from "react";
+import { ReactNode, ButtonHTMLAttributes, CSSProperties } from "react";
 
 /** Cartão comum sólido/elevado. Blur fica restrito ao cromo persistente e overlays. */
 export function Card({
   children,
   className = "",
-  accent,
+  allowOverflow = false,
+  style,
 }: {
   children: ReactNode;
   className?: string;
-  /** Quando presente, pinta uma faixa de acento no topo do cartão. */
-  accent?: string;
+  allowOverflow?: boolean;
+  style?: CSSProperties;
 }) {
   return (
-    <div className={`a-card relative overflow-hidden ${className}`}>
-      {accent && (
-        <span
-          aria-hidden
-          className="absolute inset-x-0 top-0 h-[3px]"
-          style={{ background: accent }}
-        />
-      )}
+    <div
+      className={`a-card relative ${
+        allowOverflow ? "overflow-visible" : "overflow-hidden"
+      } ${className}`}
+      style={style}
+    >
       {children}
     </div>
   );
@@ -43,11 +42,11 @@ export function Button({
     variant === "primary"
       ? "a-btn-primary"
       : variant === "secondary"
-        ? "a-btn-secondary"
+        ? "a-btn-secondary backdrop-blur-[18px] backdrop-brightness-[1.01] backdrop-saturate-[165%] backdrop-contrast-[1.08]"
         : "";
   const plain =
     variant === "plain"
-      ? "text-[color:var(--accent-text)] hover:opacity-70"
+      ? "text-accent hover:opacity-70"
       : "";
 
   return (
@@ -63,7 +62,7 @@ export function Button({
 /** Título de seção: rótulo pequeno em caixa alta + espaço generoso. */
 export function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <p className="a-caption uppercase text-[color:var(--label-secondary)]">
+    <p className="a-caption uppercase text-label-secondary">
       {children}
     </p>
   );
@@ -81,7 +80,7 @@ export function PageTitle({
   return (
     <header className="mb-8">
       {eyebrow && (
-        <p className="a-caption mb-2 text-[color:var(--label-secondary)]">
+        <p className="a-caption mb-2 text-label-secondary">
           {eyebrow}
         </p>
       )}
@@ -89,7 +88,7 @@ export function PageTitle({
         {title}
       </h1>
       {subtitle && (
-        <p className="a-body mt-3 max-w-xl text-[color:var(--label-secondary)]">
+        <p className="a-body mt-3 max-w-xl text-label-secondary">
           {subtitle}
         </p>
       )}
@@ -115,21 +114,20 @@ export function BottomSheet({
   return (
     <>
       <div
-        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity a-enter"
+        className="liquid-scrim fixed inset-0 z-50 backdrop-blur-[10px] backdrop-saturate-[130%] transition-opacity a-enter"
         onClick={onClose}
         aria-hidden
       />
       <div
-        className="fixed inset-x-0 bottom-0 z-50 flex max-h-[90vh] flex-col overflow-hidden rounded-t-[32px] bg-[color:var(--bg)] transition-transform a-enter"
+        className="liquid-panel fixed inset-x-0 bottom-0 z-50 flex max-h-[90vh] flex-col rounded-t-[32px] backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08] transition-transform a-enter"
         style={{
-          boxShadow: "0 -8px 24px rgba(0,0,0,0.12)",
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        <div className="flex shrink-0 items-center justify-center pt-3 pb-2">
-          <div className="h-1.5 w-10 rounded-full bg-[color:var(--separator)]" />
+        <div className="relative z-10 flex shrink-0 items-center justify-center pt-3 pb-2">
+          <div className="h-1.5 w-10 rounded-full bg-separator" />
         </div>
-        <div className="overflow-y-auto px-5 pb-12">
+        <div className="relative z-10 overflow-y-auto px-5 pb-12">
           {children}
         </div>
       </div>

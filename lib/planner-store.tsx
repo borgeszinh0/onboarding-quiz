@@ -22,6 +22,8 @@ import {
 } from "./planner-types";
 import { SLOT_LIMITS } from "./planner-data";
 
+export type { Quarter } from "./planner-types";
+
 const STORAGE_KEY = "onboarding-quiz-planner";
 
 function loadState(): PlannerState {
@@ -53,7 +55,14 @@ type Action =
   | { type: "UPDATE_TASK"; id: string; title: string }
   | { type: "TOGGLE_TASK_DONE"; id: string }
   | { type: "REMOVE_TASK"; id: string }
-  | { type: "ADD_TIME_BLOCK"; taskId: string; date: string; startTime: string; endTime: string }
+  | {
+      type: "ADD_TIME_BLOCK";
+      taskId: string;
+      date: string;
+      startTime: string;
+      endTime: string;
+      protected?: boolean;
+    }
   | { type: "REMOVE_TIME_BLOCK"; id: string }
   | { type: "ADD_HABIT"; title: string }
   | { type: "TOGGLE_HABIT_ACTIVE"; id: string }
@@ -74,9 +83,11 @@ function reducer(state: PlannerState, action: Action): PlannerState {
 
     case "PLAN_DAY": {
       const existingIdx = state.dayLogs.findIndex((l) => l.date === action.date);
+      const mode = action.payload.mode ?? action.payload.energy;
       const newLog: DayLog = {
         date: action.date,
         ...action.payload,
+        ...(mode ? { mode, energy: mode, modeSource: "chosen" as const } : {}),
         plannedAt: Date.now(),
       };
       if (existingIdx >= 0) {
@@ -192,6 +203,7 @@ function reducer(state: PlannerState, action: Action): PlannerState {
         date: action.date,
         startTime: action.startTime,
         endTime: action.endTime,
+        protected: action.protected,
       };
       return { ...state, timeBlocks: [...withoutOld, block] };
     }

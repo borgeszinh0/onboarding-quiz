@@ -100,7 +100,7 @@ export default function DadosPage() {
             <p className="a-title-2 tabular">
               {hydrated ? s.n : "—"}
             </p>
-            <p className="a-caption text-[color:var(--label-secondary)]">{s.l}</p>
+            <p className="a-caption text-label-secondary">{s.l}</p>
           </Card>
         ))}
       </div>
@@ -109,7 +109,7 @@ export default function DadosPage() {
         <SectionLabel>Nuvem</SectionLabel>
         <Card className="mt-3 p-5">
           {!configured ? (
-            <p className="a-subheadline text-[color:var(--label-secondary)]">
+            <p className="a-subheadline text-label-secondary">
               Backend não configurado. Use exportar e importar abaixo para mover
               seus dados entre dispositivos.
             </p>
@@ -119,7 +119,7 @@ export default function DadosPage() {
               automaticamente.
             </p>
           ) : (
-            <p className="a-subheadline text-[color:var(--label-secondary)]">
+            <p className="a-subheadline text-label-secondary">
               Entre para sincronizar em todos os dispositivos.
             </p>
           )}
@@ -146,7 +146,7 @@ export default function DadosPage() {
               }}
             />
           </div>
-          <p className="a-caption mt-3 text-[color:var(--label-secondary)]">
+          <p className="a-caption mt-3 text-label-secondary">
             Importar substitui os dados atuais deste dispositivo.
           </p>
         </Card>
@@ -156,10 +156,10 @@ export default function DadosPage() {
         <section>
           <SectionLabel>Backups automáticos</SectionLabel>
           <Card className="mt-3 p-5">
-            <p className="a-caption mb-4 text-[color:var(--label-secondary)]">
+            <p className="a-caption mb-4 text-label-secondary">
               Snapshots salvos localmente, últimos 7 dias.
             </p>
-            <ul className="divide-y divide-[color:var(--separator)]">
+            <ul className="divide-y divide-separator">
               {autoBackups.map((b) => (
                 <li
                   key={b.key}
@@ -172,7 +172,7 @@ export default function DadosPage() {
                       const bk = readAutoBackup(b.key);
                       if (bk) restore(bk);
                     }}
-                    className="a-subheadline a-hit-44 text-[color:var(--accent-text)]"
+                    className="a-subheadline a-hit-44 text-accent"
                   >
                     Restaurar
                   </button>

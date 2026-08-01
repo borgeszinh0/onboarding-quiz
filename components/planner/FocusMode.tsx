@@ -129,7 +129,7 @@ export function FocusMode({
       className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6"
       style={{ background: "var(--bg)" }}
     >
-      <p className="a-subheadline text-[color:var(--label-secondary)]">
+      <p className="a-subheadline text-label-secondary">
         {reached ? "Alvo batido" : status === "paused" ? "Pausado" : "Em foco"}
       </p>
       <h1 className="a-title-2 mt-3 max-w-xs text-center">
@@ -149,7 +149,7 @@ export function FocusMode({
       <button
         type="button"
         onClick={() => saveAndClose(false)}
-        className="a-subheadline a-hit-44 mt-10 text-[color:var(--label-secondary)]"
+        className="a-subheadline a-hit-44 mt-10 text-label-secondary"
       >
         Sair do foco
       </button>

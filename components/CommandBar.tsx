@@ -81,14 +81,14 @@ export default function CommandBar() {
   return (
     <>
       <div 
-        className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm transition-opacity duration-200 ease-apple"
+        className="liquid-scrim fixed inset-0 z-[100] backdrop-blur-[10px] backdrop-saturate-[130%] transition-opacity duration-200 ease-apple"
         onClick={() => setOpen(false)} 
         aria-hidden
       />
       <div className="fixed left-1/2 top-[15vh] z-[101] w-full max-w-2xl -translate-x-1/2 px-4 sm:top-[20vh]">
-        <div className="overflow-hidden rounded-2xl bg-[color:var(--bg-elevated)] shadow-2xl ring-1 ring-[color:var(--separator)]">
-          <div className="flex items-center px-4">
-            <Search size={20} className="mr-3 shrink-0 text-[color:var(--label-secondary)]" />
+        <div className="liquid-panel relative rounded-2xl backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08]">
+          <div className="relative z-10 flex items-center px-4">
+            <Search size={20} className="mr-3 shrink-0 text-label-secondary" />
             <input
               ref={inputRef}
               type="text"
@@ -98,15 +98,15 @@ export default function CommandBar() {
                 if (e.key === "Enter") handleCapture();
               }}
               placeholder="Criar tarefa (ex: Pagar boleto amanhã 10h)"
-              className="a-body h-[52px] w-full bg-transparent text-[color:var(--label)] placeholder:text-[color:var(--label-secondary)] focus:outline-none"
+              className="a-body h-[52px] w-full bg-transparent text-label placeholder:text-label-secondary focus:outline-none"
             />
           </div>
           {query.trim() && (
-            <div className="border-t border-[color:var(--separator)] p-2">
+            <div className="relative z-10 border-t border-separator p-2">
               <button
                 type="button"
                 onClick={handleCapture}
-                className="a-body flex w-full items-center rounded-xl bg-[color:var(--color-accent)] px-4 py-3 text-white transition-colors"
+                className="a-body flex w-full items-center rounded-xl bg-system-accent px-4 py-3 text-white transition-colors"
               >
                 Criar tarefa: <span className="ml-1 font-semibold truncate">{query}</span>
                 <span className="ml-auto text-xs opacity-70 shrink-0 uppercase tracking-wider">↵ Enter</span>

@@ -19,35 +19,35 @@ export default function PerfilPage() {
 
   return (
     <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
-      <Link href="/mais" className="mb-8 inline-flex a-hit-44 items-center -ml-2 a-caption text-[color:var(--label-secondary)] hover:text-[color:var(--label)]">
+      <Link href="/mais" className="mb-8 inline-flex a-hit-44 items-center -ml-2 a-caption text-label-secondary hover-text-label">
         ← Voltar
       </Link>
 
       <div className="mb-8 flex flex-col items-center">
-        <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-[color:var(--gemini-grad)] text-white shadow-lg">
+        <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gemini text-white shadow-lg">
           <UserCircle2 size={48} />
         </div>
-        <h1 className="a-title-2 text-[color:var(--label)]">Seu Perfil</h1>
+        <h1 className="a-title-2 text-label">Seu Perfil</h1>
         {user ? (
-          <p className="a-subheadline text-[color:var(--label-secondary)]">{user.email}</p>
+          <p className="a-subheadline text-label-secondary">{user.email}</p>
         ) : (
-          <p className="a-subheadline text-[color:var(--label-secondary)]">Visitante (Offline)</p>
+          <p className="a-subheadline text-label-secondary">Visitante (Offline)</p>
         )}
       </div>
 
       <section className="mb-8">
-        <h2 className="a-headline mb-4 text-[color:var(--label)]">Estatísticas Vitalícias</h2>
+        <h2 className="a-headline mb-4 text-label">Estatísticas Vitalícias</h2>
         <div className="grid grid-cols-2 gap-4">
           <Card className="flex flex-col items-center justify-center p-5 text-center">
-            <CheckCircle2 size={28} className="mb-2 text-[color:var(--accent-text)]" />
+            <CheckCircle2 size={28} className="mb-2 text-accent" />
             <span className="a-large-title tabular">{tasksDone}</span>
-            <span className="a-caption text-[color:var(--label-secondary)]">Tarefas Concluídas</span>
+            <span className="a-caption text-label-secondary">Tarefas Concluídas</span>
           </Card>
           
           <Card className="flex flex-col items-center justify-center p-5 text-center">
             <Trophy size={28} className="mb-2 text-[#fbbc04]" />
             <span className="a-large-title tabular">{habitsDone}</span>
-            <span className="a-caption text-[color:var(--label-secondary)]">Hábitos Marcados</span>
+            <span className="a-caption text-label-secondary">Hábitos Marcados</span>
           </Card>
 
           <Card className="col-span-2 flex flex-col items-center justify-center p-5 text-center">
@@ -55,21 +55,21 @@ export default function PerfilPage() {
             <span className="a-large-title tabular">
               {focusHours > 0 ? `${focusHours}h ${focusMins}m` : `${focusMins}m`}
             </span>
-            <span className="a-caption text-[color:var(--label-secondary)]">Tempo em Foco Profundo</span>
+            <span className="a-caption text-label-secondary">Tempo em Foco Profundo</span>
           </Card>
         </div>
       </section>
 
       <section>
-        <h2 className="a-headline mb-4 text-[color:var(--label)]">Conta e Sincronização</h2>
+        <h2 className="a-headline mb-4 text-label">Conta e Sincronização</h2>
         <Card className="p-5">
           {!configured ? (
-            <p className="a-subheadline text-[color:var(--label-secondary)] text-center">
+            <p className="a-subheadline text-label-secondary text-center">
               A sincronização em nuvem não está configurada neste ambiente.
             </p>
           ) : user ? (
             <div className="flex flex-col items-center gap-4 text-center">
-              <p className="a-subheadline text-[color:var(--label-secondary)]">
+              <p className="a-subheadline text-label-secondary">
                 Seus dados estão sincronizando com a nuvem em tempo real.
               </p>
               <Button variant="secondary" onClick={signOut} className="w-full">
@@ -78,7 +78,7 @@ export default function PerfilPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center gap-4 text-center">
-              <p className="a-subheadline text-[color:var(--label-secondary)]">
+              <p className="a-subheadline text-label-secondary">
                 Crie uma conta para salvar suas métricas na nuvem e sincronizar em outros dispositivos.
               </p>
               <Link href="/login" className="w-full">

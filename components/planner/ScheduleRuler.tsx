@@ -1,17 +1,21 @@
 "use client";
 
-import { usePlanner, getTimeBlocksForDate } from "@/lib/planner-store";
-import { SCHEDULE_END_HOUR, SCHEDULE_START_HOUR } from "@/lib/planner-data";
-import { Card, SectionLabel } from "@/components/apple/ui";
+import {
+  usePlanner,
+  getTimeBlocksForDate,
+  minutesBetween,
+} from "@/lib/planner-store";
+import { SectionLabel } from "@/components/apple/ui";
 
-const HOUR_HEIGHT = 56;
-
-function minutesFromRulerStart(time: string): number {
-  const [h, m] = time.split(":").map(Number);
-  return (h - SCHEDULE_START_HOUR) * 60 + m;
+function formatDuration(startTime: string, endTime: string): string {
+  const mins = minutesBetween(startTime, endTime);
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const rest = mins % 60;
+  return rest > 0 ? `${h}h ${rest}m` : `${h}h`;
 }
 
-/** Régua de horários do dia: cada bloco agendado vira uma barra na posição certa. */
+/** Agenda do dia: lista cronológica de blocos protegidos, otimizada para mobile. */
 export function ScheduleRuler({
   date,
   onFocus,
@@ -20,80 +24,90 @@ export function ScheduleRuler({
   onFocus: (taskId: string) => void;
 }) {
   const { state } = usePlanner();
-  const blocks = getTimeBlocksForDate(state, date);
-  const hours = Array.from(
-    { length: SCHEDULE_END_HOUR - SCHEDULE_START_HOUR + 1 },
-    (_, i) => SCHEDULE_START_HOUR + i
+  const blocks = getTimeBlocksForDate(state, date).sort((a, b) =>
+    a.startTime.localeCompare(b.startTime)
   );
-  const rulerHeight = (hours.length - 1) * HOUR_HEIGHT;
   const taskById = new Map(state.tasks.map((t) => [t.id, t]));
 
   return (
     <section>
-      <SectionLabel>Cronograma</SectionLabel>
-      <Card className="mt-3 overflow-hidden p-0">
+      <div className="flex items-end justify-between">
+        <SectionLabel>Agenda</SectionLabel>
+        <span className="a-caption tabular text-label-secondary">
+          {blocks.length === 0 ? "Livre" : `${blocks.length} ${blocks.length === 1 ? "bloco" : "blocos"}`}
+        </span>
+      </div>
+      <div className="mt-3">
         {blocks.length === 0 && (
-          <p className="a-subheadline p-5 text-[color:var(--label-secondary)]">
-            Nenhum bloco protegido.
-          </p>
+          <div className="a-card p-5">
+            <p className="a-headline text-label">Sem blocos protegidos</p>
+            <p className="a-subheadline mt-1 text-label-secondary">
+              Agende tarefas pelo funil para reservar foco no dia.
+            </p>
+          </div>
         )}
-        <div className="relative px-5 py-2" style={{ height: rulerHeight }}>
-          {hours.map((h, i) => (
-            <div
-              key={h}
-              className="absolute inset-x-5 border-t border-[color:var(--separator)]"
-              style={{ top: i * HOUR_HEIGHT }}
-            >
-              <span className="text-[11px] leading-[13px] tabular -translate-y-1/2 inline-block bg-[color:var(--bg)] pr-2 text-[color:var(--label-secondary)]">
-                {String(h).padStart(2, "0")}:00
-              </span>
-            </div>
-          ))}
 
-          {blocks.map((block) => {
-            const task = taskById.get(block.taskId);
-            if (!task) return null;
-            const top = (minutesFromRulerStart(block.startTime) / 60) * HOUR_HEIGHT;
-            const height = Math.max(
-              44,
-              ((minutesFromRulerStart(block.endTime) -
-                minutesFromRulerStart(block.startTime)) /
-                60) *
-                HOUR_HEIGHT
-            );
+        {blocks.length > 0 && (
+          <ol className="space-y-3">
+            {blocks.map((block, index) => {
+              const task = taskById.get(block.taskId);
+              if (!task) return null;
+              const done = task.status === "done";
+              const isLast = index === blocks.length - 1;
 
-            return (
-              <button
-                key={block.id}
-                type="button"
-                onClick={() => onFocus(block.taskId)}
-                className="absolute inset-x-5 overflow-hidden rounded-[10px] px-2.5 py-1 text-left transition-opacity hover:opacity-90"
-                style={{
-                  top,
-                  height,
-                  background:
-                    task.status === "done"
-                      ? "var(--fill-subtle)"
-                      : "color-mix(in oklab, var(--color-accent) 16%, var(--bg))",
-                }}
-              >
-                <span
-                  className="a-caption block truncate"
-                  style={{
-                    color:
-                      task.status === "done"
-                        ? "var(--label-secondary)"
-                        : "var(--accent-text)",
-                    textDecoration: task.status === "done" ? "line-through" : undefined,
-                  }}
-                >
-                  {block.startTime} · {task.title}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
+              return (
+                <li key={block.id} className="relative grid grid-cols-[62px_14px_1fr] gap-x-3">
+                  <div className="flex flex-col items-end pt-3">
+                    <span className="a-caption tabular text-label">
+                      {block.startTime}
+                    </span>
+                    <span className="a-caption tabular mt-0.5 text-label-secondary">
+                      {block.endTime}
+                    </span>
+                  </div>
+
+                  <div className="relative flex justify-center pt-[18px]">
+                    <span
+                      aria-hidden
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{
+                        background: done ? "var(--label-secondary)" : "var(--gemini-grad)",
+                      }}
+                    />
+                    {!isLast && (
+                      <span
+                        aria-hidden
+                        className="absolute top-[16px] h-[calc(100%+12px)] w-px bg-separator"
+                      />
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onFocus(block.taskId)}
+                    className="liquid-control min-h-[72px] overflow-hidden rounded-2xl px-4 py-3 text-left backdrop-blur-[18px] backdrop-brightness-[1.01] backdrop-saturate-[165%] backdrop-contrast-[1.08] transition-transform duration-200 active:scale-[0.99]"
+                    style={{ opacity: done ? 0.66 : 1 }}
+                  >
+                    <span className="a-caption tabular text-label-secondary">
+                      {formatDuration(block.startTime, block.endTime)}
+                      {block.protected ? " · Foco protegido" : ""}
+                    </span>
+                    <span
+                      className="a-headline mt-0.5 block"
+                      style={{
+                        color: done ? "var(--label-secondary)" : "var(--label)",
+                        textDecoration: done ? "line-through" : undefined,
+                      }}
+                    >
+                      {task.title}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </div>
     </section>
   );
 }

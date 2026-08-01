@@ -67,7 +67,7 @@ export default function MesPage() {
             type="button"
             onClick={() => changeMonth(-1)}
             aria-label="Mês anterior"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-[color:var(--label-secondary)] transition-colors hover:bg-[color:var(--fill-subtle)]"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-label-secondary transition-colors hover-bg-fill-subtle"
           >
             <ChevronLeft size={24} />
           </button>
@@ -78,7 +78,7 @@ export default function MesPage() {
             type="button"
             onClick={() => changeMonth(1)}
             aria-label="Próximo mês"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-[color:var(--label-secondary)] transition-colors hover:bg-[color:var(--fill-subtle)]"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-label-secondary transition-colors hover-bg-fill-subtle"
           >
             <ChevronRight size={24} />
           </button>
@@ -89,7 +89,7 @@ export default function MesPage() {
             <div
               key={i}
               aria-hidden
-              className="a-caption pb-1 text-center text-[color:var(--label-secondary)]"
+              className="a-caption pb-1 text-center text-label-secondary"
             >
               {d}
             </div>
@@ -112,7 +112,7 @@ export default function MesPage() {
                 title={perfect ? "Todos os hábitos cumpridos" : undefined}
                 className={`a-subheadline relative flex aspect-square flex-col items-center justify-center ${
                   perfect
-                    ? "rounded-full border-[1.5px] border-[color:var(--success-fill)] font-semibold text-[color:var(--label)]"
+                    ? "rounded-full border-[1.5px] border-success-fill font-semibold text-label"
                     : "rounded-xl"
                 }`}
                 style={
@@ -135,7 +135,7 @@ export default function MesPage() {
         </div>
       </Card>
 
-      <p className="a-caption mt-4 text-[color:var(--label-secondary)]">
+      <p className="a-caption mt-4 text-label-secondary">
         {perfectCount} {perfectCount === 1 ? "dia perfeito" : "dias perfeitos"} em{" "}
         {MONTHS[viewMonth].toLowerCase()}.
       </p>

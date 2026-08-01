@@ -79,7 +79,7 @@ export default function SemanaPage() {
         </div>
       </Card>
 
-      <p className="a-caption mt-4 text-[color:var(--label-secondary)]">
+      <p className="a-caption mt-4 text-label-secondary">
         {perfectDays} de 7 dias com todos os hábitos cumpridos.
       </p>
     </main>

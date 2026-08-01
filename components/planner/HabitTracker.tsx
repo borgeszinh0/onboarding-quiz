@@ -27,7 +27,7 @@ export function HabitTracker() {
         <button
           type="button"
           onClick={() => setManaging(!managing)}
-          className="a-caption text-[color:var(--accent-text)] transition-opacity hover:opacity-70"
+          className="a-caption text-accent transition-opacity hover:opacity-70"
         >
           {managing ? "Concluído" : "Gerenciar"}
         </button>
@@ -39,7 +39,7 @@ export function HabitTracker() {
       </BottomSheet>
 
       {habits.length === 0 && !managing ? (
-        <p className="a-subheadline mt-4 text-[color:var(--label-secondary)]">
+        <p className="a-subheadline mt-4 text-label-secondary">
           Você não tem hábitos ativos no momento. Clique em Gerenciar para criar um.
         </p>
       ) : (
@@ -48,7 +48,7 @@ export function HabitTracker() {
             <Card key={habit.id} className="p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <h3 className="a-headline truncate text-[color:var(--label)]">
+                  <h3 className="a-headline truncate text-label">
                     {habit.title}
                   </h3>
                   
@@ -121,14 +121,14 @@ function HabitManager({ onClose }: { onClose: () => void }) {
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && add()}
           placeholder="Novo hábito"
-          className="a-subheadline min-h-[44px] min-w-0 flex-1 rounded-xl bg-[color:var(--fill-subtle)] px-3"
+          className="a-subheadline min-h-[44px] min-w-0 flex-1 rounded-xl bg-fill-subtle px-3"
         />
         <button
           type="button"
           onClick={add}
           disabled={!title.trim()}
           aria-label="Adicionar hábito"
-          className="a-hit-44 shrink-0 rounded-xl px-4 text-[color:var(--accent-text)] disabled:opacity-30"
+          className="a-hit-44 shrink-0 rounded-xl px-4 text-accent disabled:opacity-30"
         >
           <Plus size={24} />
         </button>
@@ -153,7 +153,7 @@ function HabitManager({ onClose }: { onClose: () => void }) {
                 type="button"
                 onClick={() => dispatch({ type: "REMOVE_HABIT", id: habit.id })}
                 aria-label={`Remover ${habit.title}`}
-                className="a-caption a-hit-44 shrink-0 px-2 text-[color:var(--label-secondary)] hover:text-[color:var(--danger-text)]"
+                className="a-caption a-hit-44 shrink-0 px-2 text-label-secondary hover-text-danger"
               >
                 Remover
               </button>
@@ -196,11 +196,11 @@ function HabitChart({ habitId }: { habitId: string }) {
   return (
     <div>
       <div className="mb-2 flex items-center gap-2">
-        <span className="a-caption text-[color:var(--label-secondary)]">
+        <span className="a-caption text-label-secondary">
           Últimos 7 dias
         </span>
         {streak > 0 && (
-          <span className="a-caption ml-auto flex items-center gap-1 rounded-full bg-[color:var(--fill-subtle)] px-2 py-0.5 font-medium text-[color:var(--label)]">
+          <span className="a-caption ml-auto flex items-center gap-1 rounded-full bg-fill-subtle px-2 py-0.5 font-medium text-label">
             🔥 {streak} {streak === 1 ? "dia" : "dias"}
           </span>
         )}
@@ -220,7 +220,7 @@ function HabitChart({ habitId }: { habitId: string }) {
             />
             {/* Mostrar a letra de todos os dias */}
             <span
-              className="text-[11px] leading-none font-medium text-[color:var(--label-secondary)] w-full text-center"
+              className="text-[11px] leading-none font-medium text-label-secondary w-full text-center"
               style={{
                 visibility: "visible",
                 color: i === days.length - 1 ? "var(--label)" : "var(--label-secondary)",

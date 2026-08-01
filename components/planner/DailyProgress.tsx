@@ -20,16 +20,28 @@ export function DailyProgress({ date }: { date: string }) {
 
   const activeHabits = state.habits.filter((h) => h.isActive).length;
   const doneHabits = state.habitLogs.filter((l) => l.date === date && l.done).length;
+  const dayLog = state.dayLogs.find((l) => l.date === date);
+  const dayStatus = dayLog?.shutdownAt
+    ? "dia encerrado"
+    : dayLog?.plannedAt
+      ? "objetivo definido"
+      : null;
 
   return (
-    <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[color:var(--label-secondary)]">
+    <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-label-secondary">
       <span className="a-caption">{doneTasks} de {todayTasks.length} tarefas</span>
-      <span aria-hidden className="a-caption text-[color:var(--separator)]">·</span>
+      <span aria-hidden className="a-caption text-separator">·</span>
       <span className="a-caption">{totalMinutes} min planejados</span>
       {activeHabits > 0 && (
         <>
-          <span aria-hidden className="a-caption text-[color:var(--separator)]">·</span>
+          <span aria-hidden className="a-caption text-separator">·</span>
           <span className="a-caption">{doneHabits} de {activeHabits} hábitos</span>
+        </>
+      )}
+      {dayStatus && (
+        <>
+          <span aria-hidden className="a-caption text-separator">·</span>
+          <span className="a-caption">{dayStatus}</span>
         </>
       )}
     </div>

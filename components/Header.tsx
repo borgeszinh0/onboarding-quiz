@@ -41,7 +41,7 @@ function SyncBadge() {
 
   return (
     <span
-      className="a-caption hidden items-center gap-1.5 text-[color:var(--label-secondary)] sm:inline-flex"
+      className="a-caption hidden items-center gap-1.5 text-label-secondary sm:inline-flex"
       title={s.label}
     >
       <span
@@ -121,10 +121,9 @@ export default function Header() {
   return (
     <>
       <header
-        className="sticky top-0 z-40 hidden border-b backdrop-blur-xl sm:block"
+        className="liquid-topbar sticky top-0 z-40 hidden border-b backdrop-blur-[24px] backdrop-brightness-[1.02] backdrop-saturate-[170%] sm:block"
         style={{
           borderColor: "var(--separator)",
-          background: "color-mix(in oklab, var(--bg) 82%, transparent)",
         }}
       >
         <nav
@@ -150,11 +149,11 @@ export default function Header() {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={`a-caption flex min-h-[44px] items-center whitespace-nowrap rounded-full px-3.5 transition-colors duration-200 ${
-                    active ? "" : "hover:bg-[color:var(--fill-subtle)] hover:text-[color:var(--label)]"
+                    active ? "liquid-control" : "hover-bg-fill-subtle hover-text-label"
                   }`}
                   style={
                     active
-                      ? { background: "var(--color-accent)", color: "#fff" }
+                      ? { color: "var(--label)" }
                       : { color: "var(--label-secondary)" }
                   }
                 >
@@ -171,14 +170,14 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={signOut}
-                  className="a-caption a-hit-44 text-[color:var(--label-secondary)] transition-colors hover:text-[color:var(--label)]"
+                  className="a-caption a-hit-44 text-label-secondary transition-colors hover-text-label"
                 >
                   Sair
                 </button>
               ) : (
                 <Link
                   href="/login"
-                  className="a-caption a-hit-44 text-[color:var(--accent-text)]"
+                  className="a-caption a-hit-44 text-accent"
                 >
                   Entrar
                 </Link>
@@ -189,15 +188,9 @@ export default function Header() {
 
       <nav
         aria-label="Navegação principal"
-        className="fixed inset-x-6 bottom-[calc(16px+env(safe-area-inset-bottom))] z-40 h-[64px] rounded-full sm:hidden shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-none"
-        style={{
-          background: "color-mix(in oklab, var(--bg-elevated) 35%, transparent)",
-          backdropFilter: "blur(24px) saturate(180%)",
-          WebkitBackdropFilter: "blur(24px) saturate(180%)",
-          border: "1px solid color-mix(in oklab, var(--separator) 15%, transparent)",
-        }}
+        className="liquid-dock fixed inset-x-4 bottom-dock-safe z-40 h-[80px] rounded-full backdrop-blur-[28px] backdrop-brightness-[1.02] backdrop-saturate-[190%] backdrop-contrast-[1.12] sm:hidden"
       >
-        <div className="mx-auto flex h-full max-w-xl items-center justify-between px-3">
+        <div className="relative z-10 mx-auto flex h-full max-w-xl items-center justify-between px-3.5">
           {MOBILE_TABS.map((item) => {
             const active =
               item.href === "/"
@@ -214,11 +207,11 @@ export default function Header() {
                 aria-current={active ? "page" : undefined}
                 className="group flex flex-1 items-center justify-center h-full active:scale-95 transition-transform duration-200"
                 style={{ 
-                  color: active ? "var(--label)" : "var(--label-secondary)"
+                  color: active ? "var(--dock-active-label)" : "var(--dock-inactive-label)"
                 }}
               >
                 <div 
-                  className={`flex items-center justify-center transition-all duration-300 ${active ? "bg-[color:var(--fill-subtle)] rounded-full w-[72px] h-[52px]" : "w-[52px] h-[52px]"}`}
+                  className={`flex items-center justify-center transition-all duration-300 ${active ? "liquid-dock-pill h-[64px] w-[88px]" : "h-[64px] w-[56px]"}`}
                 >
                   <NavIcon icon={item.icon} active={active} />
                 </div>

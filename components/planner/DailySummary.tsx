@@ -16,15 +16,15 @@ export function DailySummary({ date }: { date: string }) {
       <Card className="mt-3 flex items-center justify-around p-4">
         <div className="flex flex-col items-center gap-0.5">
           <span className="a-title-2" style={{ color: "var(--danger-text)" }}>{big}</span>
-          <span className="text-[11px] font-medium uppercase tracking-wider text-[color:var(--label-secondary)]">Grande</span>
+          <span className="text-[11px] font-medium uppercase tracking-wider text-label-secondary">Grande</span>
         </div>
         <div className="flex flex-col items-center gap-0.5">
           <span className="a-title-2" style={{ color: "var(--attention-text)" }}>{medium}</span>
-          <span className="text-[11px] font-medium uppercase tracking-wider text-[color:var(--label-secondary)]">Médias</span>
+          <span className="text-[11px] font-medium uppercase tracking-wider text-label-secondary">Médias</span>
         </div>
         <div className="flex flex-col items-center gap-0.5">
           <span className="a-title-2" style={{ color: "var(--accent-text)" }}>{small}</span>
-          <span className="text-[11px] font-medium uppercase tracking-wider text-[color:var(--label-secondary)]">Pequenas</span>
+          <span className="text-[11px] font-medium uppercase tracking-wider text-label-secondary">Pequenas</span>
         </div>
       </Card>
     </section>

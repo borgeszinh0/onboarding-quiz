@@ -3,6 +3,7 @@
 
 /** "inbox" = ainda não planejada. As outras três são os slots do dia. */
 export type TaskCategory = "inbox" | "big" | "medium" | "small";
+export type DayMode = "low" | "medium" | "high";
 
 export type TaskStatus = "pending" | "done";
 
@@ -25,6 +26,7 @@ export interface TimeBlock {
   startTime: string;
   /** "HH:MM" */
   endTime: string;
+  protected?: boolean;
 }
 
 export interface FocusSession {
@@ -54,7 +56,12 @@ export interface HabitLog {
 export interface DayLog {
   date: string;
   intention?: string;
-  energy?: "low" | "medium" | "high";
+  /** Legacy name kept for existing localStorage data. New code uses mode. */
+  energy?: DayMode;
+  mode?: DayMode;
+  modeSource?: "chosen" | "inferred";
+  overrideCount?: number;
+  shutdownFit?: "matched" | "tooHeavy" | "tooLight";
   plannedStart?: string;
   plannedShutdown?: string;
   plannedAt?: number;

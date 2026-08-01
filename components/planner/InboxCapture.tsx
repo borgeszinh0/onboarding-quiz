@@ -5,6 +5,14 @@ import { usePlanner, getInboxTasks } from "@/lib/planner-store";
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { parseNaturalInput } from "@/lib/parser";
 import { Plus, X } from "lucide-react";
+import {
+  DAY_MODE_RULES,
+  getDayMode,
+  getFitLabel,
+  getModeSource,
+  sortTasksForMode,
+  type TaskFitGroup,
+} from "@/lib/day-mode";
 
 /**
  * A caixa de captura. Tudo que não coube nos 9 slots do dia — ou que ainda
@@ -14,6 +22,16 @@ export function InboxCapture() {
   const { state, dispatch } = usePlanner();
   const [title, setTitle] = useState("");
   const items = getInboxTasks(state);
+  const today = new Date();
+  const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const mode = getDayMode(state, date);
+  const modeSource = getModeSource(state, date);
+  const sortedItems = sortTasksForMode(items, state, date, mode);
+  const groupedItems: Record<TaskFitGroup, typeof sortedItems> = {
+    recommended: sortedItems.filter((item) => item.group === "recommended"),
+    compatible: sortedItems.filter((item) => item.group === "compatible"),
+    saveForLater: sortedItems.filter((item) => item.group === "saveForLater"),
+  };
 
   const capture = () => {
     if (!title.trim()) return;
@@ -64,43 +82,94 @@ export function InboxCapture() {
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && capture()}
             placeholder="Despejar uma ideia"
-            className="a-subheadline min-h-[44px] min-w-0 flex-1 rounded-xl bg-[color:var(--fill-subtle)] px-3"
+            className="a-subheadline min-h-[44px] min-w-0 flex-1 rounded-xl bg-fill-subtle px-3"
           />
           <button
             type="button"
             onClick={capture}
             disabled={!title.trim()}
             aria-label="Capturar"
-            className="a-hit-44 shrink-0 rounded-xl px-4 text-[color:var(--accent-text)] disabled:opacity-30"
+            className="a-hit-44 shrink-0 rounded-xl px-4 text-accent disabled:opacity-30"
           >
             <Plus size={24} />
           </button>
         </div>
 
         {items.length === 0 ? (
-          <p className="a-subheadline text-[color:var(--label-secondary)]">
+          <p className="a-subheadline text-label-secondary">
             Nada capturado.
           </p>
         ) : (
-          <ul className="divide-y divide-[color:var(--separator)]">
-            {items.map((task) => (
-              <li key={task.id} className="flex min-h-[44px] items-center gap-3 py-1">
-                <span className="a-body min-w-0 flex-1">
-                  {task.title}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => dispatch({ type: "REMOVE_TASK", id: task.id })}
-                  aria-label={`Remover ${task.title}`}
-                  className="a-subheadline flex h-11 w-11 shrink-0 items-center justify-center text-[color:var(--label-secondary)] transition-colors hover:text-[color:var(--danger-text)]"
-                >
-                  <X size={20} />
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div className="space-y-4">
+            {modeSource === "inferred" && (
+              <p className="a-caption text-label-secondary">
+                Sem modo escolhido. O app está usando Execução como padrão.
+              </p>
+            )}
+            <p className="a-caption text-label-secondary">
+              {DAY_MODE_RULES[mode].summary}
+            </p>
+            <InboxGroup
+              title="Recomendadas para hoje"
+              items={groupedItems.recommended}
+              mode={mode}
+              onRemove={(id) => dispatch({ type: "REMOVE_TASK", id })}
+            />
+            <InboxGroup
+              title="Também cabem"
+              items={groupedItems.compatible}
+              mode={mode}
+              onRemove={(id) => dispatch({ type: "REMOVE_TASK", id })}
+            />
+            <InboxGroup
+              title="Melhor guardar"
+              items={groupedItems.saveForLater}
+              mode={mode}
+              onRemove={(id) => dispatch({ type: "REMOVE_TASK", id })}
+            />
+          </div>
         )}
       </Card>
     </section>
+  );
+}
+
+function InboxGroup({
+  title,
+  items,
+  mode,
+  onRemove,
+}: {
+  title: string;
+  items: ReturnType<typeof sortTasksForMode>;
+  mode: ReturnType<typeof getDayMode>;
+  onRemove: (id: string) => void;
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <div>
+      <p className="a-caption mb-1.5 uppercase text-label-secondary">{title}</p>
+      <ul className="divide-y divide-separator">
+        {items.map(({ task, group }) => (
+          <li key={task.id} className="flex min-h-[44px] items-center gap-3 py-2">
+            <span className="min-w-0 flex-1">
+              <span className="a-body block truncate">{task.title}</span>
+              <span className="a-caption text-label-secondary">
+                {getFitLabel(mode, group)}
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={() => onRemove(task.id)}
+              aria-label={`Remover ${task.title}`}
+              className="a-subheadline flex h-11 w-11 shrink-0 items-center justify-center text-label-secondary transition-colors hover-text-danger"
+            >
+              <X size={20} />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

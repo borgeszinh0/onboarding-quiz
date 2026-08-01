@@ -36,9 +36,9 @@ export default function Home() {
 
   return (
     <>
-      <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
+      <main className="mx-auto w-full max-w-xl px-5 pb-main-safe pt-8">
         <header className="mb-6">
-          <p className="a-subheadline text-[color:var(--label-secondary)]" suppressHydrationWarning>
+          <p className="a-subheadline text-label-secondary" suppressHydrationWarning>
             {WEEKDAYS[new Date().getDay()]}
           </p>
           <h1 className="a-large-title mt-1" suppressHydrationWarning>
@@ -51,14 +51,16 @@ export default function Home() {
 
         <DailySummary date={date} />
 
-        <div className="mt-6 flex rounded-xl bg-[color:var(--fill-subtle)] p-1">
+        <div className="liquid-segment mt-6 flex rounded-full p-1 backdrop-blur-[20px] backdrop-brightness-[1.01] backdrop-saturate-[170%] backdrop-contrast-[1.08]">
           <button
             type="button"
             onClick={() => setView("funnel")}
-            className="a-subheadline flex-1 rounded-lg py-1.5 font-medium transition-colors duration-200"
+            className={`a-subheadline min-h-[44px] flex-1 rounded-full font-medium transition-colors duration-200 ${
+              view === "funnel" ? "liquid-segment-active" : ""
+            }`}
             style={
               view === "funnel"
-                ? { background: "var(--bg)", color: "var(--label)", boxShadow: "0 1px 3px rgba(0,0,0,0.12)" }
+                ? { color: "var(--label)" }
                 : { color: "var(--label-secondary)" }
             }
           >
@@ -67,10 +69,12 @@ export default function Home() {
           <button
             type="button"
             onClick={() => setView("schedule")}
-            className="a-subheadline flex-1 rounded-lg py-1.5 font-medium transition-colors duration-200"
+            className={`a-subheadline min-h-[44px] flex-1 rounded-full font-medium transition-colors duration-200 ${
+              view === "schedule" ? "liquid-segment-active" : ""
+            }`}
             style={
               view === "schedule"
-                ? { background: "var(--bg)", color: "var(--label)", boxShadow: "0 1px 3px rgba(0,0,0,0.12)" }
+                ? { color: "var(--label)" }
                 : { color: "var(--label-secondary)" }
             }
           >
@@ -88,8 +92,8 @@ export default function Home() {
 
         <DailyShutdown date={date} />
 
-        <nav className="mt-8">
-          <Link href="/inbox" className="a-btn a-btn-secondary">
+        <nav className="mt-14">
+          <Link href="/inbox" className="a-btn a-btn-secondary backdrop-blur-[18px] backdrop-brightness-[1.01] backdrop-saturate-[165%] backdrop-contrast-[1.08]">
             Ver Inbox
           </Link>
         </nav>

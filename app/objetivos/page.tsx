@@ -32,7 +32,7 @@ export default function ObjetivosPage() {
 
   return (
     <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
-      <Link href="/mais" className="mb-8 inline-flex a-hit-44 items-center -ml-2 a-caption text-[color:var(--label-secondary)] hover:text-[color:var(--label)]">
+      <Link href="/mais" className="mb-8 inline-flex a-hit-44 items-center -ml-2 a-caption text-label-secondary hover-text-label">
         ← Voltar
       </Link>
       
@@ -47,14 +47,14 @@ export default function ObjetivosPage() {
           <Card key={q.id} className="p-5">
             <div className="mb-3 flex items-center justify-between">
               <div>
-                <h3 className="a-headline text-[color:var(--label)]">{q.label}</h3>
-                <p className="a-caption text-[color:var(--label-secondary)]">{q.months}</p>
+                <h3 className="a-headline text-label">{q.label}</h3>
+                <p className="a-caption text-label-secondary">{q.months}</p>
               </div>
               {editing !== q.id && (
                 <button
                   type="button"
                   onClick={() => startEdit(q.id)}
-                  className="a-hit-44 -mr-3 a-caption text-[color:var(--accent-text)] hover:opacity-80"
+                  className="a-hit-44 -mr-3 a-caption text-accent hover:opacity-80"
                 >
                   Editar
                 </button>
@@ -67,7 +67,7 @@ export default function ObjetivosPage() {
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Ex: Lançar meu app e conseguir os primeiros 100 usuários."
-                  className="a-body w-full rounded-2xl bg-[color:var(--fill-subtle)] p-4 outline-none focus:ring-2 focus:ring-[color:var(--accent-text)] resize-none"
+                  className="a-body w-full rounded-2xl bg-fill-subtle p-4 outline-none focus:ring-2 focus-ring-accent resize-none"
                   rows={3}
                   autoFocus
                 />
@@ -81,11 +81,11 @@ export default function ObjetivosPage() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-2xl bg-[color:var(--fill-subtle)] p-4 min-h-[80px] flex items-center">
+              <div className="rounded-2xl bg-fill-subtle p-4 min-h-[80px] flex items-center">
                 {yearFocus[q.id] ? (
-                  <p className="a-body text-[color:var(--label)]">{yearFocus[q.id]}</p>
+                  <p className="a-body text-label">{yearFocus[q.id]}</p>
                 ) : (
-                  <p className="a-body text-[color:var(--label-secondary)] opacity-60 italic">
+                  <p className="a-body text-label-secondary opacity-60 italic">
                     Nenhum foco definido para este trimestre.
                   </p>
                 )}

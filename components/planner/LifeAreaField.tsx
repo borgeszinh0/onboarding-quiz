@@ -69,25 +69,15 @@ export function LifeAreaMenu({
             setOpen(true);
           }
         }}
-        className={`a-caption relative z-10 inline-flex min-h-[44px] items-center justify-between gap-2 rounded-full border px-3 text-left transition-colors ${
-          compact ? "min-w-[116px] max-w-[152px]" : "w-full"
+        className={`a-caption relative z-10 inline-flex min-h-[44px] items-center justify-end gap-1.5 rounded-full border border-transparent px-2 text-left transition-colors hover-bg-fill-subtle ${
+          compact ? "min-w-[88px] max-w-[132px]" : "w-full"
         }`}
         style={{
-          background: value
-            ? `color-mix(in oklab, ${selectedColor} 18%, var(--glass-2))`
-            : "var(--fill-subtle)",
-          borderColor: value
-            ? `color-mix(in oklab, ${selectedColor} 44%, transparent)`
-            : "var(--separator)",
-          color: value ? "var(--label)" : "var(--label-secondary)",
+          background: "transparent",
+          color: value ? selectedColor : "var(--label-secondary)",
         }}
       >
-        <span className="flex min-w-0 items-center gap-2">
-          <span
-            className="h-2.5 w-2.5 shrink-0 rounded-full"
-            style={{ background: selectedColor }}
-            aria-hidden
-          />
+        <span className="flex min-w-0 items-center">
           <span className="truncate">{selectedLabel}</span>
         </span>
         <svg
@@ -111,9 +101,14 @@ export function LifeAreaMenu({
           id={id}
           role="listbox"
           aria-label={label}
-          className={`liquid-panel absolute right-0 top-full z-[70] mt-2 rounded-2xl p-1.5 ${
+          className={`absolute right-0 top-full z-[70] mt-2 rounded-2xl border p-1.5 shadow-[0_24px_72px_rgba(0,0,0,.58)] ${
             compact ? "w-56" : "w-full min-w-56"
           }`}
+          style={{
+            background: "rgba(12, 12, 16, 0.94)",
+            borderColor: "rgba(255,255,255,.16)",
+            backdropFilter: "blur(18px) saturate(130%)",
+          }}
         >
           <LifeAreaOption
             selected={!value}
@@ -155,17 +150,12 @@ function LifeAreaOption({
       onClick={onSelect}
       className="a-caption relative z-10 flex min-h-[44px] w-full items-center gap-2 rounded-xl px-3 text-left text-label-secondary transition-colors hover-bg-fill-subtle"
       style={{
-        color: selected ? "var(--label)" : "var(--label-secondary)",
+        color: selected ? color : "var(--label-secondary)",
         background: selected
-          ? `color-mix(in oklab, ${color} 14%, transparent)`
+          ? `color-mix(in oklab, ${color} 10%, transparent)`
           : "transparent",
       }}
     >
-      <span
-        className="h-2.5 w-2.5 rounded-full"
-        style={{ background: color }}
-        aria-hidden
-      />
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {selected && (
         <span className="text-label" aria-hidden>

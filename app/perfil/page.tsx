@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePlanner } from "@/lib/planner-store";
 import { useAuth } from "@/lib/auth-context";
 import { Card, Button } from "@/components/apple/ui";
+import { LifeAreasPanel } from "@/components/planner/LifeAreasPanel";
 import { Trophy, CheckCircle2, Timer, UserCircle2 } from "lucide-react";
 
 export default function PerfilPage() {
@@ -18,49 +19,55 @@ export default function PerfilPage() {
   const focusMins = Math.floor((focusMs % (1000 * 60 * 60)) / (1000 * 60));
 
   return (
-    <main className="page-with-bottom-dock mx-auto w-full max-w-xl px-5 pt-8">
-      <Link href="/mais" className="mb-8 inline-flex a-hit-44 items-center -ml-2 a-caption text-label-secondary hover-text-label">
+    <main className="page-with-bottom-dock mx-auto w-full max-w-5xl px-5 pt-8">
+      <div className="mx-auto w-full max-w-xl">
+        <Link href="/mais" className="mb-8 inline-flex a-hit-44 items-center -ml-2 a-caption text-label-secondary hover-text-label">
         ← Voltar
-      </Link>
+        </Link>
 
-      <div className="mb-8 flex flex-col items-center">
-        <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gemini text-white shadow-lg">
-          <UserCircle2 size={48} />
+        <div className="mb-8 flex flex-col items-center">
+          <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gemini text-white shadow-lg">
+            <UserCircle2 size={48} />
+          </div>
+          <h1 className="a-title-2 text-label">Seu Perfil</h1>
+          {user ? (
+            <p className="a-subheadline text-label-secondary">{user.email}</p>
+          ) : (
+            <p className="a-subheadline text-label-secondary">Visitante (Offline)</p>
+          )}
         </div>
-        <h1 className="a-title-2 text-label">Seu Perfil</h1>
-        {user ? (
-          <p className="a-subheadline text-label-secondary">{user.email}</p>
-        ) : (
-          <p className="a-subheadline text-label-secondary">Visitante (Offline)</p>
-        )}
+
+        <section className="mb-8">
+          <h2 className="a-headline mb-4 text-label">Estatísticas Vitalícias</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <Card className="flex flex-col items-center justify-center p-5 text-center">
+              <CheckCircle2 size={28} className="mb-2 text-accent" />
+              <span className="a-large-title tabular">{tasksDone}</span>
+              <span className="a-caption text-label-secondary">Tarefas Concluídas</span>
+            </Card>
+            
+            <Card className="flex flex-col items-center justify-center p-5 text-center">
+              <Trophy size={28} className="mb-2 text-[#fbbc04]" />
+              <span className="a-large-title tabular">{habitsDone}</span>
+              <span className="a-caption text-label-secondary">Hábitos Marcados</span>
+            </Card>
+
+            <Card className="col-span-2 flex flex-col items-center justify-center p-5 text-center">
+              <Timer size={28} className="mb-2 text-[#9b72cb]" />
+              <span className="a-large-title tabular">
+                {focusHours > 0 ? `${focusHours}h ${focusMins}m` : `${focusMins}m`}
+              </span>
+              <span className="a-caption text-label-secondary">Tempo em Foco Profundo</span>
+            </Card>
+          </div>
+        </section>
       </div>
 
       <section className="mb-8">
-        <h2 className="a-headline mb-4 text-label">Estatísticas Vitalícias</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="flex flex-col items-center justify-center p-5 text-center">
-            <CheckCircle2 size={28} className="mb-2 text-accent" />
-            <span className="a-large-title tabular">{tasksDone}</span>
-            <span className="a-caption text-label-secondary">Tarefas Concluídas</span>
-          </Card>
-          
-          <Card className="flex flex-col items-center justify-center p-5 text-center">
-            <Trophy size={28} className="mb-2 text-[#fbbc04]" />
-            <span className="a-large-title tabular">{habitsDone}</span>
-            <span className="a-caption text-label-secondary">Hábitos Marcados</span>
-          </Card>
-
-          <Card className="col-span-2 flex flex-col items-center justify-center p-5 text-center">
-            <Timer size={28} className="mb-2 text-[#9b72cb]" />
-            <span className="a-large-title tabular">
-              {focusHours > 0 ? `${focusHours}h ${focusMins}m` : `${focusMins}m`}
-            </span>
-            <span className="a-caption text-label-secondary">Tempo em Foco Profundo</span>
-          </Card>
-        </div>
+        <LifeAreasPanel state={state} />
       </section>
 
-      <section>
+      <section className="mx-auto w-full max-w-xl">
         <h2 className="a-headline mb-4 text-label">Conta e Sincronização</h2>
         <Card className="p-5">
           {!configured ? (

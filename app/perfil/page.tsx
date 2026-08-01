@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePlanner } from "@/lib/planner-store";
 import { useAuth } from "@/lib/auth-context";
@@ -9,7 +10,7 @@ import { Trophy, CheckCircle2, Timer, UserCircle2 } from "lucide-react";
 
 export default function PerfilPage() {
   const { state } = usePlanner();
-  const { user, signOut, configured } = useAuth();
+  const { user, signOut, configured, signIn, signUp } = useAuth();
 
   // Métricas
   const tasksDone = state.tasks.filter((t) => t.status === "done").length;
@@ -84,17 +85,129 @@ export default function PerfilPage() {
               </Button>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-4 text-center">
-              <p className="a-subheadline text-label-secondary">
-                Crie uma conta para salvar suas métricas na nuvem e sincronizar em outros dispositivos.
-              </p>
-              <Link href="/login" className="w-full">
-                <Button className="w-full">Criar Conta ou Entrar</Button>
-              </Link>
-            </div>
+            <InlineAuthForm signIn={signIn} signUp={signUp} />
           )}
         </Card>
       </section>
     </main>
   );
+}
+
+function InlineAuthForm({
+  signIn,
+  signUp,
+}: {
+  signIn: ReturnType<typeof useAuth>["signIn"];
+  signUp: ReturnType<typeof useAuth>["signUp"];
+}) {
+  const [mode, setMode] = useState<"in" | "up">("in");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!email.trim() || password.length < 6) {
+      setError("Informe e-mail e senha com no mínimo 6 caracteres.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setNotice(null);
+    const result =
+      mode === "in"
+        ? await signIn(email.trim(), password)
+        : await signUp(email.trim(), password);
+    setLoading(false);
+
+    if (result.error) {
+      setError(translateAuthError(result.error));
+      return;
+    }
+    if (mode === "up" && "needsConfirmation" in result && result.needsConfirmation) {
+      setNotice("Conta criada. Confirme seu e-mail para ativar a sincronização.");
+      return;
+    }
+    setNotice("Conta conectada. Seus dados vão sincronizar automaticamente.");
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <p className="a-subheadline text-label">
+          {mode === "in" ? "Entrar na sua conta" : "Criar conta"}
+        </p>
+        <p className="a-caption mt-1 text-label-secondary">
+          Sincronize tarefas, hábitos, métricas e agenda em outros dispositivos.
+        </p>
+      </div>
+
+      <form onSubmit={submit} className="space-y-3">
+        <input
+          type="email"
+          required
+          autoComplete="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="seu@email.com"
+          aria-label="E-mail"
+          className="a-subheadline min-h-[44px] w-full rounded-xl border border-separator bg-fill-subtle px-4 text-label outline-none transition-colors focus:border-[var(--accent)]"
+        />
+        <input
+          type="password"
+          required
+          minLength={6}
+          autoComplete={mode === "in" ? "current-password" : "new-password"}
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="Senha (mín. 6)"
+          aria-label="Senha"
+          className="a-subheadline min-h-[44px] w-full rounded-xl border border-separator bg-fill-subtle px-4 text-label outline-none transition-colors focus:border-[var(--accent)]"
+        />
+
+        {error && (
+          <p className="a-caption text-danger" role="alert">
+            {error}
+          </p>
+        )}
+        {notice && (
+          <p className="a-caption rounded-xl border border-separator bg-fill-subtle p-3 text-label-secondary" role="status">
+            {notice}
+          </p>
+        )}
+
+        <Button type="submit" full disabled={loading}>
+          {loading ? "Aguarde..." : mode === "in" ? "Entrar" : "Criar conta"}
+        </Button>
+      </form>
+
+      <p className="a-caption text-center text-label-secondary">
+        {mode === "in" ? "Ainda não tem conta?" : "Já tem conta?"}{" "}
+        <button
+          type="button"
+          onClick={() => {
+            setMode(mode === "in" ? "up" : "in");
+            setError(null);
+            setNotice(null);
+          }}
+          className="a-hit-44 text-accent"
+        >
+          {mode === "in" ? "Criar conta" : "Entrar"}
+        </button>
+      </p>
+    </div>
+  );
+}
+
+function translateAuthError(message: string): string {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("invalid login")) return "E-mail ou senha incorretos.";
+  if (normalized.includes("already registered") || normalized.includes("already been")) {
+    return "Este e-mail já tem conta. Faça login.";
+  }
+  if (normalized.includes("password")) return "Senha inválida. Use no mínimo 6 caracteres.";
+  return message;
 }

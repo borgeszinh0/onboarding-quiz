@@ -21,7 +21,7 @@ import {
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { ScheduleTaskControl, ScheduleForm } from "./ScheduleTaskControl";
 import { LifeAreaBadge } from "./LifeAreaField";
-import { Plus, MoreHorizontal } from "lucide-react";
+import { Inbox, Plus } from "lucide-react";
 
 /** Mesmas cores, mas seguras como cor de TEXTO (ver --accent-text em globals.css). */
 const CATEGORY_TEXT_ACCENT: Record<Exclude<TaskCategory, "inbox">, string> = {
@@ -198,7 +198,7 @@ function SlotTaskRow({
               onOpenSchedule={() => setScheduling((v) => !v)}
             />
           )}
-          <TaskRowMenu task={task} />
+          <MoveToInboxButton task={task} />
         </div>
       </div>
       {scheduling && (
@@ -208,39 +208,18 @@ function SlotTaskRow({
   );
 }
 
-function TaskRowMenu({ task }: { task: Task }) {
+function MoveToInboxButton({ task }: { task: Task }) {
   const { dispatch } = usePlanner();
-  const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        aria-label="Ações da tarefa"
-        className="a-hit-44 shrink-0 flex items-center justify-center rounded-full text-label-secondary transition-colors hover-bg-fill-subtle hover-text-label"
-      >
-        <MoreHorizontal size={20} />
-      </button>
-
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
-          <div className="liquid-panel absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl p-1.5 backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08]">
-            <button
-              type="button"
-              onClick={() => {
-                dispatch({ type: "MOVE_TASK", id: task.id, category: "inbox", date: null });
-                setOpen(false);
-              }}
-              className="a-body relative z-10 min-h-[44px] w-full rounded-xl px-3 text-left text-label transition-colors hover-bg-fill-subtle"
-            >
-              Mover para Inbox
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={() => dispatch({ type: "MOVE_TASK", id: task.id, category: "inbox", date: null })}
+      aria-label={`Mover ${task.title} para Inbox`}
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-label-secondary transition-colors hover-bg-fill-subtle hover-text-accent"
+    >
+      <Inbox size={19} />
+    </button>
   );
 }
 

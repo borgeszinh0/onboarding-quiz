@@ -9,14 +9,14 @@ import {
   getScheduleSuggestion,
   inferTaskFitCategory,
 } from "@/lib/day-mode";
+import { Clock3, X } from "lucide-react";
 
 const DURATIONS = [15, 25, 30, 45, 60, 90] as const;
 
 /**
- * Gatilho de agendamento, sempre em linha com o título: sem bloco, um chip
- * contorno "Agendar"; com bloco, o horário vira chip preenchido. O formulário
- * em si (ScheduleForm) é responsabilidade de quem chama — ele precisa de
- * largura própria e não pode brigar com um título longo na mesma linha.
+ * Gatilho de agendamento, sempre em linha com o título: sem bloco, um ícone
+ * de relógio; com bloco, o horário aparece como texto colorido. O formulário
+ * em si (ScheduleForm) é responsabilidade de quem chama.
  */
 export function ScheduleTaskControl({
   taskId,
@@ -36,7 +36,8 @@ export function ScheduleTaskControl({
         <button
           type="button"
           onClick={() => onFocus(taskId)}
-          className="a-caption liquid-control tabular min-h-[44px] rounded-full px-2.5 text-accent backdrop-blur-[18px] backdrop-brightness-[1.01] backdrop-saturate-[165%] backdrop-contrast-[1.08]"
+          className="a-caption tabular min-h-[44px] min-w-[44px] shrink-0 px-1 text-accent transition-opacity hover:opacity-75"
+          aria-label={`Iniciar foco agendado para ${block.startTime}`}
         >
           {block.startTime}
         </button>
@@ -49,9 +50,9 @@ export function ScheduleTaskControl({
           type="button"
           onClick={() => dispatch({ type: "REMOVE_TIME_BLOCK", id: block.id })}
           aria-label="Remover agendamento"
-          className="a-caption flex h-11 w-11 shrink-0 items-center justify-center text-label-secondary"
+          className="flex h-11 w-11 shrink-0 items-center justify-center text-label-secondary transition-colors hover-text-danger"
         >
-          ✕
+          <X size={16} />
         </button>
       </div>
     );
@@ -61,10 +62,11 @@ export function ScheduleTaskControl({
     <button
       type="button"
       onClick={onOpenSchedule}
-      className="a-caption liquid-control min-h-[44px] shrink-0 rounded-full px-2.5 backdrop-blur-[18px] backdrop-brightness-[1.01] backdrop-saturate-[165%] backdrop-contrast-[1.08] transition-colors duration-200"
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-label-secondary transition-colors hover-bg-fill-subtle hover-text-accent"
       style={{ color: "var(--label-secondary)" }}
+      aria-label="Agendar tarefa"
     >
-      Agendar
+      <Clock3 size={19} />
     </button>
   );
 }

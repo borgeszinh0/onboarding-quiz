@@ -345,49 +345,77 @@ interface HabitScoreDay extends HabitDay {
 }
 
 function HabitPointsChart({ days, disabled }: { days: HabitScoreDay[]; disabled: boolean }) {
-  const width = 156;
-  const height = 64;
-  const horizontalPadding = 5;
+  const width = 172;
+  const height = 70;
+  const chartHeight = 60;
+  const horizontalPadding = 8;
   const today = todayISO();
   const points = days.map((day, index) => {
     const x =
       horizontalPadding +
       (index / Math.max(1, days.length - 1)) * (width - horizontalPadding * 2);
-    const y = getHabitPointY(day.score, height);
+    const y = getHabitPointY(day.score, chartHeight);
     return { ...day, x, y };
   });
   const visiblePoints = points.filter((point) => point.iso <= today);
-  const line = visiblePoints.map((point) => `${point.x},${point.y}`).join(" ");
-  const baseY = height - 4;
-  const area =
-    visiblePoints.length > 0
-      ? `${visiblePoints[0].x},${baseY} ${line} ${visiblePoints[visiblePoints.length - 1].x},${baseY}`
+  const linePath = getSmoothPath(visiblePoints);
+  const baseY = chartHeight - 2;
+  const areaPath =
+    visiblePoints.length > 0 && linePath
+      ? `${linePath} L ${visiblePoints[visiblePoints.length - 1].x} ${baseY} L ${visiblePoints[0].x} ${baseY} Z`
       : "";
   const hasVisibleData = visiblePoints.some((point) => point.score > 0);
+  const currentPoint = visiblePoints[visiblePoints.length - 1];
 
   return (
     <div>
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        className="block h-16 w-[156px]"
+        className="block h-[70px] w-[172px]"
         role="img"
         aria-label="Pontuação semanal dos hábitos"
       >
+        <defs>
+          <linearGradient id="habit-rhythm-area" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--metric-habits)" stopOpacity="0.22" />
+            <stop offset="72%" stopColor="var(--metric-habits)" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="var(--metric-habits)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {[14, 34, 54].map((y) => (
+          <line
+            key={y}
+            x1={horizontalPadding}
+            x2={width - horizontalPadding}
+            y1={y}
+            y2={y}
+            stroke="var(--metric-track)"
+            strokeWidth="1"
+            opacity="0.55"
+          />
+        ))}
         {!disabled && hasVisibleData && (
           <>
-            <polygon
-              points={area}
-              fill="var(--metric-habits)"
-              opacity="0.14"
+            <path
+              d={areaPath}
+              fill="url(#habit-rhythm-area)"
             />
-            <polyline
-              points={line}
+            <path
+              d={linePath}
               fill="none"
-              stroke="var(--metric-habits)"
-              strokeWidth="2"
+              stroke="color-mix(in oklab, var(--metric-habits) 42%, transparent)"
+              strokeWidth="6"
               strokeLinecap="round"
               strokeLinejoin="round"
-              opacity="0.82"
+              opacity="0.22"
+            />
+            <path
+              d={linePath}
+              fill="none"
+              stroke="var(--metric-habits)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </>
         )}
@@ -400,10 +428,16 @@ function HabitPointsChart({ days, disabled }: { days: HabitScoreDay[]; disabled:
               key={point.iso}
               cx={point.x}
               cy={point.y}
-              r={complete ? 5 : active ? 4 : 4}
+              r={point.iso === currentPoint?.iso ? 5 : complete ? 4.5 : 4}
               fill={active ? "var(--metric-habits)" : "var(--metric-track)"}
-              stroke={complete ? "color-mix(in oklab, var(--metric-habits) 28%, var(--bg))" : "transparent"}
-              strokeWidth={complete ? 2 : 0}
+              stroke={
+                point.iso === currentPoint?.iso
+                  ? "var(--metric-card-bg)"
+                  : complete
+                    ? "color-mix(in oklab, var(--metric-habits) 28%, var(--bg))"
+                    : "transparent"
+              }
+              strokeWidth={point.iso === currentPoint?.iso || complete ? 2 : 0}
             >
               <title>{`${point.label}: ${Math.round(point.score * 100)}%`}</title>
             </circle>
@@ -422,6 +456,19 @@ function HabitPointsChart({ days, disabled }: { days: HabitScoreDay[]; disabled:
       </div>
     </div>
   );
+}
+
+function getSmoothPath(points: Array<HabitScoreDay & { x: number; y: number }>): string {
+  if (points.length === 0) return "";
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+
+  return points.reduce((path, point, index) => {
+    if (index === 0) return `M ${point.x} ${point.y}`;
+
+    const previous = points[index - 1];
+    const controlX = (previous.x + point.x) / 2;
+    return `${path} C ${controlX} ${previous.y}, ${controlX} ${point.y}, ${point.x} ${point.y}`;
+  }, "");
 }
 
 function HabitProgressRing({ ratio, muted }: { ratio: number; muted: boolean }) {

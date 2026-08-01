@@ -21,7 +21,7 @@ import {
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { ScheduleTaskControl, ScheduleForm } from "./ScheduleTaskControl";
 import { LifeAreaBadge } from "./LifeAreaField";
-import { Inbox, Plus } from "lucide-react";
+import { Inbox } from "lucide-react";
 
 /** Mesmas cores, mas seguras como cor de TEXTO (ver --accent-text em globals.css). */
 const CATEGORY_TEXT_ACCENT: Record<Exclude<TaskCategory, "inbox">, string> = {
@@ -235,7 +235,6 @@ function SlotPicker({
   onDone: () => void;
 }) {
   const { state, dispatch } = usePlanner();
-  const [title, setTitle] = useState("");
   const [overrideTaskId, setOverrideTaskId] = useState<string | null>(null);
   const inbox = getInboxTasks(state);
   const sortedInbox = sortTasksForMode(inbox, state, date, mode, category);
@@ -254,35 +253,8 @@ function SlotPicker({
     onDone();
   };
 
-  const createAndPlace = () => {
-    if (!title.trim() || !canPlanTask(state, date, category)) return;
-    dispatch({ type: "ADD_TASK", title: title.trim(), category, date });
-    setTitle("");
-    onDone();
-  };
-
   return (
     <div className="space-y-3 border-t border-separator pt-3">
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && createAndPlace()}
-          placeholder="Nova tarefa"
-          autoFocus
-          className="a-subheadline min-h-[44px] min-w-0 flex-1 rounded-xl bg-fill-subtle px-3"
-        />
-        <button
-          type="button"
-          onClick={createAndPlace}
-          disabled={!title.trim()}
-          className="a-hit-44 shrink-0 rounded-xl px-4 text-accent disabled:opacity-30"
-          aria-label="Criar e planejar"
-        >
-          <Plus size={24} />
-        </button>
-      </div>
       {inbox.length > 0 && (
         <div>
           <SectionLabel>Do Inbox</SectionLabel>
@@ -330,6 +302,12 @@ function SlotPicker({
             ))}
           </ul>
         </div>
+      )}
+
+      {inbox.length === 0 && (
+        <p className="a-subheadline text-label-secondary">
+          Nenhuma tarefa no Inbox para selecionar.
+        </p>
       )}
 
       <button

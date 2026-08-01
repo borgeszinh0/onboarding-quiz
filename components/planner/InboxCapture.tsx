@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { usePlanner, getInboxTasks } from "@/lib/planner-store";
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { parseNaturalInput } from "@/lib/parser";
 import { Plus, X } from "lucide-react";
 import { LifeAreaMenu } from "./LifeAreaField";
 import type { LifeArea } from "@/lib/planner-types";
-import {
-  LIFE_AREA_COLOR,
-  LIFE_AREA_LABEL,
-  LIFE_AREA_ORDER,
-  filterTasksByLifeArea,
-} from "@/lib/life-areas";
+import { filterTasksByLifeArea } from "@/lib/life-areas";
 import {
   DAY_MODE_RULES,
   getDayMode,
@@ -106,7 +101,12 @@ export function InboxCapture() {
           </button>
         </div>
         <div className="mb-4">
-          <LifeAreaFilterMenu value={areaFilter} onChange={setAreaFilter} />
+          <LifeAreaMenu
+            value={areaFilter}
+            onChange={setAreaFilter}
+            label="Filtrar Inbox por área"
+            noneLabel="Todos"
+          />
         </div>
 
         {items.length === 0 ? (
@@ -153,131 +153,6 @@ export function InboxCapture() {
         )}
       </Card>
     </section>
-  );
-}
-
-function LifeAreaFilterMenu({
-  value,
-  onChange,
-}: {
-  value: LifeArea | null;
-  onChange: (area: LifeArea | null) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const selectedLabel = value ? LIFE_AREA_LABEL[value] : "Todos";
-  const selectedColor = value ? LIFE_AREA_COLOR[value] : "var(--label-secondary)";
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-    window.addEventListener("pointerdown", onPointerDown);
-    return () => window.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
-
-  const choose = (area: LifeArea | null) => {
-    onChange(area);
-    setOpen(false);
-  };
-
-  return (
-    <div ref={rootRef} className="relative">
-      <button
-        type="button"
-        aria-label={`Filtrar Inbox por área: ${selectedLabel}`}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") setOpen(false);
-          if (event.key === "ArrowDown") {
-            event.preventDefault();
-            setOpen(true);
-          }
-        }}
-        className="a-caption inline-flex min-h-[44px] w-full items-center justify-between rounded-full border border-separator bg-fill-subtle px-3 text-left transition-colors hover-bg-fill-subtle"
-        style={{ color: selectedColor }}
-      >
-        <span className="truncate">{selectedLabel}</span>
-        <svg
-          viewBox="0 0 12 12"
-          className="h-3 w-3 shrink-0 opacity-70"
-          fill="none"
-          aria-hidden
-        >
-          <path
-            d="M3 4.5L6 7.5L9 4.5"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      {open && (
-        <div
-          role="listbox"
-          aria-label="Filtrar Inbox por área"
-          className="absolute right-0 top-full z-[70] mt-2 w-full min-w-56 rounded-2xl border border-[rgba(255,255,255,.16)] bg-[rgba(12,12,16,.94)] p-1.5 shadow-[0_24px_72px_rgba(0,0,0,.58)] backdrop-blur-[18px] backdrop-saturate-[130%]"
-        >
-          <LifeAreaFilterOption
-            selected={!value}
-            label="Todos"
-            color="var(--label)"
-            onSelect={() => choose(null)}
-          />
-          {LIFE_AREA_ORDER.map((area) => (
-            <LifeAreaFilterOption
-              key={area}
-              selected={value === area}
-              label={LIFE_AREA_LABEL[area]}
-              color={LIFE_AREA_COLOR[area]}
-              onSelect={() => choose(area)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function LifeAreaFilterOption({
-  selected,
-  label,
-  color,
-  onSelect,
-}: {
-  selected: boolean;
-  label: string;
-  color: string;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="option"
-      aria-selected={selected}
-      onClick={onSelect}
-      className="a-caption flex min-h-[44px] w-full items-center gap-2 rounded-xl px-3 text-left text-label-secondary transition-colors hover-bg-fill-subtle"
-      style={{
-        color: selected ? color : "var(--label-secondary)",
-        background: selected
-          ? `color-mix(in oklab, ${color} 10%, transparent)`
-          : "transparent",
-      }}
-    >
-      <span className="min-w-0 flex-1 truncate">{label}</span>
-      {selected && (
-        <span className="text-label" aria-hidden>
-          ✓
-        </span>
-      )}
-    </button>
   );
 }
 

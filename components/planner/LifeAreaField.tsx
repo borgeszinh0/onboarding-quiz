@@ -33,16 +33,18 @@ export function LifeAreaMenu({
   onChange,
   label = "Área",
   compact = false,
+  noneLabel = "Sem área",
 }: {
   value?: LifeArea | null;
   onChange: (area: LifeArea | null) => void;
   label?: string;
   compact?: boolean;
+  noneLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const rootRef = useRef<HTMLDivElement>(null);
-  const selectedLabel = value ? LIFE_AREA_LABEL[value] : "Sem área";
+  const selectedLabel = value ? LIFE_AREA_LABEL[value] : noneLabel;
   const selectedColor = value ? LIFE_AREA_COLOR[value] : "rgba(255,255,255,.34)";
 
   useEffect(() => {
@@ -54,6 +56,18 @@ export function LifeAreaMenu({
     };
     window.addEventListener("pointerdown", onPointerDown);
     return () => window.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.requestAnimationFrame(() => {
+      rootRef.current?.scrollIntoView({
+        block: "center",
+        inline: "nearest",
+        behavior: reduceMotion ? "auto" : "smooth",
+      });
+    });
   }, [open]);
 
   const choose = (area: LifeArea | null) => {
@@ -120,7 +134,7 @@ export function LifeAreaMenu({
         >
           <LifeAreaOption
             selected={!value}
-            label="Sem área"
+            label={noneLabel}
             color="rgba(255,255,255,.34)"
             onSelect={() => choose(null)}
           />

@@ -71,11 +71,7 @@ export default function PerfilPage() {
       <section className="mx-auto w-full max-w-xl">
         <h2 className="a-headline mb-4 text-label">Conta e Sincronização</h2>
         <Card className="p-5">
-          {!configured ? (
-            <p className="a-subheadline text-label-secondary text-center">
-              A sincronização em nuvem não está configurada neste ambiente.
-            </p>
-          ) : user ? (
+          {user ? (
             <div className="flex flex-col items-center gap-4 text-center">
               <p className="a-subheadline text-label-secondary">
                 Seus dados estão sincronizando com a nuvem em tempo real.
@@ -85,7 +81,11 @@ export default function PerfilPage() {
               </Button>
             </div>
           ) : (
-            <InlineAuthForm signIn={signIn} signUp={signUp} />
+            <InlineAuthForm
+              configured={configured}
+              signIn={signIn}
+              signUp={signUp}
+            />
           )}
         </Card>
       </section>
@@ -94,9 +94,11 @@ export default function PerfilPage() {
 }
 
 function InlineAuthForm({
+  configured,
   signIn,
   signUp,
 }: {
+  configured: boolean;
   signIn: ReturnType<typeof useAuth>["signIn"];
   signUp: ReturnType<typeof useAuth>["signUp"];
 }) {
@@ -136,6 +138,11 @@ function InlineAuthForm({
 
   return (
     <div className="space-y-4">
+      {!configured && (
+        <p className="a-caption rounded-xl border border-separator bg-fill-subtle p-3 text-label-secondary" role="status">
+          A sincronização em nuvem ainda não está configurada neste ambiente.
+        </p>
+      )}
       <div>
         <p className="a-subheadline text-label">
           {mode === "in" ? "Entrar na sua conta" : "Criar conta"}

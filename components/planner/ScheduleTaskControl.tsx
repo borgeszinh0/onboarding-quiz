@@ -164,7 +164,7 @@ export function ScheduleForm({
   }
 
   return (
-    <div className="liquid-panel relative flex flex-wrap items-center gap-2 rounded-xl p-2.5 backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08]">
+    <div className="liquid-panel schedule-menu-panel relative flex flex-wrap items-center gap-2 rounded-xl p-2.5 backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08]">
       <p className="a-caption relative z-10 w-full text-label-secondary" role="status">
         {getScheduleSuggestion(dayMode, taskCategory)}
       </p>

@@ -1006,6 +1006,10 @@ body {
   -webkit-backdrop-filter: blur(26px) brightness(1.02) contrast(1.08) saturate(180%);
 }
 
+.schedule-menu-panel {
+  overflow: visible;
+}
+
 .liquid-panel::before {
   position: absolute;
   inset: 0;

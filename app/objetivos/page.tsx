@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { usePlanner, Quarter } from "@/lib/planner-store";
-import { PageTitle, Card, Button } from "@/components/apple/ui";
+import { PageTitle, Card, Button, SectionLabel } from "@/components/apple/ui";
+import { LifeAreasPanel } from "@/components/planner/LifeAreasPanel";
 import Link from "next/link";
 
 const QUARTERS: { id: Quarter; label: string; months: string }[] = [
@@ -31,7 +32,7 @@ export default function ObjetivosPage() {
   };
 
   return (
-    <main className="page-with-bottom-dock mx-auto w-full max-w-xl px-5 pt-8">
+    <main className="page-with-bottom-dock mx-auto w-full max-w-5xl px-5 pt-8">
       <Link href="/mais" className="mb-8 inline-flex a-hit-44 items-center -ml-2 a-caption text-label-secondary hover-text-label">
         ← Voltar
       </Link>
@@ -42,9 +43,12 @@ export default function ObjetivosPage() {
         subtitle="Defina sua única grande prioridade para cada trimestre. Saber para onde está indo facilita as decisões do dia a dia."
       />
 
-      <div className="space-y-4">
-        {QUARTERS.map((q) => (
-          <Card key={q.id} className="p-5">
+      <div className="space-y-8">
+        <section className="space-y-4">
+          <SectionLabel>Norte do trimestre</SectionLabel>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {QUARTERS.map((q) => (
+              <Card key={q.id} className="p-5">
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <h3 className="a-headline text-label">{q.label}</h3>
@@ -91,8 +95,15 @@ export default function ObjetivosPage() {
                 )}
               </div>
             )}
-          </Card>
-        ))}
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <SectionLabel>Áreas da vida</SectionLabel>
+          <LifeAreasPanel state={state} />
+        </section>
       </div>
     </main>
   );

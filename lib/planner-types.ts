@@ -4,6 +4,13 @@
 /** "inbox" = ainda não planejada. As outras três são os slots do dia. */
 export type TaskCategory = "inbox" | "big" | "medium" | "small";
 export type DayMode = "low" | "medium" | "high";
+export type LifeArea =
+  | "body"
+  | "mind"
+  | "social"
+  | "spiritual"
+  | "financial"
+  | "professional";
 
 export type TaskStatus = "pending" | "done";
 
@@ -15,6 +22,7 @@ export interface Task {
   /** ISO date. Null quando category é "inbox" — regra: inbox nunca tem data. */
   date: string | null;
   estimatedMinutes?: number;
+  lifeArea?: LifeArea | null;
   createdAt: number;
 }
 
@@ -43,6 +51,7 @@ export interface Habit {
   id: string;
   title: string;
   isActive: boolean;
+  lifeArea?: LifeArea | null;
   createdAt: number;
 }
 

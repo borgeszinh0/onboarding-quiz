@@ -15,7 +15,7 @@ Planejador diário local-first. Regra **1 tarefa grande, 3 médias, 5 pequenas**
 | **Semana** | `/semana` | Ocupação de horário por dia da semana + conclusão do funil |
 | **Mês** | `/mes` | Grade mensal com destaque de dias "perfeitos" (todos os hábitos cumpridos) |
 | **Ano / Calendário** | `/ano` | Visão anual em formato de calendário de pontos |
-| **Objetivos** | `/objetivos` | Mural de foco trimestral (Q1–Q4), texto livre para o "Norte" |
+| **Objetivos** | `/objetivos` | Mural de foco trimestral (Q1–Q4), texto livre para o "Norte" e radar de Áreas da vida |
 | **Perfil** | `/perfil` | Métricas vitalícias (foco, tarefas e hábitos concluídos) e conta |
 | **Dados** | `/dados` | Export/import de backup JSON, status de sync com Supabase, backups automáticos locais |
 
@@ -27,6 +27,7 @@ Planejador diário local-first. Regra **1 tarefa grande, 3 médias, 5 pequenas**
 - **TimeBlock**: uma tarefa tem no máximo um bloco de horário ativo. Agendar de novo substitui o anterior.
 - **Modo Foco**: cronômetro regressivo baseado na duração do bloco (ou 25min padrão se a tarefa não tem bloco). Pausa de verdade — acumula tempo decorrido em vez de reiniciar. Ao bater o alvo, passa a contar tempo extra em vez de zerar.
 - **Hábitos**: lista simples com toggle diário. "Dia perfeito" = todos os hábitos ativos marcados naquela data — é o que acende o destaque verde no Mês.
+- **Áreas da vida**: tarefas e hábitos podem receber uma área opcional (`Corpo`, `Mente`, `Social`, `Espiritual`, `Financeiro`, `Profissional`). Itens sem área não entram no radar. A tela `/objetivos` usa execução real dos últimos 30 dias para mostrar distribuição por área, sem comunicar isso como nota ou julgamento.
 
 ---
 
@@ -50,6 +51,7 @@ Estado único (`PlannerState`) num reducer, sem backend obrigatório — tudo fu
 lib/planner-types.ts    Tipos: Task, TimeBlock, Habit, HabitLog, DayMode, PlannerState
 lib/planner-data.ts     Constantes: limites de vaga (1/3/5), horário da régua, trimestres
 lib/day-mode.ts         Motor de estratégia do dia: regras, scoring, microcopy e sugestões
+lib/life-areas.ts       Áreas fixas, tokens semânticos e cálculo heurístico do radar
 lib/planner-store.tsx   Reducer + Context + todos os seletores (getInboxTasks, dayCompletion, ...)
 
 components/planner/
@@ -61,6 +63,8 @@ components/planner/
   DailyShutdown.tsx       Fechamento do dia com leitura de aderência ao modo escolhido
   FocusMode.tsx           Overlay de tela cheia do cronômetro
   HabitBar.tsx            Barra fixa de hábitos no rodapé
+  LifeAreaPicker.tsx      Chips opcionais de classificação por área
+  LifeAreasPanel.tsx      Radar + legenda + tabela de distribuição em /objetivos
 
 components/apple/ui.tsx  Primitivas de UI legadas no nome, agora renderizadas pelo tema Raycast-like — Card, Button, PageTitle, SectionLabel
 ```
@@ -98,6 +102,37 @@ Onde isso aparece hoje:
 Compatibilidade de dados: `DayLog` agora usa `mode`, mas ainda aceita o campo legado `energy` para não quebrar dados já salvos no `localStorage` ou em backup. Sempre que escrever dia novo, grave `mode` e mantenha `energy` apenas como compatibilidade enquanto existirem usuários com estado antigo.
 
 O que **ainda não existe**: aprendizado histórico real, replanejamento automático, divisão automática de tarefas grandes, integração com calendário externo, perguntas de reflexão no fechamento ("sim / mais ou menos / não") e ações explícitas para pendências ("Enviar ao Inbox / Mover para amanhã / Manter planejado"). Esses pontos dependem de especificação de UX/produto antes de virar código.
+
+### Áreas da vida
+
+As áreas são uma camada estratégica, não operacional. Elas aparecem em `/objetivos`, porque a tela representa o Norte do usuário. A tela Hoje continua focada em execução.
+
+Áreas fixas:
+
+| ID | Label |
+|---|---|
+| `body` | Corpo |
+| `mind` | Mente |
+| `social` | Social |
+| `spiritual` | Espiritual |
+| `financial` | Financeiro |
+| `professional` | Profissional |
+
+Onde classificar:
+
+- `InboxCapture.tsx`: tarefa nova capturada e tarefas já no Inbox.
+- `DailyFunnel.tsx`: tarefa nova criada no slot e menu de tarefa planejada.
+- `CommandBar.tsx`: tarefa criada via command bar.
+- `HabitTracker.tsx`: hábito novo e edição de hábito existente.
+
+Cálculo atual do radar (`lib/life-areas.ts`):
+
+- Conta somente execução real: tarefas concluídas, sessões de foco concluídas e hábitos concluídos.
+- Ignora tarefas apenas criadas/planejadas, hábitos pausados e itens sem área.
+- Pontos: pequena `+1`, média `+2`, grande `+3`, foco `+1` por 25 minutos completos, hábito concluído `+1`.
+- `Atual` = últimos 30 dias; `Anterior` = 30 dias anteriores, escondido quando não há dados.
+- Valores são normalizados relativamente ao maior volume do período para mostrar distribuição/concentração. Não tratar como nota de vida.
+- `Meta` hoje é padrão visual discreto (`75`) para todas as áreas até existir configuração real de metas por área.
 
 ### Sync e backup
 

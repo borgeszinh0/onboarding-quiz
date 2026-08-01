@@ -3,6 +3,7 @@ import type {
   FocusSession,
   Habit,
   HabitLog,
+  LifeArea,
   PlannerState,
   Task,
   TaskCategory,
@@ -66,13 +67,13 @@ const INBOX_TASKS = [
 ];
 
 const HABITS: Habit[] = [
-  { id: "demo_habit_sleep", title: "Dormir antes de meia-noite", isActive: true, createdAt: 1 },
-  { id: "demo_habit_water", title: "Beber água", isActive: true, createdAt: 2 },
-  { id: "demo_habit_walk", title: "Caminhar 20 min", isActive: true, createdAt: 3 },
-  { id: "demo_habit_read", title: "Ler 10 páginas", isActive: true, createdAt: 4 },
-  { id: "demo_habit_journal", title: "Journaling", isActive: true, createdAt: 5 },
-  { id: "demo_habit_meditate", title: "Meditar", isActive: true, createdAt: 6 },
-  { id: "demo_habit_budget", title: "Revisar gastos", isActive: false, createdAt: 7 },
+  { id: "demo_habit_sleep", title: "Dormir antes de meia-noite", isActive: true, lifeArea: "body", createdAt: 1 },
+  { id: "demo_habit_water", title: "Beber água", isActive: true, lifeArea: "body", createdAt: 2 },
+  { id: "demo_habit_walk", title: "Caminhar 20 min", isActive: true, lifeArea: "body", createdAt: 3 },
+  { id: "demo_habit_read", title: "Ler 10 páginas", isActive: true, lifeArea: "mind", createdAt: 4 },
+  { id: "demo_habit_journal", title: "Journaling", isActive: true, lifeArea: "spiritual", createdAt: 5 },
+  { id: "demo_habit_meditate", title: "Meditar", isActive: true, lifeArea: "spiritual", createdAt: 6 },
+  { id: "demo_habit_budget", title: "Revisar gastos", isActive: false, lifeArea: "financial", createdAt: 7 },
 ];
 
 export function buildDemoPlannerState(referenceDate = new Date()): PlannerState {
@@ -159,6 +160,7 @@ export function buildDemoPlannerState(referenceDate = new Date()): PlannerState 
       status: "pending",
       date: null,
       estimatedMinutes: [15, 25, 45, 60, 90][index % 5],
+      lifeArea: getInboxArea(index),
       createdAt: today.getTime() - (index + 1) * DAY_MS,
     });
   });
@@ -204,6 +206,7 @@ function createDayTasks({
       date,
       estimatedMinutes:
         category === "big" ? 90 : category === "medium" ? 45 + (index % 2) * 15 : 15 + (index % 2) * 10,
+      lifeArea: getTaskArea(category, dayIndex, index),
       createdAt: dayTime + sequence * 60_000,
     });
   };
@@ -258,6 +261,24 @@ function getDuration(category: TaskCategory, mode: DayMode): number {
   if (category === "big") return mode === "high" ? 90 : 60;
   if (category === "medium") return mode === "low" ? 25 : 45;
   return 15;
+}
+
+function getTaskArea(
+  category: Exclude<TaskCategory, "inbox">,
+  dayIndex: number,
+  index: number
+): LifeArea {
+  if (category === "big") {
+    return (["professional", "financial", "mind"] as const)[(dayIndex + index) % 3];
+  }
+  if (category === "medium") {
+    return (["professional", "social", "mind", "financial"] as const)[(dayIndex + index) % 4];
+  }
+  return (["body", "social", "financial", "spiritual", "mind"] as const)[(dayIndex + index) % 5];
+}
+
+function getInboxArea(index: number): LifeArea | null {
+  return ([null, "professional", "mind", "body", "financial", "social"] as const)[index % 6];
 }
 
 function startOfDay(date: Date): Date {

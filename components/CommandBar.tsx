@@ -4,10 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import { usePlanner } from "@/lib/planner-store";
 import { parseNaturalInput } from "@/lib/parser";
 import { Search } from "lucide-react";
+import { LifeAreaPicker } from "./planner/LifeAreaPicker";
+import type { LifeArea } from "@/lib/planner-types";
 
 export default function CommandBar() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [lifeArea, setLifeArea] = useState<LifeArea | null>(null);
   const { dispatch } = usePlanner();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -16,11 +19,19 @@ export default function CommandBar() {
       // Abre com Cmd+K ou Ctrl+K
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setOpen((o) => !o);
+        setOpen((o) => {
+          if (o) {
+            setQuery("");
+            setLifeArea(null);
+          }
+          return !o;
+        });
       }
       // Fecha com Esc
       if (e.key === "Escape") {
         setOpen(false);
+        setQuery("");
+        setLifeArea(null);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -31,8 +42,6 @@ export default function CommandBar() {
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 50);
-    } else {
-      setQuery("");
     }
   }, [open]);
 
@@ -52,6 +61,7 @@ export default function CommandBar() {
       category: parsed.date ? "small" : "inbox",
       date: parsed.date ?? null,
       estimatedMinutes: parsed.durationMinutes,
+      lifeArea,
     });
 
     // Se tiver horário e data, já cria o bloco de tempo
@@ -76,13 +86,19 @@ export default function CommandBar() {
     }
 
     setOpen(false);
+    setQuery("");
+    setLifeArea(null);
   };
 
   return (
     <>
       <div 
         className="liquid-scrim fixed inset-0 z-[100] backdrop-blur-[10px] backdrop-saturate-[130%] transition-opacity duration-200 ease-apple"
-        onClick={() => setOpen(false)} 
+        onClick={() => {
+          setOpen(false);
+          setQuery("");
+          setLifeArea(null);
+        }} 
         aria-hidden
       />
       <div className="fixed left-1/2 top-[15vh] z-[101] w-full max-w-2xl -translate-x-1/2 px-4 sm:top-[20vh]">
@@ -100,6 +116,9 @@ export default function CommandBar() {
               placeholder="Criar tarefa (ex: Pagar boleto amanhã 10h)"
               className="a-body h-[52px] w-full bg-transparent text-label placeholder:text-label-secondary focus:outline-none"
             />
+          </div>
+          <div className="relative z-10 border-t border-separator px-4 py-3">
+            <LifeAreaPicker value={lifeArea} onChange={setLifeArea} compact />
           </div>
           {query.trim() && (
             <div className="relative z-10 border-t border-separator p-2">

@@ -10,8 +10,9 @@ import {
   weekDates,
 } from "@/lib/planner-store";
 import { Card, SectionLabel, BottomSheet } from "@/components/apple/ui";
-import type { Habit } from "@/lib/planner-types";
+import type { Habit, LifeArea } from "@/lib/planner-types";
 import { Check, Flame, MoreHorizontal, Plus } from "lucide-react";
+import { LifeAreaPicker } from "./LifeAreaPicker";
 
 export function HabitTracker() {
   const { state } = usePlanner();
@@ -249,6 +250,13 @@ function HabitCard({
             }}
             className="a-subheadline mt-1 min-h-[44px] w-full rounded-xl bg-bg px-3 text-label"
           />
+          <div className="mt-3">
+            <LifeAreaPicker
+              value={habit.lifeArea}
+              onChange={(lifeArea) => dispatch({ type: "SET_HABIT_AREA", id: habit.id, lifeArea })}
+              compact
+            />
+          </div>
           <div className="mt-2 grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -274,11 +282,13 @@ function HabitCard({
 function HabitManager() {
   const { state, dispatch } = usePlanner();
   const [title, setTitle] = useState("");
+  const [lifeArea, setLifeArea] = useState<LifeArea | null>(null);
 
   const add = () => {
     if (!title.trim()) return;
-    dispatch({ type: "ADD_HABIT", title: title.trim() });
+    dispatch({ type: "ADD_HABIT", title: title.trim(), lifeArea });
     setTitle("");
+    setLifeArea(null);
   };
 
   return (
@@ -302,6 +312,7 @@ function HabitManager() {
           <Plus size={24} />
         </button>
       </div>
+      <LifeAreaPicker value={lifeArea} onChange={setLifeArea} compact />
 
       {state.habits.length > 0 && (
         <ul className="space-y-1">

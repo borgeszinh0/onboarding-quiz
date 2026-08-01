@@ -5,6 +5,8 @@ import { usePlanner, getInboxTasks } from "@/lib/planner-store";
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { parseNaturalInput } from "@/lib/parser";
 import { Plus, X } from "lucide-react";
+import { LifeAreaPicker } from "./LifeAreaPicker";
+import type { LifeArea } from "@/lib/planner-types";
 import {
   DAY_MODE_RULES,
   getDayMode,
@@ -21,6 +23,7 @@ import {
 export function InboxCapture() {
   const { state, dispatch } = usePlanner();
   const [title, setTitle] = useState("");
+  const [lifeArea, setLifeArea] = useState<LifeArea | null>(null);
   const items = getInboxTasks(state);
   const today = new Date();
   const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -46,6 +49,7 @@ export function InboxCapture() {
       category: parsed.date ? "small" : "inbox",
       date: parsed.date ?? null,
       estimatedMinutes: parsed.durationMinutes,
+      lifeArea,
     });
 
     if (parsed.startTime && parsed.date) {
@@ -69,6 +73,7 @@ export function InboxCapture() {
     }
 
     setTitle("");
+    setLifeArea(null);
   };
 
   return (
@@ -94,6 +99,9 @@ export function InboxCapture() {
             <Plus size={24} />
           </button>
         </div>
+        <div className="mb-4">
+          <LifeAreaPicker value={lifeArea} onChange={setLifeArea} compact />
+        </div>
 
         {items.length === 0 ? (
           <p className="a-subheadline text-label-secondary">
@@ -113,18 +121,21 @@ export function InboxCapture() {
               title="Recomendadas para hoje"
               items={groupedItems.recommended}
               mode={mode}
+              onSetArea={(id, area) => dispatch({ type: "SET_TASK_AREA", id, lifeArea: area })}
               onRemove={(id) => dispatch({ type: "REMOVE_TASK", id })}
             />
             <InboxGroup
               title="Também cabem"
               items={groupedItems.compatible}
               mode={mode}
+              onSetArea={(id, area) => dispatch({ type: "SET_TASK_AREA", id, lifeArea: area })}
               onRemove={(id) => dispatch({ type: "REMOVE_TASK", id })}
             />
             <InboxGroup
               title="Melhor guardar"
               items={groupedItems.saveForLater}
               mode={mode}
+              onSetArea={(id, area) => dispatch({ type: "SET_TASK_AREA", id, lifeArea: area })}
               onRemove={(id) => dispatch({ type: "REMOVE_TASK", id })}
             />
           </div>
@@ -138,11 +149,13 @@ function InboxGroup({
   title,
   items,
   mode,
+  onSetArea,
   onRemove,
 }: {
   title: string;
   items: ReturnType<typeof sortTasksForMode>;
   mode: ReturnType<typeof getDayMode>;
+  onSetArea: (id: string, area: LifeArea | null) => void;
   onRemove: (id: string) => void;
 }) {
   if (items.length === 0) return null;
@@ -152,13 +165,21 @@ function InboxGroup({
       <p className="a-caption mb-1.5 uppercase text-label-secondary">{title}</p>
       <ul className="divide-y divide-separator">
         {items.map(({ task, group }) => (
-          <li key={task.id} className="flex min-h-[44px] items-center gap-3 py-2">
-            <span className="min-w-0 flex-1">
+          <li key={task.id} className="flex min-h-[44px] items-start gap-3 py-3">
+            <div className="min-w-0 flex-1">
               <span className="a-body block truncate">{task.title}</span>
               <span className="a-caption text-label-secondary">
                 {getFitLabel(mode, group)}
               </span>
-            </span>
+              <div className="mt-2">
+                <LifeAreaPicker
+                  value={task.lifeArea}
+                  onChange={(area) => onSetArea(task.id, area)}
+                  compact
+                  showLabel={false}
+                />
+              </div>
+            </div>
             <button
               type="button"
               onClick={() => onRemove(task.id)}

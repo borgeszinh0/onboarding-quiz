@@ -12,6 +12,7 @@ import {
 import {
   Habit,
   HabitLog,
+  LifeArea,
   PlannerState,
   Quarter,
   Task,
@@ -50,9 +51,11 @@ type Action =
       category?: TaskCategory;
       date?: string | null;
       estimatedMinutes?: number;
+      lifeArea?: LifeArea | null;
     }
   | { type: "MOVE_TASK"; id: string; category: TaskCategory; date: string | null }
   | { type: "UPDATE_TASK"; id: string; title: string }
+  | { type: "SET_TASK_AREA"; id: string; lifeArea: LifeArea | null }
   | { type: "TOGGLE_TASK_DONE"; id: string }
   | { type: "REMOVE_TASK"; id: string }
   | {
@@ -64,8 +67,9 @@ type Action =
       protected?: boolean;
     }
   | { type: "REMOVE_TIME_BLOCK"; id: string }
-  | { type: "ADD_HABIT"; title: string }
+  | { type: "ADD_HABIT"; title: string; lifeArea?: LifeArea | null }
   | { type: "UPDATE_HABIT"; id: string; title: string }
+  | { type: "SET_HABIT_AREA"; id: string; lifeArea: LifeArea | null }
   | { type: "TOGGLE_HABIT_ACTIVE"; id: string }
   | { type: "REMOVE_HABIT"; id: string }
   | { type: "TOGGLE_HABIT_LOG"; habitId: string; date: string }
@@ -147,6 +151,7 @@ function reducer(state: PlannerState, action: Action): PlannerState {
         status: "pending",
         date: action.category && action.category !== "inbox" ? action.date ?? null : null,
         estimatedMinutes: action.estimatedMinutes,
+        lifeArea: action.lifeArea ?? null,
         createdAt: Date.now(),
       };
       return { ...state, tasks: [...state.tasks, task] };
@@ -176,6 +181,14 @@ function reducer(state: PlannerState, action: Action): PlannerState {
         ...state,
         tasks: state.tasks.map((t) =>
           t.id === action.id ? { ...t, title: action.title } : t
+        ),
+      };
+
+    case "SET_TASK_AREA":
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.id ? { ...t, lifeArea: action.lifeArea } : t
         ),
       };
 
@@ -221,6 +234,7 @@ function reducer(state: PlannerState, action: Action): PlannerState {
         id: makeId("habit"),
         title: action.title,
         isActive: true,
+        lifeArea: action.lifeArea ?? null,
         createdAt: Date.now(),
       };
       return { ...state, habits: [...state.habits, habit] };
@@ -231,6 +245,14 @@ function reducer(state: PlannerState, action: Action): PlannerState {
         ...state,
         habits: state.habits.map((h) =>
           h.id === action.id ? { ...h, title: action.title } : h
+        ),
+      };
+
+    case "SET_HABIT_AREA":
+      return {
+        ...state,
+        habits: state.habits.map((h) =>
+          h.id === action.id ? { ...h, lifeArea: action.lifeArea } : h
         ),
       };
 

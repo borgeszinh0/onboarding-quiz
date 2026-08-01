@@ -9,6 +9,7 @@ import {
 } from "@/lib/planner-store";
 import { CATEGORY_LABEL, CATEGORY_ORDER, SLOT_LIMITS } from "@/lib/planner-data";
 import type { Task, TaskCategory } from "@/lib/planner-types";
+import type { LifeArea } from "@/lib/planner-types";
 import {
   DAY_MODE_RULES,
   getDayMode,
@@ -20,6 +21,7 @@ import {
 } from "@/lib/day-mode";
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { ScheduleTaskControl, ScheduleForm } from "./ScheduleTaskControl";
+import { LifeAreaBadge, LifeAreaPicker } from "./LifeAreaPicker";
 import { Plus, MoreHorizontal } from "lucide-react";
 
 /** Mesmas cores, mas seguras como cor de TEXTO (ver --accent-text em globals.css). */
@@ -218,7 +220,14 @@ function TaskRowMenu({ task }: { task: Task }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
-          <div className="liquid-panel absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl p-1.5 backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08]">
+          <div className="liquid-panel absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl p-1.5 backdrop-blur-[26px] backdrop-brightness-[1.02] backdrop-saturate-[180%] backdrop-contrast-[1.08]">
+            <div className="relative z-10 border-b border-separator p-2">
+              <LifeAreaPicker
+                value={task.lifeArea}
+                onChange={(lifeArea) => dispatch({ type: "SET_TASK_AREA", id: task.id, lifeArea })}
+                compact
+              />
+            </div>
             <button
               type="button"
               onClick={() => {
@@ -249,6 +258,7 @@ function SlotPicker({
 }) {
   const { state, dispatch } = usePlanner();
   const [title, setTitle] = useState("");
+  const [lifeArea, setLifeArea] = useState<LifeArea | null>(null);
   const [overrideTaskId, setOverrideTaskId] = useState<string | null>(null);
   const inbox = getInboxTasks(state);
   const sortedInbox = sortTasksForMode(inbox, state, date, mode, category);
@@ -269,8 +279,9 @@ function SlotPicker({
 
   const createAndPlace = () => {
     if (!title.trim() || !canPlanTask(state, date, category)) return;
-    dispatch({ type: "ADD_TASK", title: title.trim(), category, date });
+    dispatch({ type: "ADD_TASK", title: title.trim(), category, date, lifeArea });
     setTitle("");
+    setLifeArea(null);
     onDone();
   };
 
@@ -296,6 +307,7 @@ function SlotPicker({
           <Plus size={24} />
         </button>
       </div>
+      <LifeAreaPicker value={lifeArea} onChange={setLifeArea} compact />
 
       {inbox.length > 0 && (
         <div>
@@ -334,6 +346,9 @@ function SlotPicker({
                     <span className="a-subheadline block text-label">{task.title}</span>
                     <span className="a-caption text-label-secondary">
                       {getFitLabel(mode, group)}
+                    </span>
+                    <span className="mt-1 block">
+                      <LifeAreaBadge area={task.lifeArea} />
                     </span>
                   </button>
                 )}

@@ -9,6 +9,7 @@ import {
   parseBackup,
   listAutoBackups,
   readAutoBackup,
+  clearAutoBackups,
   type Backup,
 } from "@/lib/backup";
 import { Button, Card, PageTitle, SectionLabel } from "@/components/apple/ui";
@@ -45,6 +46,7 @@ export default function DadosPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [backupsVersion, setBackupsVersion] = useState(0);
+  const [confirmReset, setConfirmReset] = useState(false);
   const autoBackups = useAutoBackups(backupsVersion);
 
   const restore = (b: Backup) => {
@@ -67,6 +69,14 @@ export default function DadosPage() {
         text: e instanceof Error ? e.message : "Falha ao importar.",
       });
     }
+  };
+
+  const handleReset = () => {
+    clearAutoBackups();
+    dispatch({ type: "RESET" });
+    setConfirmReset(false);
+    setBackupsVersion((v) => v + 1);
+    setMsg({ kind: "ok", text: "App resetado. O planejador voltou ao estado inicial." });
   };
 
   const taskCount = planner.tasks.length;
@@ -149,6 +159,45 @@ export default function DadosPage() {
           <p className="a-caption mt-3 text-label-secondary">
             Importar substitui os dados atuais deste dispositivo.
           </p>
+        </Card>
+      </section>
+
+      <section className="mb-6">
+        <SectionLabel>Reset</SectionLabel>
+        <Card className="mt-3 p-5">
+          <div className="space-y-3">
+            <div>
+              <h2 className="a-headline text-label">Começar do zero</h2>
+              <p className="a-subheadline mt-2 text-label-secondary">
+                Apaga tarefas, hábitos, métricas, agenda, metas e backups automáticos
+                deste navegador.
+              </p>
+            </div>
+
+            {confirmReset ? (
+              <div className="rounded-2xl border border-danger-fill/40 bg-fill-subtle p-3">
+                <p className="a-caption mb-3 text-danger">
+                  Essa ação não pode ser desfeita sem um backup exportado.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="a-subheadline min-h-[44px] rounded-full bg-danger-fill px-4 text-white transition-opacity hover:opacity-90"
+                  >
+                    Confirmar reset
+                  </button>
+                  <Button variant="secondary" onClick={() => setConfirmReset(false)}>
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button variant="secondary" onClick={() => setConfirmReset(true)}>
+                Resetar app
+              </Button>
+            )}
+          </div>
         </Card>
       </section>
 

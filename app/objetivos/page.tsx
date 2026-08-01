@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { usePlanner, Quarter } from "@/lib/planner-store";
 import { PageTitle, Card, Button, SectionLabel } from "@/components/apple/ui";
-import { LifeAreasPanel } from "@/components/planner/LifeAreasPanel";
 import Link from "next/link";
 
 const QUARTERS: { id: Quarter; label: string; months: string }[] = [
@@ -98,11 +97,6 @@ export default function ObjetivosPage() {
               </Card>
             ))}
           </div>
-        </section>
-
-        <section className="space-y-4">
-          <SectionLabel>Áreas da vida</SectionLabel>
-          <LifeAreasPanel state={state} />
         </section>
       </div>
     </main>

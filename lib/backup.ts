@@ -93,3 +93,12 @@ export function readAutoBackup(key: string): Backup | null {
     return null;
   }
 }
+
+export function clearAutoBackups() {
+  if (typeof window === "undefined") return;
+  for (const key of Object.keys(localStorage)) {
+    if (key.startsWith(AUTO_PREFIX)) {
+      localStorage.removeItem(key);
+    }
+  }
+}

@@ -29,6 +29,19 @@ function isEmptyObj(o: unknown): boolean {
   return !o || (typeof o === "object" && Object.keys(o as object).length === 0);
 }
 
+function isPlannerEmpty(planner: ReturnType<typeof buildBackup>["planner"]): boolean {
+  return (
+    (planner.tasks?.length ?? 0) === 0 &&
+    (planner.timeBlocks?.length ?? 0) === 0 &&
+    (planner.habits?.length ?? 0) === 0 &&
+    (planner.habitLogs?.length ?? 0) === 0 &&
+    (planner.dayLogs?.length ?? 0) === 0 &&
+    (planner.focusSessions?.length ?? 0) === 0 &&
+    isEmptyObj(planner.yearFocus) &&
+    isEmptyObj(planner.lifeAreaTargets)
+  );
+}
+
 /**
  * Bridges the planner reducer store with Supabase. Strategy:
  *  - On login: pull the remote row. If it has data, hydrate local state from
@@ -58,6 +71,7 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   // ---- Daily local auto-backup snapshot ----
   useEffect(() => {
     if (!hydrated) return;
+    if (isPlannerEmpty(planner)) return;
     autoBackup(buildBackup(planner));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [

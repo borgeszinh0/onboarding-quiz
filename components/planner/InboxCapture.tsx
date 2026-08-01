@@ -13,6 +13,7 @@ import {
   getDayMode,
   getFitLabel,
   getModeSource,
+  groupTasksForTodayRecommendation,
   sortTasksForMode,
   type TaskFitGroup,
 } from "@/lib/day-mode";
@@ -31,7 +32,7 @@ export function InboxCapture() {
   const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const mode = getDayMode(state, date);
   const modeSource = getModeSource(state, date);
-  const sortedItems = sortTasksForMode(visibleItems, state, date, mode);
+  const sortedItems = groupTasksForTodayRecommendation(visibleItems, state, date, mode);
   const groupedItems: Record<TaskFitGroup, typeof sortedItems> = {
     recommended: sortedItems.filter((item) => item.group === "recommended"),
     compatible: sortedItems.filter((item) => item.group === "compatible"),

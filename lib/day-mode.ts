@@ -1,4 +1,5 @@
 import type { PlannerState, Task, TaskCategory } from "./planner-types";
+import { SLOT_LIMITS } from "./planner-data";
 
 export type DayMode = "low" | "medium" | "high";
 export type TaskFitGroup = "recommended" | "compatible" | "saveForLater";
@@ -159,6 +160,54 @@ export function sortTasksForMode(
       return { task, score, group: getFitGroup(score) };
     })
     .sort((a, b) => b.score - a.score || a.task.createdAt - b.task.createdAt);
+}
+
+export function groupTasksForTodayRecommendation(
+  tasks: Task[],
+  state: PlannerState,
+  date: string,
+  mode: DayMode
+): Array<{ task: Task; score: number; group: TaskFitGroup }> {
+  const rules = DAY_MODE_RULES[mode];
+  const remainingSlots = Object.fromEntries(
+    (Object.keys(SLOT_LIMITS) as FunnelCategory[]).map((category) => [
+      category,
+      Math.max(0, SLOT_LIMITS[category] - getPlannedCountByCategory(state, date, category)),
+    ])
+  ) as Record<FunnelCategory, number>;
+  const remainingRecommended = Object.fromEntries(
+    (Object.keys(SLOT_LIMITS) as FunnelCategory[]).map((category) => [
+      category,
+      Math.max(
+        0,
+        rules.recommendedTasks[category] - getPlannedCountByCategory(state, date, category)
+      ),
+    ])
+  ) as Record<FunnelCategory, number>;
+
+  return tasks
+    .map((task) => {
+      const score = getTaskFitScore({ state, date, mode, task });
+      return {
+        task,
+        score,
+        category: inferTaskFitCategory(task),
+      };
+    })
+    .sort((a, b) => b.score - a.score || a.task.createdAt - b.task.createdAt)
+    .map(({ task, score, category }) => {
+      let group: TaskFitGroup = "saveForLater";
+      if (remainingSlots[category] > 0 && score >= 50) {
+        if (remainingRecommended[category] > 0) {
+          group = "recommended";
+          remainingRecommended[category] -= 1;
+        } else {
+          group = "compatible";
+        }
+        remainingSlots[category] -= 1;
+      }
+      return { task, score, group };
+    });
 }
 
 export function getRecommendedBudgetCopy(

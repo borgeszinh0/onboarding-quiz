@@ -102,6 +102,7 @@ Construído do zero nesta sessão em cima da **skill `apple-ui-design`** (design
 ### Tokens e Estética Gemini (`app/globals.css`)
 
 - **Bubbly & Minimalista:** O aplicativo adotou uma identidade visual focada em contrastes extremos (fundo preto absoluto ou branco puro, sem cinzas chapados) e curvaturas acentuadas (`rounded-3xl` e border-radius de `32px` em cartões).
+- **Dock Flutuante Imersiva:** A barra de navegação inferior foi convertida em uma pílula flutuante (estilo Instagram Reels / Gemini App) com blur super pesado e alta translucidez, e sem rótulos de texto nos ícones.
 - **Gemini Spark:** A cor de destaque primária para eventos de conclusão (como bater um hábito ou fechar uma tarefa) agora usa o gradiente `--gemini-grad` inspirado nos tons da IA do Google (azul, roxo, rosa).
 - Cor: `--bg`, `--label`, `--label-secondary`, `--separator`, `--fill-subtle`, `--card-bg/border/shadow`, todos com variante escura via `@media (prefers-color-scheme: dark)` — **não existe toggle manual de tema**, segue o SO.
 - Espaçamento (`--space-*`) e `--ease-standard` (curva de easing) ficam **fora do bloco `@theme`** de propósito — `--spacing-*` é namespace reservado do Tailwind 4 e colidir com ele quebra todas as utilities de padding/margem.

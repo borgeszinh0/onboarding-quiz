@@ -54,17 +54,17 @@ function SyncBadge() {
   );
 }
 
-function NavIcon({ icon }: { icon: (typeof MOBILE_TABS)[number]["icon"] }) {
+function NavIcon({ icon, active }: { icon: (typeof MOBILE_TABS)[number]["icon"], active?: boolean }) {
   return (
     <svg
       aria-hidden
       viewBox="0 0 24 24"
-      className="h-5 w-5"
+      className="h-6 w-6 transition-all duration-200"
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth="2"
+      strokeWidth={active ? "2.5" : "1.75"}
     >
       {icon === "today" && (
         <>
@@ -189,10 +189,12 @@ export default function Header() {
 
       <nav
         aria-label="Navegação principal"
-        className="fixed inset-x-4 bottom-[calc(16px+env(safe-area-inset-bottom))] z-40 h-[64px] rounded-3xl border shadow-2xl backdrop-blur-2xl sm:hidden transition-all duration-300"
+        className="fixed inset-x-6 bottom-[calc(16px+env(safe-area-inset-bottom))] z-40 h-[64px] rounded-full sm:hidden shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-none"
         style={{
-          borderColor: "color-mix(in oklab, var(--separator) 50%, transparent)",
-          background: "color-mix(in oklab, var(--bg-elevated) 70%, transparent)",
+          background: "color-mix(in oklab, var(--bg-elevated) 35%, transparent)",
+          backdropFilter: "blur(24px) saturate(180%)",
+          WebkitBackdropFilter: "blur(24px) saturate(180%)",
+          border: "1px solid color-mix(in oklab, var(--separator) 15%, transparent)",
         }}
       >
         <div className="mx-auto flex h-full max-w-xl items-center justify-between px-3">
@@ -210,20 +212,16 @@ export default function Header() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className="group relative flex flex-1 flex-col items-center justify-center gap-1 rounded-3xl h-[52px] transition-all duration-300"
+                className="group flex flex-1 items-center justify-center h-full active:scale-95 transition-transform duration-200"
                 style={{ 
                   color: active ? "var(--label)" : "var(--label-secondary)"
                 }}
               >
-                {active && (
-                  <span 
-                    aria-hidden
-                    className="absolute inset-0 rounded-3xl opacity-[0.08] dark:opacity-[0.15]"
-                    style={{ background: "var(--gemini-grad)" }}
-                  />
-                )}
-                <NavIcon icon={item.icon} />
-                <span className="text-[11px] leading-[13px]">{item.label}</span>
+                <div 
+                  className={`flex items-center justify-center transition-all duration-300 ${active ? "bg-[color:var(--fill-subtle)] rounded-full w-[72px] h-[52px]" : "w-[52px] h-[52px]"}`}
+                >
+                  <NavIcon icon={item.icon} active={active} />
+                </div>
               </Link>
             );
           })}

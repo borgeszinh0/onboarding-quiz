@@ -105,6 +105,7 @@ body {
     system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
 }
 
 /* ---------- Primitivas ---------- */

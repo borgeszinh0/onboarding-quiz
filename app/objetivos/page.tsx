@@ -32,7 +32,7 @@ export default function ObjetivosPage() {
 
   return (
     <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
-      <Link href="/mais" className="mb-8 inline-block a-caption text-[color:var(--label-secondary)] hover:text-[color:var(--label)]">
+      <Link href="/mais" className="mb-8 inline-flex a-hit-44 items-center -ml-2 a-caption text-[color:var(--label-secondary)] hover:text-[color:var(--label)]">
         ← Voltar
       </Link>
       
@@ -54,7 +54,7 @@ export default function ObjetivosPage() {
                 <button
                   type="button"
                   onClick={() => startEdit(q.id)}
-                  className="a-caption text-[color:var(--accent-text)] hover:opacity-80"
+                  className="a-hit-44 -mr-3 a-caption text-[color:var(--accent-text)] hover:opacity-80"
                 >
                   Editar
                 </button>

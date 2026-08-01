@@ -7,6 +7,7 @@ import {
   isHabitDone,
   todayISO,
   toISODate,
+  weekDates,
 } from "@/lib/planner-store";
 import { Card, SectionLabel, BottomSheet } from "@/components/apple/ui";
 import type { Habit } from "@/lib/planner-types";
@@ -17,28 +18,20 @@ export function HabitTracker() {
   const [managing, setManaging] = useState(false);
   const habits = getActiveHabits(state);
   const today = todayISO();
-  const days = getRecentDays(28);
-  const currentStreak = getCurrentHabitStreak(habits, days, (habit, date) =>
-    isHabitDone(state, habit.id, date)
-  );
-  const totalCompleted = days.reduce(
-    (sum, day) =>
-      sum + habits.filter((habit) => isHabitEligibleForDate(habit, day.iso) && isHabitDone(state, habit.id, day.iso)).length,
-    0
-  );
-  const totalPossible = days.reduce(
-    (sum, day) => sum + habits.filter((habit) => isHabitEligibleForDate(habit, day.iso)).length,
-    0
-  );
+  const weekDays = getWeekHabitDays(today);
+  const streakDays = getRecentDays(28);
+  const weekScores = weekDays.map((day) => ({
+    ...day,
+    score: getHabitCompletionRatio(state, habits, day.iso),
+  }));
+  const maintainedDays = weekScores.filter((day) => day.score > 0).length;
 
   return (
     <section className="space-y-4">
       <HabitRhythmCard
         habits={habits}
-        days={days}
-        streak={currentStreak}
-        completed={totalCompleted}
-        possible={totalPossible}
+        days={weekScores}
+        maintainedDays={maintainedDays}
         onManage={() => setManaging(true)}
       />
 
@@ -62,7 +55,7 @@ export function HabitTracker() {
         <Card className="p-5">
           <p className="a-headline text-label">Comece com um hábito pequeno.</p>
           <p className="a-subheadline mt-2 text-label-secondary">
-            A matriz aparece assim que você marcar o primeiro dia.
+            O gráfico e os anéis aparecem assim que você marcar o primeiro dia.
           </p>
           <button
             type="button"
@@ -75,7 +68,13 @@ export function HabitTracker() {
       ) : (
         <div className="space-y-4">
           {habits.map((habit) => (
-            <HabitCard key={habit.id} habit={habit} today={today} days={days} />
+            <HabitCard
+              key={habit.id}
+              habit={habit}
+              today={today}
+              weekDays={weekDays}
+              streakDays={streakDays}
+            />
           ))}
         </div>
       )}
@@ -86,20 +85,15 @@ export function HabitTracker() {
 function HabitRhythmCard({
   habits,
   days,
-  streak,
-  completed,
-  possible,
+  maintainedDays,
   onManage,
 }: {
   habits: Habit[];
-  days: HabitDay[];
-  streak: number;
-  completed: number;
-  possible: number;
+  days: HabitScoreDay[];
+  maintainedDays: number;
   onManage: () => void;
 }) {
-  const { state } = usePlanner();
-  const hasLogs = completed > 0;
+  const hasLogs = days.some((day) => day.score > 0);
 
   return (
     <Card
@@ -125,7 +119,7 @@ function HabitRhythmCard({
           >
             <Flame size={19} />
           </span>
-          <h2 className="a-headline truncate text-label">Ritmo de hábitos</h2>
+          <h2 className="a-headline truncate text-label">Ritmo</h2>
         </div>
         <span className="a-subheadline shrink-0 text-label-secondary">Semana</span>
       </div>
@@ -133,25 +127,18 @@ function HabitRhythmCard({
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-5">
         <div className="min-w-0">
           <p className="text-[34px] font-semibold leading-[40px] tracking-normal text-label tabular">
-            {streak} {streak === 1 ? "dia" : "dias"}
+            {maintainedDays} {maintainedDays === 1 ? "dia" : "dias"}
           </p>
           <p className="a-subheadline mt-1 text-label-secondary">
-            {hasLogs ? "Sequência atual" : "Marque um hábito hoje para iniciar seu ritmo."}
+            {hasLogs ? "Hábitos mantidos nesta semana" : "Marque um hábito hoje para iniciar seu ritmo."}
           </p>
         </div>
-        <HabitHeatmap
-          days={days}
-          dotSize={8}
-          dotGap={6}
-          getRatio={(day) => getHabitCompletionRatio(state, habits, day.iso)}
-          getDisabled={(day) => habits.length === 0 || !habits.some((habit) => isHabitEligibleForDate(habit, day.iso))}
-          label="Mapa dos últimos 28 dias de hábitos"
-        />
+        <HabitPointsChart days={days} disabled={habits.length === 0} />
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-3">
         <p className="a-subheadline text-label-secondary">
-          {habits.length > 0 ? `${completed}/${possible} concluídos` : "Matriz fantasma"}
+          {habits.length > 0 ? "Tendência semanal" : "Gráfico aguardando dados"}
         </p>
         {habits.length === 0 && (
           <button
@@ -167,14 +154,25 @@ function HabitRhythmCard({
   );
 }
 
-function HabitCard({ habit, today, days }: { habit: Habit; today: string; days: HabitDay[] }) {
+function HabitCard({
+  habit,
+  today,
+  weekDays,
+  streakDays,
+}: {
+  habit: Habit;
+  today: string;
+  weekDays: HabitDay[];
+  streakDays: HabitDay[];
+}) {
   const { state, dispatch } = usePlanner();
   const [menuOpen, setMenuOpen] = useState(false);
   const [draftTitle, setDraftTitle] = useState(habit.title);
   const doneToday = isHabitDone(state, habit.id, today);
-  const completed = days.filter((day) => isHabitEligibleForDate(habit, day.iso) && isHabitDone(state, habit.id, day.iso)).length;
-  const possible = days.filter((day) => isHabitEligibleForDate(habit, day.iso)).length;
-  const streak = getCurrentSingleHabitStreak(habit, days, (date) => isHabitDone(state, habit.id, date));
+  const completed = weekDays.filter((day) => isHabitEligibleForDate(habit, day.iso) && isHabitDone(state, habit.id, day.iso)).length;
+  const possible = weekDays.filter((day) => isHabitEligibleForDate(habit, day.iso)).length;
+  const ratio = possible > 0 ? completed / possible : 0;
+  const streak = getCurrentSingleHabitStreak(habit, streakDays, (date) => isHabitDone(state, habit.id, date));
   const saveTitle = () => {
     const title = draftTitle.trim();
     if (!title || title === habit.title) return;
@@ -193,55 +191,42 @@ function HabitCard({ habit, today, days }: { habit: Habit; today: string; days: 
         boxShadow: "var(--metric-card-shadow)",
       }}
     >
-      <div className="space-y-4">
-        <div className="flex items-start gap-2">
-          <div className="min-w-0 flex-1">
-            <h3 className="a-headline text-label">{habit.title}</h3>
-            <p className="a-caption mt-1 text-label-secondary">
-              {streak} {streak === 1 ? "dia" : "dias"} de sequência
-            </p>
-          </div>
+      <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3">
+        <HabitProgressRing ratio={ratio} muted={!habit.isActive} />
+
+        <div className="min-w-0">
+          <h3 className="a-headline text-label">{habit.title}</h3>
+          <p className="a-caption mt-1 text-label-secondary">
+            {completed}/{possible} esta semana
+          </p>
+          <p className="a-caption mt-1 text-label-secondary">
+            Sequência de {streak} {streak === 1 ? "dia" : "dias"}
+          </p>
+        </div>
+
+        <div className="flex flex-col items-center gap-2">
           <button
             type="button"
             onClick={() => setMenuOpen((value) => !value)}
             aria-expanded={menuOpen}
             aria-label={`Ações de ${habit.title}`}
-            className="a-hit-44 -mr-2 -mt-2 flex shrink-0 items-center justify-center rounded-full text-label-secondary"
+            className="a-hit-44 flex shrink-0 items-center justify-center rounded-full text-label-secondary"
           >
             <MoreHorizontal size={22} />
           </button>
-        </div>
-
-        <div className="flex items-end justify-between gap-4">
-          <p className="a-caption min-w-0 text-label-secondary">
-            {completed}/{possible} dias concluídos
-          </p>
-          <div className="flex shrink-0 items-center gap-3">
-            <HabitHeatmap
-              days={days}
-              dotSize={6}
-              dotGap={4}
-              getRatio={(day) => {
-                if (!isHabitEligibleForDate(habit, day.iso)) return 0;
-                return isHabitDone(state, habit.id, day.iso) ? 1 : 0;
-              }}
-              getDisabled={(day) => !isHabitEligibleForDate(habit, day.iso)}
-              label={`Mapa dos últimos 28 dias de ${habit.title}`}
-            />
-            <button
-              type="button"
-              onClick={() => dispatch({ type: "TOGGLE_HABIT_LOG", habitId: habit.id, date: today })}
-              aria-pressed={doneToday}
-              aria-label={doneToday ? `Desmarcar ${habit.title} hoje` : `Marcar ${habit.title} hoje`}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-transform duration-200 active:scale-95"
-              style={{
-                background: doneToday ? "var(--metric-habits)" : "var(--fill-subtle)",
-                color: doneToday ? "var(--success-label)" : "var(--label-secondary)",
-              }}
-            >
-              <Check size={22} strokeWidth={2.6} />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => dispatch({ type: "TOGGLE_HABIT_LOG", habitId: habit.id, date: today })}
+            aria-pressed={doneToday}
+            aria-label={doneToday ? `Desmarcar ${habit.title} hoje` : `Marcar ${habit.title} hoje`}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-transform duration-200 active:scale-95"
+            style={{
+              background: doneToday ? "var(--metric-habits)" : "var(--fill-subtle)",
+              color: doneToday ? "var(--success-label)" : "var(--label-secondary)",
+            }}
+          >
+            <Check size={22} strokeWidth={2.6} />
+          </button>
         </div>
       </div>
 
@@ -351,49 +336,143 @@ function HabitManager() {
 
 interface HabitDay {
   iso: string;
+  label?: string;
 }
 
-function HabitHeatmap({
-  days,
-  dotSize,
-  dotGap,
-  getRatio,
-  getDisabled,
-  label,
-}: {
-  days: HabitDay[];
-  dotSize: number;
-  dotGap: number;
-  getRatio: (day: HabitDay) => number;
-  getDisabled: (day: HabitDay) => boolean;
+interface HabitScoreDay extends HabitDay {
   label: string;
-}) {
+  score: number;
+}
+
+function HabitPointsChart({ days, disabled }: { days: HabitScoreDay[]; disabled: boolean }) {
+  const width = 132;
+  const height = 64;
+  const horizontalPadding = 5;
+  const points = days.map((day, index) => {
+    const x =
+      horizontalPadding +
+      (index / Math.max(1, days.length - 1)) * (width - horizontalPadding * 2);
+    const y = getHabitPointY(day.score, height);
+    return { ...day, x, y };
+  });
+  const line = points.map((point) => `${point.x},${point.y}`).join(" ");
+
   return (
-    <div
-      role="img"
-      aria-label={label}
-      className="grid grid-flow-col grid-rows-4"
-      style={{ gap: dotGap }}
-    >
-      {days.map((day) => {
-        const ratio = getRatio(day);
-        const disabled = getDisabled(day);
-        return (
+    <div>
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        className="block h-16 w-[132px]"
+        role="img"
+        aria-label="Pontuação semanal dos hábitos"
+      >
+        {!disabled && points.some((point) => point.score > 0) && (
+          <polyline
+            points={line}
+            fill="none"
+            stroke="var(--metric-habits)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="0.78"
+          />
+        )}
+        {points.map((point) => {
+          const active = point.score > 0;
+          const complete = point.score >= 1;
+
+          return (
+            <circle
+              key={point.iso}
+              cx={point.x}
+              cy={point.y}
+              r={complete ? 5 : active ? 4 : 4}
+              fill={active ? "var(--metric-habits)" : "var(--metric-track)"}
+              stroke={complete ? "color-mix(in oklab, var(--metric-habits) 28%, var(--bg))" : "transparent"}
+              strokeWidth={complete ? 2 : 0}
+            >
+              <title>{`${point.label}: ${Math.round(point.score * 100)}%`}</title>
+            </circle>
+          );
+        })}
+      </svg>
+      <div className="mt-2 flex justify-between gap-[10px]">
+        {days.map((day) => (
           <span
             key={day.iso}
-            title={`${day.iso}: ${Math.round(ratio * 100)}%`}
-            className="rounded-full"
-            style={{
-              width: dotSize,
-              height: dotSize,
-              opacity: disabled ? 0.45 : 1,
-              background: getHeatmapColor(ratio, disabled),
-            }}
-          />
-        );
-      })}
+            className="a-caption block w-[10px] text-center uppercase text-label-secondary"
+          >
+            {day.label}
+          </span>
+        ))}
+      </div>
     </div>
   );
+}
+
+function HabitProgressRing({ ratio, muted }: { ratio: number; muted: boolean }) {
+  const size = 44;
+  const strokeWidth = 5;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = Math.max(0, Math.min(1, ratio));
+  const strokeDashoffset = circumference * (1 - progress);
+  const complete = progress >= 1;
+  const color = muted ? "var(--metric-muted)" : "var(--metric-habits)";
+
+  return (
+    <span className="relative flex h-11 w-11 shrink-0 items-center justify-center">
+      <svg
+        viewBox={`0 0 ${size} ${size}`}
+        className="-rotate-90 h-11 w-11"
+        role="img"
+        aria-label={`${Math.round(progress * 100)}% concluído nesta semana`}
+      >
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="var(--metric-track)"
+          strokeWidth={strokeWidth}
+        />
+        {progress > 0 && (
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+          />
+        )}
+      </svg>
+      {complete && !muted && (
+        <Check
+          aria-hidden
+          size={15}
+          strokeWidth={2.6}
+          className="absolute text-[color:var(--metric-habits)]"
+        />
+      )}
+    </span>
+  );
+}
+
+function getHabitPointY(score: number, height: number): number {
+  if (score <= 0) return height - 8;
+  if (score < 0.5) return height - 28;
+  return 14;
+}
+
+function getWeekHabitDays(anchor: string): HabitScoreDay[] {
+  return weekDates(anchor).map((iso, index) => ({
+    iso,
+    label: ["S", "T", "Q", "Q", "S", "S", "D"][index],
+    score: 0,
+  }));
 }
 
 function getRecentDays(count: number): HabitDay[] {
@@ -418,21 +497,6 @@ function isHabitEligibleForDate(habit: Habit, date: string): boolean {
   return habit.createdAt <= new Date(`${date}T23:59:59`).getTime();
 }
 
-function getCurrentHabitStreak(
-  habits: Habit[],
-  days: HabitDay[],
-  isDone: (habit: Habit, date: string) => boolean
-): number {
-  let streak = 0;
-  for (let index = days.length - 1; index >= 0; index -= 1) {
-    const eligible = habits.filter((habit) => isHabitEligibleForDate(habit, days[index].iso));
-    if (eligible.length === 0) continue;
-    if (eligible.some((habit) => isDone(habit, days[index].iso))) streak += 1;
-    else if (index !== days.length - 1) break;
-  }
-  return streak;
-}
-
 function getCurrentSingleHabitStreak(
   habit: Habit,
   days: HabitDay[],
@@ -445,12 +509,4 @@ function getCurrentSingleHabitStreak(
     else if (index !== days.length - 1) break;
   }
   return streak;
-}
-
-function getHeatmapColor(ratio: number, disabled: boolean): string {
-  if (disabled) return "color-mix(in oklab, var(--metric-track) 62%, transparent)";
-  if (ratio <= 0) return "var(--metric-track)";
-  if (ratio < 0.5) return "color-mix(in oklab, var(--metric-habits) 30%, var(--metric-track))";
-  if (ratio < 1) return "color-mix(in oklab, var(--metric-habits) 64%, var(--metric-track))";
-  return "var(--metric-habits)";
 }

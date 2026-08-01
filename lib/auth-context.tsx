@@ -42,6 +42,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    const handleAuthRedirect = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      const tokenHash = params.get("token_hash");
+      const type = params.get("type");
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!error) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } else if (tokenHash && type) {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: type as Parameters<typeof supabase.auth.verifyOtp>[0]["type"],
+        });
+        if (!error) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    };
+
+    handleAuthRedirect();
+
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null);
       setLoading(false);

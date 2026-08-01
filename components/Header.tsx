@@ -193,7 +193,7 @@ export default function Header() {
 
       <nav
         aria-label="Navegação principal"
-        className="liquid-dock fixed inset-x-4 bottom-dock-safe z-40 h-[80px] rounded-full backdrop-blur-[28px] backdrop-brightness-[1.02] backdrop-saturate-[190%] backdrop-contrast-[1.12] sm:hidden"
+        className="liquid-dock fixed inset-x-[18px] bottom-dock-safe z-40 h-[72px] rounded-full sm:hidden"
       >
         <div className="relative z-10 mx-auto flex h-full max-w-xl items-center justify-between px-3.5">
           {MOBILE_TABS.map((item) => {
@@ -216,7 +216,7 @@ export default function Header() {
                 }}
               >
                 <div 
-                  className={`flex items-center justify-center transition-all duration-300 ${active ? "liquid-dock-pill h-[64px] w-[88px]" : "h-[64px] w-[56px]"}`}
+                  className={`flex items-center justify-center transition-all duration-300 ${active ? "liquid-dock-pill h-[56px] w-[84px]" : "h-[56px] w-[54px]"}`}
                 >
                   <NavIcon icon={item.icon} active={active} />
                 </div>

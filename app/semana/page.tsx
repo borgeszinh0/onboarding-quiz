@@ -226,7 +226,7 @@ function MetricCard({
       style={{
         minHeight: 148,
         padding: 20,
-        borderRadius: 28,
+        borderRadius: 20,
         borderColor: "var(--separator)",
         background: "var(--metric-card-bg)",
         boxShadow: "var(--metric-card-shadow)",

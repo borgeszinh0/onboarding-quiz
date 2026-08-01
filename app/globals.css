@@ -1,22 +1,21 @@
 @import "tailwindcss";
 
 /* ============================================================
-   Design system — Apple-inspired.
-   Clareza (o conteúdo manda), deferência (a UI não compete),
-   profundidade (camadas criam hierarquia).
+   Design system — Raycast-inspired dark liquid glass.
+   Superfícies compactas, bordas hairline, cor dosada e glass estrutural.
    ============================================================ */
 
 @theme {
   /* Superfícies e texto */
-  --color-surface: #ffffff;
-  --color-surface-2: #f5f5f7;
-  --color-label: #1d1d1f;
-  --color-label-2: #86868b;
+  --color-surface: #050507;
+  --color-surface-2: #101014;
+  --color-label: rgba(255, 255, 255, 0.94);
+  --color-label-2: rgba(255, 255, 255, 0.58);
 
-  --color-accent: #0071e3;
-  --color-energia: #30d158;
-  --color-atencao: #ff9f0a;
-  --color-danger: #ff3b30;
+  --color-accent: #8b5cf6;
+  --color-energia: #22c55e;
+  --color-atencao: #f59e0b;
+  --color-danger: #f43f5e;
   
   --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
@@ -32,142 +31,122 @@
   --space-xl: 48px;
   --space-2xl: 96px;
 
-  --dock-height: 80px;
-  --dock-bottom-offset: 16px;
+  --dock-height: 72px;
+  --dock-bottom-offset: 18px;
   --dock-readability-gap: 48px;
   --bottom-nav-clearance: calc(
     var(--dock-height) + var(--dock-bottom-offset) +
       var(--dock-readability-gap) + env(safe-area-inset-bottom)
   );
 
-  /* Curva padrão da Apple para micro-interações. */
+  /* Curva padrão para micro-interações existentes. O nome da utility ficou
+     legado para evitar churn em classes Tailwind já espalhadas pelo app. */
   --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
 
   /* Sem isso, o ícone do seletor de hora nativo e a seta do <select>
-     renderizam no chrome do SO (geralmente claro) mesmo com o app escuro —
-     ícone branco-no-branco, ilegível. */
+     podem renderizar no chrome claro do SO mesmo com o app escuro. */
   color-scheme: light dark;
 
-  --bg: #ffffff;
-  --bg-elevated: #f4f5f8;
-  --label: #1d1d1f;
-  --label-secondary: #5f6368;
-  --separator: rgba(0, 0, 0, 0.05);
-  --card-bg: var(--bg-elevated);
-  --card-border: transparent;
+  --bg: #050507;
+  --bg-radial: radial-gradient(
+      circle at 50% -10%,
+      rgba(139, 92, 246, 0.16),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 100% 20%,
+      rgba(56, 189, 248, 0.08),
+      transparent 28%
+    );
+  --bg-elevated: rgba(255, 255, 255, 0.045);
+  --glass-1: rgba(255, 255, 255, 0.045);
+  --glass-2: rgba(255, 255, 255, 0.07);
+  --glass-3: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-strong: rgba(255, 255, 255, 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+  --label: rgba(255, 255, 255, 0.94);
+  --label-secondary: rgba(255, 255, 255, 0.58);
+  --label-tertiary: rgba(255, 255, 255, 0.36);
+  --separator: rgba(255, 255, 255, 0.08);
+  --card-bg: var(--glass-1);
+  --card-border: var(--glass-border);
   --card-shadow: none;
-  --fill-subtle: rgba(0, 0, 0, 0.05);
+  --fill-subtle: rgba(255, 255, 255, 0.07);
+  --accent: #8b5cf6;
+  --accent-2: #38bdf8;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #f43f5e;
   --energy-low: #34a853;
-  --energy-medium: #4285f4;
+  --energy-medium: #38bdf8;
   --energy-high: #9b72cb;
-  --energy-low-bg: rgba(52, 168, 83, 0.1);
-  --energy-medium-bg: rgba(66, 133, 244, 0.1);
-  --energy-high-bg: rgba(155, 114, 203, 0.12);
-  --metric-focus: #4285f4;
+  --energy-low-bg: rgba(34, 197, 94, 0.14);
+  --energy-medium-bg: rgba(56, 189, 248, 0.14);
+  --energy-high-bg: rgba(139, 92, 246, 0.16);
+  --metric-focus: #38bdf8;
   --metric-tasks: #9b72cb;
   --metric-plan: #f97316;
-  --metric-habits: #34a853;
-  --metric-habits-soft: rgba(52, 168, 83, 0.12);
+  --metric-habits: #22c55e;
+  --metric-habits-soft: rgba(34, 197, 94, 0.18);
   --metric-streak: #f97316;
   --metric-consistency: #22c55e;
   --metric-energy: #8b5cf6;
-  --metric-energy-low: #34a853;
-  --metric-energy-medium: #4285f4;
+  --metric-energy-low: #22c55e;
+  --metric-energy-medium: #38bdf8;
   --metric-energy-high: #9b72cb;
-  --metric-warning: #fbbc04;
-  --metric-danger: #ea4335;
-  --metric-track: rgba(0, 0, 0, 0.08);
-  --metric-muted: rgba(0, 0, 0, 0.18);
-  --metric-card-bg: var(--card-bg);
-  --metric-card-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
-  --liquid-control-bg: rgba(255, 255, 255, 0.24);
-  --liquid-control-border: rgba(255, 255, 255, 0.55);
-  --liquid-control-shadow: 0 8px 24px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.58),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
-  --liquid-panel-bg: rgba(246, 248, 255, 0.22);
-  --liquid-panel-surface: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0.05) 48%,
-    rgba(0, 0, 0, 0.06)
-  );
-  --liquid-panel-border: rgba(255, 255, 255, 0.58);
-  --liquid-panel-shadow: 0 24px 64px rgba(0, 0, 0, 0.18),
-    inset 0 1px 1px rgba(255, 255, 255, 0.66),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.08);
-  --liquid-scrim: rgba(0, 0, 0, 0.18);
-  --dock-bg: rgba(246, 248, 255, 0.14);
-  --dock-surface: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.14),
-    rgba(255, 255, 255, 0.03) 46%,
-    rgba(0, 0, 0, 0.06)
-  );
-  --dock-border: rgba(255, 255, 255, 0.72);
-  --dock-inner-border: rgba(255, 255, 255, 0.5);
-  --dock-active-bg: rgba(255, 255, 255, 0.26);
-  --dock-active-label: #1d1d1f;
-  --dock-inactive-label: rgba(29, 29, 31, 0.7);
-  --dock-shadow: 0 18px 48px rgba(0, 0, 0, 0.2),
-    0 2px 10px rgba(255, 255, 255, 0.3),
-    inset 0 1px 1px rgba(255, 255, 255, 0.76),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.12);
-  --dock-sheen: linear-gradient(
-      160deg,
-      rgba(255, 255, 255, 0.5) 0%,
-      rgba(255, 255, 255, 0.18) 26%,
-      rgba(255, 255, 255, 0.02) 48%,
-      rgba(255, 255, 255, 0.12) 78%,
-      rgba(255, 255, 255, 0.34) 100%
-    ),
-    radial-gradient(
-      100% 120% at 16% 0%,
-      rgba(255, 255, 255, 0.46),
-      transparent 42%
-    ),
-    radial-gradient(
-      80% 90% at 84% 100%,
-      rgba(255, 255, 255, 0.2),
-      transparent 54%
-    );
-  --dock-refract: radial-gradient(
-      85% 110% at 50% -40%,
-      rgba(255, 255, 255, 0.42),
-      transparent 56%
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.28),
-      transparent 18%,
-      transparent 82%,
-      rgba(255, 255, 255, 0.24)
-    );
+  --metric-warning: #f59e0b;
+  --metric-danger: #f43f5e;
+  --metric-track: rgba(255, 255, 255, 0.1);
+  --metric-muted: rgba(255, 255, 255, 0.24);
+  --metric-card-bg: var(--glass-2);
+  --metric-card-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  --liquid-control-bg: rgba(255, 255, 255, 0.07);
+  --liquid-control-border: rgba(255, 255, 255, 0.12);
+  --liquid-control-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --liquid-panel-bg: rgba(16, 16, 20, 0.62);
+  --liquid-panel-surface: none;
+  --liquid-panel-border: rgba(255, 255, 255, 0.16);
+  --liquid-panel-shadow: 0 24px 72px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --liquid-scrim: rgba(0, 0, 0, 0.56);
+  --dock-bg: rgba(12, 12, 16, 0.66);
+  --dock-surface: none;
+  --dock-border: rgba(255, 255, 255, 0.14);
+  --dock-inner-border: rgba(255, 255, 255, 0.08);
+  --dock-active-bg: rgba(255, 255, 255, 0.1);
+  --dock-active-label: rgba(255, 255, 255, 0.96);
+  --dock-inactive-label: rgba(255, 255, 255, 0.58);
+  --dock-shadow: 0 22px 64px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --dock-sheen: none;
+  --dock-refract: none;
   --dock-underlay-bg: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.54) 58%,
-    rgba(255, 255, 255, 0.9) 100%
+    rgba(5, 5, 7, 0) 0%,
+    rgba(5, 5, 7, 0.56) 54%,
+    rgba(5, 5, 7, 0.92) 100%
   );
   --dock-underlay-glow: radial-gradient(
     76% 68% at 50% 48%,
-    rgba(0, 0, 0, 0.08),
+    rgba(56, 189, 248, 0.08),
     transparent 72%
   );
 
-  --gemini-grad: linear-gradient(135deg, #4285f4 0%, #9b72cb 50%, #d96570 100%);
+  --gemini-grad: linear-gradient(135deg, #38bdf8 0%, #8b5cf6 100%);
   --gemini-text: transparent;
 
-  --success-fill: #34a853;
+  --success-fill: var(--success);
   --success-label: #ffffff;
-  --danger-text-light: #ea4335;
-  --attention-text-light: #fbbc04;
-  --accent-text-light: #4285f4;
-  --accent-text-dark: #8ab4f8;
+  --danger-text-light: var(--danger);
+  --attention-text-light: var(--warning);
+  --accent-text-light: var(--accent-2);
+  --accent-text-dark: var(--accent-2);
 
-  --accent-text: var(--accent-text-light);
-  --attention-text: var(--attention-text-light);
-  --danger-text: var(--danger-text-light);
+  --accent-text: var(--accent-2);
+  --attention-text: var(--warning);
+  --danger-text: var(--danger);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -466,12 +445,125 @@
   --danger-text: var(--danger-text-light);
 }
 
+/* Ordem importa: estes tokens vêm depois dos blocos legados de tema e
+   estabelecem o novo visual Raycast-like como padrão do app. */
+:root,
+:root.dark,
+:root.light {
+  color-scheme: dark;
+  --bg: #050507;
+  --bg-radial: radial-gradient(
+      circle at 50% -10%,
+      rgba(139, 92, 246, 0.16),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 100% 20%,
+      rgba(56, 189, 248, 0.08),
+      transparent 28%
+    );
+  --bg-elevated: rgba(255, 255, 255, 0.045);
+  --glass-1: rgba(255, 255, 255, 0.045);
+  --glass-2: rgba(255, 255, 255, 0.07);
+  --glass-3: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-strong: rgba(255, 255, 255, 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+  --label: rgba(255, 255, 255, 0.94);
+  --label-secondary: rgba(255, 255, 255, 0.58);
+  --label-tertiary: rgba(255, 255, 255, 0.36);
+  --separator: rgba(255, 255, 255, 0.08);
+  --card-bg: var(--glass-1);
+  --card-border: var(--glass-border);
+  --card-shadow: none;
+  --fill-subtle: rgba(255, 255, 255, 0.07);
+  --accent: #8b5cf6;
+  --accent-2: #38bdf8;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #f43f5e;
+  --accent-text: var(--accent-2);
+  --attention-text: var(--warning);
+  --danger-text: var(--danger);
+  --success-fill: var(--success);
+  --metric-focus: #38bdf8;
+  --metric-tasks: #a78bfa;
+  --metric-plan: #f59e0b;
+  --metric-habits: #22c55e;
+  --metric-habits-soft: rgba(34, 197, 94, 0.18);
+  --metric-streak: #f97316;
+  --metric-consistency: #22c55e;
+  --metric-energy: #8b5cf6;
+  --metric-track: rgba(255, 255, 255, 0.1);
+  --metric-muted: rgba(255, 255, 255, 0.24);
+  --metric-card-bg: var(--glass-2);
+  --metric-card-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  --liquid-control-bg: rgba(255, 255, 255, 0.07);
+  --liquid-control-border: rgba(255, 255, 255, 0.12);
+  --liquid-control-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --liquid-panel-bg: rgba(16, 16, 20, 0.62);
+  --liquid-panel-surface: none;
+  --liquid-panel-border: rgba(255, 255, 255, 0.16);
+  --liquid-panel-shadow: 0 24px 72px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --liquid-scrim: rgba(0, 0, 0, 0.56);
+  --dock-bg: rgba(12, 12, 16, 0.66);
+  --dock-surface: none;
+  --dock-border: rgba(255, 255, 255, 0.14);
+  --dock-inner-border: rgba(255, 255, 255, 0.08);
+  --dock-active-bg: rgba(255, 255, 255, 0.1);
+  --dock-active-label: rgba(255, 255, 255, 0.96);
+  --dock-inactive-label: rgba(255, 255, 255, 0.58);
+  --dock-shadow: 0 22px 64px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --dock-sheen: none;
+  --dock-refract: none;
+  --dock-underlay-bg: linear-gradient(
+    180deg,
+    rgba(5, 5, 7, 0) 0%,
+    rgba(5, 5, 7, 0.56) 54%,
+    rgba(5, 5, 7, 0.92) 100%
+  );
+  --dock-underlay-glow: radial-gradient(
+    76% 68% at 50% 48%,
+    rgba(56, 189, 248, 0.08),
+    transparent 72%
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    color-scheme: dark;
+    --bg: #050507;
+    --bg-radial: radial-gradient(
+        circle at 50% -10%,
+        rgba(139, 92, 246, 0.16),
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 100% 20%,
+        rgba(56, 189, 248, 0.08),
+        transparent 28%
+      );
+    --label: rgba(255, 255, 255, 0.94);
+    --label-secondary: rgba(255, 255, 255, 0.58);
+    --card-bg: var(--glass-1);
+    --card-border: var(--glass-border);
+    --metric-card-bg: var(--glass-2);
+    --dock-bg: rgba(12, 12, 16, 0.66);
+    --dock-border: rgba(255, 255, 255, 0.14);
+    --dock-active-bg: rgba(255, 255, 255, 0.1);
+  }
+}
+
 html,
 body {
-  background-color: var(--bg);
+  background:
+    var(--bg-radial),
+    var(--bg);
   color: var(--label);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
-    system-ui, sans-serif;
+  font-family: var(--font-geist-sans), Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overscroll-behavior-y: none;
@@ -479,20 +571,48 @@ body {
 
 /* ---------- Primitivas ---------- */
 
-/* Cartão bubbly tipo Gemini */
+/* Raycast surfaces */
+.surface-base {
+  background: var(--glass-1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+.surface-raised {
+  background: var(--glass-2);
+  border: 1px solid var(--glass-border-strong);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+}
+
+.surface-floating {
+  background: rgba(16, 16, 20, 0.62);
+  border: 1px solid var(--glass-border-strong);
+  box-shadow: var(--liquid-panel-shadow);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
 .a-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 32px;
+  border-radius: 20px;
   box-shadow: var(--card-shadow);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
 .metric-card {
   min-height: 148px;
   padding: 20px;
-  border-radius: 28px;
-  border-color: var(--separator);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  border-color: var(--glass-border-strong);
+  background: var(--metric-card-bg);
+  box-shadow: var(--metric-card-shadow);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
 }
 
 .metric-card-layout {
@@ -526,7 +646,7 @@ body {
   gap: 8px;
   min-height: 44px;
   padding: 12px 24px;
-  border-radius: 980px;
+  border-radius: 12px;
   font-size: 15px;
   line-height: 20px;
   font-weight: 500;
@@ -541,19 +661,12 @@ body {
 .a-btn-primary {
   position: relative;
   overflow: hidden;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.22),
-      rgba(255, 255, 255, 0) 46%,
-      rgba(0, 0, 0, 0.08)
-    ),
-    var(--gemini-grad);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   color: #ffffff;
-  box-shadow:
-    0 10px 28px rgba(66, 133, 244, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  color: #07070a;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .a-btn-primary:hover:not(:disabled) {
@@ -579,7 +692,7 @@ body {
   cursor: not-allowed;
 }
 
-/* Alvo mínimo Apple/WCAG para controles que não usam .a-btn. */
+/* Alvo mínimo WCAG para controles que não usam .a-btn. */
 .a-hit-44 {
   display: inline-flex;
   align-items: center;
@@ -781,11 +894,11 @@ body {
 .liquid-dock {
   overflow: hidden;
   isolation: isolate;
-  background:
-    var(--dock-surface),
-    var(--dock-bg);
+  background: var(--dock-bg);
   border: 1px solid var(--dock-border);
   box-shadow: var(--dock-shadow);
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
 }
 
 .dock-underlay {
@@ -821,7 +934,7 @@ body {
 .liquid-dock::before {
   z-index: 0;
   background: var(--dock-refract), var(--dock-sheen);
-  opacity: 0.88;
+  opacity: 0.08;
 }
 
 .liquid-dock::after {
@@ -837,9 +950,10 @@ body {
 .liquid-dock-pill {
   border-radius: 999px;
   background: var(--dock-active-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.36),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
 }
 
 .liquid-panel {
@@ -871,7 +985,7 @@ body {
       transparent 34%,
       rgba(255, 255, 255, 0.08) 100%
     );
-  opacity: 0.74;
+  opacity: 0.18;
 }
 
 :root.dark .liquid-panel::before {
@@ -917,12 +1031,8 @@ body {
 }
 
 .liquid-topbar {
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--bg) 58%, transparent),
-      color-mix(in oklab, var(--bg) 28%, transparent)
-    );
+  background: rgba(5, 5, 7, 0.72);
+  border-color: var(--glass-border);
   backdrop-filter: blur(24px) brightness(1.02) saturate(170%);
   -webkit-backdrop-filter: blur(24px) brightness(1.02) saturate(170%);
 }
@@ -941,29 +1051,29 @@ body {
 }
 
 /* ---------- Tipografia ----------
-   Escala única alinhada ao HIG: tamanho / line-height / peso.
+   Escala única do tema Raycast-like: tamanho / line-height / peso.
    Letter-spacing permanece em 0 para evitar drift em UI compacta. */
 
 .a-large-title {
-  font-size: 34px;
-  line-height: 41px;
-  font-weight: 500;
+  font-size: 32px;
+  line-height: 38px;
+  font-weight: 600;
 }
 
 .a-title-2 {
-  font-size: 22px;
-  line-height: 28px;
-  font-weight: 500;
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 600;
 }
 
 .a-headline {
-  font-size: 17px;
+  font-size: 15px;
   line-height: 22px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .a-body {
-  font-size: 17px;
+  font-size: 15px;
   line-height: 22px;
   font-weight: 400;
 }
@@ -975,9 +1085,9 @@ body {
 }
 
 .a-caption {
-  font-size: 13px;
-  line-height: 18px;
-  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
 }
 
 /* ---------- Movimento ---------- */

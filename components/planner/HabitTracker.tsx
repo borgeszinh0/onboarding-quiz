@@ -101,7 +101,7 @@ function HabitRhythmCard({
       style={{
         minHeight: 180,
         padding: 20,
-        borderRadius: 28,
+        borderRadius: 20,
         borderColor: "var(--separator)",
         background: "var(--metric-card-bg)",
         boxShadow: "var(--metric-card-shadow)",
@@ -185,7 +185,7 @@ function HabitCard({
       style={{
         minHeight: 104,
         padding: 16,
-        borderRadius: 24,
+        borderRadius: 20,
         borderColor: "var(--separator)",
         background: "var(--metric-card-bg)",
         boxShadow: "var(--metric-card-shadow)",

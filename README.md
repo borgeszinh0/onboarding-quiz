@@ -62,7 +62,7 @@ components/planner/
   FocusMode.tsx           Overlay de tela cheia do cronômetro
   HabitBar.tsx            Barra fixa de hábitos no rodapé
 
-components/apple/ui.tsx  Design system (ver abaixo) — Card, Button, PageTitle, SectionLabel
+components/apple/ui.tsx  Primitivas de UI legadas no nome, agora renderizadas pelo tema Raycast-like — Card, Button, PageTitle, SectionLabel
 ```
 
 ### Padrão de hidratação (importante)
@@ -124,16 +124,22 @@ Sem as env vars, o botão de login some e o app usa só localStorage.
 
 ## Design system
 
-Construído do zero nesta sessão em cima da **skill `apple-ui-design`** (design Apple-like: clareza, deferência, profundidade) e depois revisado com a **skill `impeccable`** (comando `polish`, register "product") e a **skill `web-design-guidelines`** (Vercel).
+A direção visual atual abandona o padrão Apple-like anterior e assume uma estética **Raycast-inspired dark liquid glass tech**. A referência principal é [Raycast](https://www.raycast.com/): fundo preto, superfícies translúcidas compactas, bordas hairline, blur controlado, acentos frios e pouca cor.
 
-### Tokens e Estética Gemini (`app/globals.css`)
+### Tokens Raycast-like (`app/globals.css`)
 
-- **Bubbly & Minimalista:** O aplicativo adotou uma identidade visual focada em contrastes extremos (fundo preto absoluto ou branco puro, sem cinzas chapados) e curvaturas acentuadas (`rounded-3xl` e border-radius de `32px` em cartões).
-- **Liquid Glass funcional:** A barra inferior e superfícies principais usam uma leitura inspirada em Liquid Glass: pílula flutuante, fundo translúcido, reflexo discreto do conteúdo por trás, borda sutil e contraste preservado. Evitar voltar para glassmorphism pesado; a intenção é profundidade controlada, não peça de vidro embaçada.
-- **Gemini Spark:** A cor de destaque primária para eventos de conclusão (como bater um hábito ou fechar uma tarefa) agora usa o gradiente `--gemini-grad` inspirado nos tons da IA do Google (azul, roxo, rosa).
-- Cor: `--bg`, `--label`, `--label-secondary`, `--separator`, `--fill-subtle`, `--card-bg/border/shadow`, todos com variante escura via `@media (prefers-color-scheme: dark)` — **não existe toggle manual de tema**, segue o SO.
-- Espaçamento (`--space-*`) e `--ease-standard` (curva de easing) ficam **fora do bloco `@theme`** de propósito — `--spacing-*` é namespace reservado do Tailwind 4 e colidir com ele quebra todas as utilities de padding/margem.
-- `color-scheme: light dark` no `:root` — sem isso, o ícone do seletor de hora nativo (`<input type="time">`) e a seta do `<select>` renderizam no chrome claro do SO mesmo com o app em modo escuro.
+- **Base preta:** `--bg: #050507`, com brilho radial sutil em `--bg-radial`. Não usar orbs grandes, bokeh, textura barulhenta ou gradientes multicoloridos decorativos.
+- **Vidro estrutural:** `--glass-1`, `--glass-2`, `--glass-3`, `--glass-border`, `--glass-border-strong`, `--glass-highlight` e `--glass-shadow` definem a hierarquia. Não criar efeitos diferentes por componente.
+- **Superfícies:** usar `.surface-base` para cards normais, `.surface-raised` para métricas/destaques e `.surface-floating` para dock, command bar, sheets e modais.
+- **Cards:** raio padrão de `20px`, padding `16px` ou `20px`, `background: var(--glass-1)`, `border: 1px solid var(--glass-border)`, `backdrop-filter: blur(18px) saturate(140%)`. Cards importantes usam `--glass-2`, borda forte e sombra curta.
+- **Dock:** pílula escura de `72px`, `inset-x: 18px`, `bottom: calc(18px + env(safe-area-inset-bottom))`, `background: rgba(12, 12, 16, 0.66)`, borda `rgba(255,255,255,.14)` e blur `26px`.
+- **Gráficos:** trilha `rgba(255,255,255,.10)`, ativo `--accent-2` ou token da métrica, glow somente no traço/ponto ativo do gráfico, nunca no card inteiro.
+- **Tipografia:** Geist/Inter/system, com escala `32/38 600`, `20/26 600`, `15/22 400`, `12/16 500`, números em `tabular-nums`.
+- **Tema:** o app está visualmente dark-first. `:root.light` também recebe os tokens escuros por enquanto para evitar drift visual enquanto não existir um spec de tema claro Raycast-like.
+- Espaçamento (`--space-*`) e `--ease-standard` ficam **fora do bloco `@theme`** de propósito — `--spacing-*` é namespace reservado do Tailwind 4 e colidir com ele quebra todas as utilities de padding/margem.
+- `color-scheme` permanece configurado no `:root` para manter controles nativos (`<input type="time">`, `<select>`) legíveis no tema escuro.
+
+Regra de aprovação visual: a tela precisa parecer uma ferramenta premium de comando e foco. Se parecer uma demo de glassmorphism, reduzir blur, glow, saturação, radius e cor.
 
 ### Tailwind 4 e CSS variables
 
@@ -147,7 +153,7 @@ Use utilities nomeadas em `app/globals.css` (`text-label`, `text-label-secondary
 
 ### Componentes (`components/apple/ui.tsx`)
 
-`Card`, `Button` (variantes primary/secondary/plain), `PageTitle`, `SectionLabel`. Todo alvo de toque ≥44px. Cards usam blur + borda 1px + sombra **rasa** (nunca sombra difusa de blur alto junto com borda — é um padrão banido explicitamente pela skill impeccable, o "ghost-card", clichê reconhecível de UI gerada por IA).
+`Card`, `Button` (variantes primary/secondary/plain), `PageTitle`, `SectionLabel`. O nome da pasta é legado, mas o visual vem dos tokens Raycast-like. Todo alvo de toque ≥44px. Cards usam blur + borda 1px + sombra rasa quando elevados; evitar sombra difusa forte junto com borda branca grossa.
 
 ### O que foi revisado e corrigido no polish pass
 

@@ -1,4 +1,4 @@
-import type { LifeArea, PlannerState, TaskCategory } from "./planner-types";
+import type { Habit, LifeArea, PlannerState, Task, TaskCategory } from "./planner-types";
 
 export const LIFE_AREA_ORDER: readonly LifeArea[] = [
   "body",
@@ -55,6 +55,76 @@ const TASK_POINTS: Record<TaskCategory, number> = {
   big: 3,
 };
 
+const AREA_KEYWORDS: Record<LifeArea, readonly string[]> = {
+  body: [
+    "agua",
+    "beber",
+    "caminhar",
+    "consulta",
+    "corpo",
+    "dormir",
+    "exercicio",
+    "saude",
+    "sono",
+    "treino",
+  ],
+  mind: [
+    "aula",
+    "estudo",
+    "estudar",
+    "ler",
+    "livro",
+    "mente",
+    "notas",
+    "pesquisar",
+    "revisar materiais",
+  ],
+  social: [
+    "audio",
+    "conversa",
+    "follow-up",
+    "mensagem",
+    "mentoria",
+    "perguntar",
+    "reuniao",
+    "social",
+  ],
+  spiritual: [
+    "journaling",
+    "meditar",
+    "meditacao",
+    "reflexao",
+    "ritual",
+    "silencio",
+  ],
+  financial: [
+    "boleto",
+    "compras",
+    "financeiro",
+    "gastos",
+    "orcamento",
+    "pagar",
+    "recibos",
+  ],
+  professional: [
+    "app",
+    "arquitetura",
+    "backlog",
+    "briefing",
+    "checklist",
+    "deploy",
+    "designer",
+    "documentacao",
+    "metrica",
+    "onboarding",
+    "produto",
+    "proposta",
+    "reuniao",
+    "ui",
+    "widget",
+  ],
+};
+
 export function getLifeAreaRadarRows(
   state: PlannerState,
   referenceDate = new Date()
@@ -75,8 +145,8 @@ export function getLifeAreaRadarRows(
   const hasPrevious = previous.totalPoints > 0;
   const denominator = Math.max(current.maxAreaPoints, previous.maxAreaPoints, 1);
   const classifiedItems =
-    state.tasks.filter((task) => task.lifeArea).length +
-    state.habits.filter((habit) => habit.lifeArea).length;
+    state.tasks.filter((task) => getTaskLifeArea(task)).length +
+    state.habits.filter((habit) => getHabitLifeArea(habit)).length;
 
   const rows = LIFE_AREA_ORDER.map((area) => ({
     area,
@@ -115,37 +185,41 @@ function scorePeriod(state: PlannerState, startDate: Date, endDate: Date) {
   const activeDates = new Set<string>();
 
   for (const task of state.tasks) {
-    if (!task.lifeArea || task.status !== "done" || !task.date) continue;
+    const area = getTaskLifeArea(task);
+    if (!area || task.status !== "done" || !task.date) continue;
     if (!isISOInRange(task.date, start, end)) continue;
     const points = TASK_POINTS[task.category];
-    byArea[task.lifeArea].tasksCompleted += 1;
-    byArea[task.lifeArea].points += points;
+    byArea[area].tasksCompleted += 1;
+    byArea[area].points += points;
     activeDates.add(task.date);
   }
 
   for (const session of state.focusSessions) {
     if (!session.completed || !isISOInRange(session.date, start, end)) continue;
     const task = state.tasks.find((item) => item.id === session.taskId);
-    if (!task?.lifeArea) continue;
+    const area = task ? getTaskLifeArea(task) : null;
+    if (!area) continue;
     const minutes = Math.round(session.elapsedMs / 60_000);
-    byArea[task.lifeArea].focusMinutes += minutes;
-    byArea[task.lifeArea].points += Math.floor(session.elapsedMs / FOCUS_UNIT_MS);
+    byArea[area].focusMinutes += minutes;
+    byArea[area].points += Math.floor(session.elapsedMs / FOCUS_UNIT_MS);
     activeDates.add(session.date);
   }
 
   const habitsById = new Map(state.habits.map((habit) => [habit.id, habit]));
   for (const habit of state.habits) {
-    if (habit.lifeArea && habit.isActive) {
-      byArea[habit.lifeArea].linkedHabits += 1;
+    const area = getHabitLifeArea(habit);
+    if (area && habit.isActive) {
+      byArea[area].linkedHabits += 1;
     }
   }
 
   for (const log of state.habitLogs) {
     if (!log.done || !isISOInRange(log.date, start, end)) continue;
     const habit = habitsById.get(log.habitId);
-    if (!habit?.lifeArea || !habit.isActive) continue;
-    byArea[habit.lifeArea].habitCompletions += 1;
-    byArea[habit.lifeArea].points += 1;
+    const area = habit ? getHabitLifeArea(habit) : null;
+    if (!habit?.isActive || !area) continue;
+    byArea[area].habitCompletions += 1;
+    byArea[area].points += 1;
     activeDates.add(log.date);
   }
 
@@ -155,6 +229,31 @@ function scorePeriod(state: PlannerState, startDate: Date, endDate: Date) {
     maxAreaPoints: Math.max(...LIFE_AREA_ORDER.map((area) => byArea[area].points)),
     activeDays: activeDates.size,
   };
+}
+
+function getTaskLifeArea(task: Task): LifeArea | null {
+  return task.lifeArea ?? inferLifeArea(task.title);
+}
+
+function getHabitLifeArea(habit: Habit): LifeArea | null {
+  return habit.lifeArea ?? inferLifeArea(habit.title);
+}
+
+function inferLifeArea(title: string): LifeArea | null {
+  const normalized = normalizeText(title);
+  for (const area of LIFE_AREA_ORDER) {
+    if (AREA_KEYWORDS[area].some((keyword) => normalized.includes(keyword))) {
+      return area;
+    }
+  }
+  return null;
+}
+
+function normalizeText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
 function normalize(points: number, denominator: number): number {

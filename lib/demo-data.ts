@@ -180,6 +180,14 @@ export function buildDemoPlannerState(referenceDate = new Date()): PlannerState 
         Q4: "Publicar o produto e revisar a estratégia para o próximo ciclo.",
       },
     },
+    lifeAreaTargets: {
+      body: 70,
+      mind: 65,
+      social: 45,
+      spiritual: 55,
+      financial: 40,
+      professional: 85,
+    },
     lastRolloverDate: toISODate(today),
   };
 }

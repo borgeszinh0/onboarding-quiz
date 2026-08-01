@@ -133,7 +133,7 @@ Cálculo atual do radar (`lib/life-areas.ts`):
 - Pontos: pequena `+1`, média `+2`, grande `+3`, foco `+1` por 25 minutos completos, hábito concluído `+1`.
 - `Atual` = últimos 30 dias; `Anterior` = 30 dias anteriores, escondido quando não há dados.
 - Valores são normalizados relativamente ao maior volume do período para mostrar distribuição/concentração. Não tratar como nota de vida.
-- `Meta` hoje é padrão visual discreto (`75`) para todas as áreas até existir configuração real de metas por área.
+- `Meta` usa `state.lifeAreaTargets`, editável no botão `Gerenciar` do painel. Sem valor salvo, cai no padrão visual discreto (`75`).
 
 ### Sync e backup
 

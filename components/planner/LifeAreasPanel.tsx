@@ -2,11 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Card } from "@/components/apple/ui";
+import { BottomSheet, Card } from "@/components/apple/ui";
 import {
+  LIFE_AREA_LABEL,
+  LIFE_AREA_ORDER,
   getLifeAreaRadarRows,
   type LifeAreaRadarRow,
 } from "@/lib/life-areas";
+import { usePlanner } from "@/lib/planner-store";
 import type { LifeArea, PlannerState } from "@/lib/planner-types";
 
 const SIZE = 360;
@@ -16,8 +19,10 @@ const LABEL_RADIUS = 142;
 const LEVELS = [25, 50, 75, 100];
 
 export function LifeAreasPanel({ state }: { state: PlannerState }) {
+  const { dispatch } = usePlanner();
   const data = useMemo(() => getLifeAreaRadarRows(state), [state]);
   const [selectedArea, setSelectedArea] = useState<LifeArea>(data.rows[0].area);
+  const [managing, setManaging] = useState(false);
   const selected = data.rows.find((row) => row.area === selectedArea) ?? data.rows[0];
 
   if (data.classifiedItems === 0) {
@@ -43,7 +48,10 @@ export function LifeAreasPanel({ state }: { state: PlannerState }) {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,.95fr)] lg:items-center">
         <div>
           <div className="mb-4 lg:hidden">
-            <h2 className="a-title-2 text-label">Áreas da vida</h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="a-title-2 text-label">Áreas da vida</h2>
+              <ManageTargetsButton onClick={() => setManaging(true)} />
+            </div>
             <p className="a-body mt-2 text-label-secondary">
               Para onde suas ações foram nos últimos 30 dias.
             </p>
@@ -59,7 +67,10 @@ export function LifeAreasPanel({ state }: { state: PlannerState }) {
 
         <div className="space-y-5">
           <div className="hidden lg:block">
-            <h2 className="a-title-2 text-label">Áreas da vida</h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="a-title-2 text-label">Áreas da vida</h2>
+              <ManageTargetsButton onClick={() => setManaging(true)} />
+            </div>
             <p className="a-body mt-2 text-label-secondary">
               Para onde suas ações foram nos últimos 30 dias.
             </p>
@@ -83,7 +94,91 @@ export function LifeAreasPanel({ state }: { state: PlannerState }) {
           <AreaDetail row={selected} hasPrevious={data.hasPrevious} />
         </div>
       </div>
+
+      <LifeAreaTargetsSheet
+        isOpen={managing}
+        rows={data.rows}
+        onClose={() => setManaging(false)}
+        onChange={(area, target) =>
+          dispatch({ type: "SET_LIFE_AREA_TARGET", area, target })
+        }
+      />
     </Card>
+  );
+}
+
+function ManageTargetsButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="a-hit-44 -mr-3 shrink-0 px-3 text-right a-caption text-accent hover:opacity-80"
+    >
+      Gerenciar
+    </button>
+  );
+}
+
+function LifeAreaTargetsSheet({
+  isOpen,
+  rows,
+  onClose,
+  onChange,
+}: {
+  isOpen: boolean;
+  rows: LifeAreaRadarRow[];
+  onClose: () => void;
+  onChange: (area: LifeArea, target: number) => void;
+}) {
+  const targets = new Map(rows.map((row) => [row.area, row.target]));
+
+  return (
+    <BottomSheet isOpen={isOpen} onClose={onClose}>
+      <div className="space-y-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="a-title-2 text-label">Metas por área</h2>
+            <p className="a-body mt-2 text-label-secondary">
+              Ajuste o alvo visual de cada categoria no radar.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="a-hit-44 -mr-3 px-3 a-caption text-accent hover:opacity-80"
+          >
+            Concluir
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          {LIFE_AREA_ORDER.map((area) => {
+            const value = targets.get(area) ?? 75;
+            return (
+              <label
+                key={area}
+                className="grid gap-3 rounded-2xl border border-separator bg-fill-subtle p-4"
+              >
+                <span className="flex items-center justify-between gap-4">
+                  <span className="a-headline text-label">{LIFE_AREA_LABEL[area]}</span>
+                  <span className="a-caption tabular text-label-secondary">{value}%</span>
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={value}
+                  onChange={(event) => onChange(area, Number(event.target.value))}
+                  className="life-target-slider"
+                  aria-label={`Meta de ${LIFE_AREA_LABEL[area]}`}
+                />
+              </label>
+            );
+          })}
+        </div>
+      </div>
+    </BottomSheet>
   );
 }
 

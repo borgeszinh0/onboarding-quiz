@@ -73,6 +73,7 @@ type Action =
   | { type: "TOGGLE_HABIT_ACTIVE"; id: string }
   | { type: "REMOVE_HABIT"; id: string }
   | { type: "TOGGLE_HABIT_LOG"; habitId: string; date: string }
+  | { type: "SET_LIFE_AREA_TARGET"; area: LifeArea; target: number }
   | { type: "SET_YEAR_FOCUS"; year: number; quarter: Quarter; text: string }
   | { type: "PLAN_DAY"; date: string; payload: Omit<DayLog, "date" | "plannedAt" | "shutdownAt"> }
   | { type: "SHUTDOWN_DAY"; date: string }
@@ -292,6 +293,15 @@ function reducer(state: PlannerState, action: Action): PlannerState {
       };
     }
 
+    case "SET_LIFE_AREA_TARGET":
+      return {
+        ...state,
+        lifeAreaTargets: {
+          ...state.lifeAreaTargets,
+          [action.area]: clampTarget(action.target),
+        },
+      };
+
     case "SET_YEAR_FOCUS": {
       const yearMap = state.yearFocus[action.year] ?? {};
       return {
@@ -398,6 +408,11 @@ export function toISODate(d: Date): string {
 
 export function todayISO(): string {
   return toISODate(new Date());
+}
+
+function clampTarget(value: number): number {
+  if (!Number.isFinite(value)) return 75;
+  return Math.min(100, Math.max(0, Math.round(value)));
 }
 
 export function weekDates(anchor: string = todayISO()): string[] {

@@ -89,6 +89,8 @@ export interface PlannerState {
   focusSessions: FocusSession[];
   /** year -> quarter -> texto. */
   yearFocus: Record<number, Partial<Record<Quarter, string>>>;
+  /** Metas normalizadas do radar de áreas da vida, de 0 a 100. */
+  lifeAreaTargets: Partial<Record<LifeArea, number>>;
   /** Última data em que a virada de dia rodou, para não repetir no mesmo dia. */
   lastRolloverDate: string | null;
 }
@@ -101,5 +103,6 @@ export const initialPlannerState: PlannerState = {
   dayLogs: [],
   focusSessions: [],
   yearFocus: {},
+  lifeAreaTargets: {},
   lastRolloverDate: null,
 };

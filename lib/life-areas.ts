@@ -154,7 +154,7 @@ export function getLifeAreaRadarRows(
     color: LIFE_AREA_COLOR[area],
     current: normalize(current.byArea[area].points, denominator),
     previous: hasPrevious ? normalize(previous.byArea[area].points, denominator) : null,
-    target: DEFAULT_TARGET,
+    target: getTarget(state, area),
     detail: current.byArea[area],
   }));
 
@@ -165,6 +165,12 @@ export function getLifeAreaRadarRows(
     hasAnyExecution: current.totalPoints > 0,
     isEarly: current.activeDays < 5,
   };
+}
+
+function getTarget(state: PlannerState, area: LifeArea): number {
+  const target = state.lifeAreaTargets?.[area];
+  if (typeof target !== "number" || !Number.isFinite(target)) return DEFAULT_TARGET;
+  return Math.min(100, Math.max(0, Math.round(target)));
 }
 
 function scorePeriod(state: PlannerState, startDate: Date, endDate: Date) {

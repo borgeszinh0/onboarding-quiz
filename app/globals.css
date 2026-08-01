@@ -956,6 +956,44 @@ body {
     inset 0 -1px 0 rgba(0, 0, 0, 0.18);
 }
 
+.life-target-slider {
+  height: 28px;
+  accent-color: var(--accent);
+}
+
+.life-target-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--fill-secondary);
+}
+
+.life-target-slider::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.life-target-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--fill-secondary);
+}
+
+.life-target-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
 .liquid-panel {
   overflow: hidden;
   isolation: isolate;

@@ -210,15 +210,21 @@ export default function Header() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className="group flex flex-1 items-center justify-center h-full active:scale-95 transition-transform duration-200"
+                className="group flex h-full flex-1 items-center justify-center active:scale-95 transition-transform duration-150"
                 style={{ 
                   color: active ? "var(--dock-active-label)" : "var(--dock-inactive-label)"
                 }}
               >
-                <div 
-                  className={`flex items-center justify-center transition-all duration-300 ${active ? "liquid-dock-pill h-[56px] w-[84px]" : "h-[56px] w-[54px]"}`}
-                >
-                  <NavIcon icon={item.icon} active={active} />
+                <div className="relative flex h-[56px] w-full max-w-[68px] items-center justify-center">
+                  <span
+                    aria-hidden
+                    className={`liquid-dock-pill absolute inset-y-0 -inset-x-1 transition-opacity duration-150 ${
+                      active ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                  <span className="relative z-10 flex items-center justify-center">
+                    <NavIcon icon={item.icon} active={active} />
+                  </span>
                 </div>
               </Link>
             );

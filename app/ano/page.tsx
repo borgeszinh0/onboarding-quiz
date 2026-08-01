@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePlanner } from "@/lib/planner-store";
 import { QUARTERS, QUARTER_LABEL } from "@/lib/planner-data";
 import type { Quarter } from "@/lib/planner-types";
@@ -19,7 +19,7 @@ export default function AnoPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-xl px-5 pb-20 pt-8">
+    <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
       <div className="mb-8 flex items-start justify-between">
         <PageTitle eyebrow="Ano" title={String(year)} />
         <div className="flex gap-1">

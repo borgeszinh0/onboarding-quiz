@@ -14,7 +14,9 @@ Planejador diário local-first. Regra **1 tarefa grande, 3 médias, 5 pequenas**
 | **Inbox** | `/inbox` | Captura rápida de ideias/tarefas sem categoria nem data |
 | **Semana** | `/semana` | Ocupação de horário por dia da semana + conclusão do funil |
 | **Mês** | `/mes` | Grade mensal com destaque de dias "perfeitos" (todos os hábitos cumpridos) |
-| **Ano** | `/ano` | Mural de foco trimestral (Q1–Q4), texto livre, sem interação com o calendário |
+| **Ano / Calendário** | `/ano` | Visão anual em formato de calendário de pontos |
+| **Objetivos** | `/objetivos` | Mural de foco trimestral (Q1–Q4), texto livre para o "Norte" |
+| **Perfil** | `/perfil` | Métricas vitalícias (foco, tarefas e hábitos concluídos) e conta |
 | **Dados** | `/dados` | Export/import de backup JSON, status de sync com Supabase, backups automáticos locais |
 
 ### Regras de negócio centrais
@@ -97,11 +99,11 @@ Sem as env vars, o botão de login some e o app usa só localStorage.
 
 Construído do zero nesta sessão em cima da **skill `apple-ui-design`** (design Apple-like: clareza, deferência, profundidade) e depois revisado com a **skill `impeccable`** (comando `polish`, register "product") e a **skill `web-design-guidelines`** (Vercel).
 
-### Tokens (`app/globals.css`)
+### Tokens e Estética Gemini (`app/globals.css`)
 
+- **Bubbly & Minimalista:** O aplicativo adotou uma identidade visual focada em contrastes extremos (fundo preto absoluto ou branco puro, sem cinzas chapados) e curvaturas acentuadas (`rounded-3xl` e border-radius de `32px` em cartões).
+- **Gemini Spark:** A cor de destaque primária para eventos de conclusão (como bater um hábito ou fechar uma tarefa) agora usa o gradiente `--gemini-grad` inspirado nos tons da IA do Google (azul, roxo, rosa).
 - Cor: `--bg`, `--label`, `--label-secondary`, `--separator`, `--fill-subtle`, `--card-bg/border/shadow`, todos com variante escura via `@media (prefers-color-scheme: dark)` — **não existe toggle manual de tema**, segue o SO.
-- `--color-accent` / `--color-energia` / `--color-atencao` / `--color-danger`: acentos semânticos (azul, verde, laranja, vermelho).
-- `--accent-text`: **não é decoração, é correção de contraste.** `--color-accent` puro como cor de *texto* sobre fundo escuro mede ~4.4:1 (abaixo do mínimo AA de 4.5:1); como *preenchimento* de botão (texto branco em cima) está ótimo. Esse token separa os dois usos — sobrescreve pra um azul mais claro (`#4da3ff`, ~7.9:1) só em telas escuras, sem mexer no azul-marca usado em botões e bordas. **Regra pra quem for adicionar UI nova: `--color-accent` para preenchimento/borda, `--accent-text` para texto solto sobre `--bg` ou um tint sutil.**
 - Espaçamento (`--space-*`) e `--ease-standard` (curva de easing) ficam **fora do bloco `@theme`** de propósito — `--spacing-*` é namespace reservado do Tailwind 4 e colidir com ele quebra todas as utilities de padding/margem.
 - `color-scheme: light dark` no `:root` — sem isso, o ícone do seletor de hora nativo (`<input type="time">`) e a seta do `<select>` renderizam no chrome claro do SO mesmo com o app em modo escuro.
 

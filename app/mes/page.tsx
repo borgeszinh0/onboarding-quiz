@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   usePlanner,
   todayISO,
@@ -42,8 +42,9 @@ export default function MesPage() {
   }
 
   const startOffset = new Date(viewYear, viewMonth, 1).getDay();
-  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const todayISOValue = todayISO();
+
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
   const changeMonth = (delta: number) => {
     const d = new Date(viewYear, viewMonth + delta, 1);
@@ -57,7 +58,7 @@ export default function MesPage() {
   const perfectCount = monthDates.filter((d) => isPerfectDay(state, d)).length;
 
   return (
-    <main className="mx-auto w-full max-w-xl px-5 pb-20 pt-8">
+    <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
       <PageTitle eyebrow="Mês" title="Streaks" />
 
       <Card className="p-5">

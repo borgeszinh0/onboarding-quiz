@@ -96,3 +96,43 @@ export function PageTitle({
     </header>
   );
 }
+
+/** 
+ * Modal nativo de deslizar de baixo para cima (iOS). 
+ * Bloqueia a rolagem do corpo e oferece um backdrop interativo.
+ */
+export function BottomSheet({
+  isOpen,
+  onClose,
+  children,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity a-enter"
+        onClick={onClose}
+        aria-hidden
+      />
+      <div
+        className="fixed inset-x-0 bottom-0 z-50 flex max-h-[90vh] flex-col overflow-hidden rounded-t-[32px] bg-[color:var(--bg)] transition-transform a-enter"
+        style={{
+          boxShadow: "0 -8px 24px rgba(0,0,0,0.12)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
+      >
+        <div className="flex shrink-0 items-center justify-center pt-3 pb-2">
+          <div className="h-1.5 w-10 rounded-full bg-[color:var(--separator)]" />
+        </div>
+        <div className="overflow-y-auto px-5 pb-12">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}

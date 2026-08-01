@@ -41,47 +41,60 @@
   color-scheme: light dark;
 
   --bg: #ffffff;
-  --bg-elevated: #f5f5f7;
+  --bg-elevated: #f4f5f8;
   --label: #1d1d1f;
-  --label-secondary: #86868b;
-  --separator: rgba(0, 0, 0, 0.08);
+  --label-secondary: #5f6368;
+  --separator: rgba(0, 0, 0, 0.05);
   --card-bg: var(--bg-elevated);
-  --card-border: var(--separator);
+  --card-border: transparent;
   --card-shadow: none;
-  --fill-subtle: rgba(0, 0, 0, 0.04);
+  --fill-subtle: rgba(0, 0, 0, 0.05);
 
-  --success-fill: #30d158;
-  --success-label: #1d1d1f;
-  --danger-text-light: #d70015;
-  --attention-text-light: #b25000;
-  --accent-text-light: #0071e3;
-  --accent-text-dark: #4da3ff;
+  --gemini-grad: linear-gradient(135deg, #4285f4 0%, #9b72cb 50%, #d96570 100%);
+  --gemini-text: transparent;
 
-  /* var(--color-accent) usado como COR DE TEXTO (não preenchimento) em cima de
-     --bg ou de um tint sutil cai pra ~4.4:1 em telas escuras — abaixo do
-     mínimo AA de 4.5:1. Este token existe só pra texto; botões com fundo
-     sólido continuam usando --color-accent puro (texto branco em cima dele
-     já tem contraste de sobra, e clarear o azul quebraria isso). */
+  --success-fill: #34a853;
+  --success-label: #ffffff;
+  --danger-text-light: #ea4335;
+  --attention-text-light: #fbbc04;
+  --accent-text-light: #4285f4;
+  --accent-text-dark: #8ab4f8;
+
   --accent-text: var(--accent-text-light);
   --attention-text: var(--attention-text-light);
   --danger-text: var(--danger-text-light);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --bg: #000000;
-    --bg-elevated: #1d1d1f;
+    --bg-elevated: #1a1a1c;
     --label: #f5f5f7;
-    --label-secondary: #98989d;
-    --separator: rgba(255, 255, 255, 0.1);
+    --label-secondary: #9aa0a6;
+    --separator: rgba(255, 255, 255, 0.05);
     --card-bg: var(--bg-elevated);
-    --card-border: var(--separator);
+    --card-border: transparent;
     --card-shadow: none;
-    --fill-subtle: rgba(255, 255, 255, 0.06);
+    --fill-subtle: rgba(255, 255, 255, 0.08);
     --accent-text: var(--accent-text-dark);
-    --attention-text: var(--color-atencao);
-    --danger-text: var(--color-danger);
+    --attention-text: #fdd663;
+    --danger-text: #f28b82;
   }
+}
+
+:root.dark {
+  --bg: #000000;
+  --bg-elevated: #1a1a1c;
+  --label: #f5f5f7;
+  --label-secondary: #9aa0a6;
+  --separator: rgba(255, 255, 255, 0.05);
+  --card-bg: var(--bg-elevated);
+  --card-border: transparent;
+  --card-shadow: none;
+  --fill-subtle: rgba(255, 255, 255, 0.08);
+  --accent-text: var(--accent-text-dark);
+  --attention-text: #fdd663;
+  --danger-text: #f28b82;
 }
 
 html,
@@ -96,11 +109,11 @@ body {
 
 /* ---------- Primitivas ---------- */
 
-/* Cartão comum: superfície sólida elevada, sem blur. Blur fica só no cromo persistente e overlays. */
+/* Cartão bubbly tipo Gemini */
 .a-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 16px;
+  border-radius: 32px;
   box-shadow: var(--card-shadow);
 }
 
@@ -125,7 +138,7 @@ body {
 }
 
 .a-btn-primary {
-  background: var(--color-accent);
+  background: var(--gemini-grad);
   color: #ffffff;
 }
 
@@ -177,19 +190,19 @@ body {
 .a-large-title {
   font-size: 34px;
   line-height: 41px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .a-title-2 {
   font-size: 22px;
   line-height: 28px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .a-headline {
   font-size: 17px;
   line-height: 22px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .a-body {
@@ -293,3 +306,13 @@ select {
     transition: none !important;
   }
 }
+
+/* Esconder indicador do Next.js no mobile */
+[data-nextjs-toast],
+nextjs-portal,
+#nextjs-build-indicator,
+#__next-build-watcher {
+  display: none !important;
+  pointer-events: none !important;
+}
+

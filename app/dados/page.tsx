@@ -74,7 +74,7 @@ export default function DadosPage() {
   const blockCount = planner.timeBlocks.length;
 
   return (
-    <main className="mx-auto w-full max-w-xl px-5 pb-20 pt-8">
+    <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
       <PageTitle eyebrow="Dados" title="Backup e sincronização" />
 
       {msg && (

@@ -1,0 +1,99 @@
+"use client";
+
+import { useState } from "react";
+import { usePlanner, Quarter } from "@/lib/planner-store";
+import { PageTitle, Card, Button } from "@/components/apple/ui";
+import Link from "next/link";
+
+const QUARTERS: { id: Quarter; label: string; months: string }[] = [
+  { id: "Q1", label: "Trimestre 1", months: "Jan - Mar" },
+  { id: "Q2", label: "Trimestre 2", months: "Abr - Jun" },
+  { id: "Q3", label: "Trimestre 3", months: "Jul - Set" },
+  { id: "Q4", label: "Trimestre 4", months: "Out - Dez" },
+];
+
+export default function ObjetivosPage() {
+  const { state, dispatch } = usePlanner();
+  const year = new Date().getFullYear();
+  const yearFocus = state.yearFocus[year] || {};
+
+  const [editing, setEditing] = useState<Quarter | null>(null);
+  const [draft, setDraft] = useState("");
+
+  const startEdit = (q: Quarter) => {
+    setDraft(yearFocus[q] || "");
+    setEditing(q);
+  };
+
+  const saveEdit = (q: Quarter) => {
+    dispatch({ type: "SET_YEAR_FOCUS", year, quarter: q, text: draft.trim() });
+    setEditing(null);
+  };
+
+  return (
+    <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
+      <Link href="/mais" className="mb-8 inline-block a-caption text-[color:var(--label-secondary)] hover:text-[color:var(--label)]">
+        ← Voltar
+      </Link>
+      
+      <PageTitle 
+        eyebrow="Visão Macro" 
+        title={`Objetivos ${year}`} 
+        subtitle="Defina sua única grande prioridade para cada trimestre. Saber para onde está indo facilita as decisões do dia a dia."
+      />
+
+      <div className="space-y-4">
+        {QUARTERS.map((q) => (
+          <Card key={q.id} className="p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <h3 className="a-headline text-[color:var(--label)]">{q.label}</h3>
+                <p className="a-caption text-[color:var(--label-secondary)]">{q.months}</p>
+              </div>
+              {editing !== q.id && (
+                <button
+                  type="button"
+                  onClick={() => startEdit(q.id)}
+                  className="a-caption text-[color:var(--accent-text)] hover:opacity-80"
+                >
+                  Editar
+                </button>
+              )}
+            </div>
+
+            {editing === q.id ? (
+              <div className="space-y-3">
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="Ex: Lançar meu app e conseguir os primeiros 100 usuários."
+                  className="a-body w-full rounded-2xl bg-[color:var(--fill-subtle)] p-4 outline-none focus:ring-2 focus:ring-[color:var(--accent-text)] resize-none"
+                  rows={3}
+                  autoFocus
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button variant="secondary" onClick={() => setEditing(null)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={() => saveEdit(q.id)}>
+                    Salvar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-2xl bg-[color:var(--fill-subtle)] p-4 min-h-[80px] flex items-center">
+                {yearFocus[q.id] ? (
+                  <p className="a-body text-[color:var(--label)]">{yearFocus[q.id]}</p>
+                ) : (
+                  <p className="a-body text-[color:var(--label-secondary)] opacity-60 italic">
+                    Nenhum foco definido para este trimestre.
+                  </p>
+                )}
+              </div>
+            )}
+          </Card>
+        ))}
+      </div>
+    </main>
+  );
+}

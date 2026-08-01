@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import {
   usePlanner,
   weekDates,
@@ -18,16 +20,12 @@ const BAR_HEIGHT = 96;
 export default function SemanaPage() {
   const { state, hydrated } = usePlanner();
 
-  if (!hydrated) {
-    return <main className="mx-auto w-full max-w-xl px-5 py-12" aria-busy="true" />;
-  }
-
   const today = todayISO();
   const dates = weekDates(today);
   const perfectDays = dates.filter((d) => isPerfectDay(state, d)).length;
 
   return (
-    <main className="mx-auto w-full max-w-xl px-5 pb-20 pt-8">
+    <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
       <PageTitle
         eyebrow="Semana"
         title="Ocupação"

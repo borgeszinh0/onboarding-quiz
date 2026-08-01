@@ -117,19 +117,19 @@ function SlotTaskRow({
 
   return (
     <li className="flex flex-col gap-2">
-      <div className="flex min-h-[44px] items-start gap-3 py-1">
+      <div className="flex min-h-[44px] items-center gap-3 py-1">
         <button
           type="button"
           onClick={() => dispatch({ type: "TOGGLE_TASK_DONE", id: task.id })}
           aria-pressed={task.status === "done"}
           aria-label={task.title}
-          className="flex h-11 w-11 shrink-0 items-start justify-center pt-0.5"
+          className="flex h-11 w-11 shrink-0 items-center justify-center"
         >
           <span
             className="flex h-[22px] w-[22px] items-center justify-center rounded-full border-[1.5px] transition-colors duration-200"
             style={{
-              borderColor: task.status === "done" ? accent : "var(--separator)",
-              background: task.status === "done" ? accent : "transparent",
+              borderColor: task.status === "done" ? "transparent" : "var(--separator)",
+              background: task.status === "done" ? "var(--gemini-grad)" : "transparent",
             }}
           >
             {task.status === "done" && (
@@ -146,7 +146,7 @@ function SlotTaskRow({
           </span>
         </button>
         <span
-          className="a-body min-w-0 flex-1 pt-0.5"
+          className="a-body min-w-0 flex-1"
           style={
             task.status === "done"
               ? { color: "var(--label-secondary)", textDecoration: "line-through" }
@@ -155,7 +155,7 @@ function SlotTaskRow({
         >
           {task.title}
         </span>
-        <div className="mt-0.5 flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {task.status !== "done" && (
             <ScheduleTaskControl
               taskId={task.id}
@@ -183,7 +183,7 @@ function TaskRowMenu({ task }: { task: Task }) {
         type="button"
         onClick={() => setOpen(!open)}
         aria-label="Ações da tarefa"
-        className="a-hit-44 flex items-center justify-center rounded-full text-[color:var(--label-secondary)] transition-colors hover:bg-[color:var(--fill-subtle)] hover:text-[color:var(--label)]"
+        className="a-hit-44 shrink-0 flex items-center justify-center rounded-full text-[color:var(--label-secondary)] transition-colors hover:bg-[color:var(--fill-subtle)] hover:text-[color:var(--label)]"
       >
         <MoreHorizontal size={20} />
       </button>

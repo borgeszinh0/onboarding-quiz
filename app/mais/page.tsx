@@ -1,19 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { PageTitle } from "@/components/apple/ui";
+import { PageTitle, SectionLabel } from "@/components/apple/ui";
+import { useTheme } from "@/lib/theme-context";
 
 const MORE_ITEMS = [
-  { href: "/mes", label: "Mês" },
-  { href: "/ano", label: "Ano" },
-  { href: "/dados", label: "Dados" },
-  { href: "/login", label: "Conta" },
-  { href: "/dados", label: "Backup" },
+  { href: "/perfil", label: "Meu Perfil & Métricas" },
+  { href: "/objetivos", label: "Objetivos do Ano" },
+  { href: "/mes", label: "Calendário do Mês" },
+  { href: "/ano", label: "Visão Anual" },
+  { href: "/dados", label: "Backup e Dados" },
 ];
 
 export default function MaisPage() {
+  const { theme, setTheme } = useTheme();
+
   return (
-    <main className="mx-auto w-full max-w-xl px-5 pb-24 pt-8">
+    <main className="mx-auto w-full max-w-xl px-5 pb-32 pt-8">
       <PageTitle eyebrow="Mais" title="Mais" />
 
       <nav
@@ -33,6 +36,26 @@ export default function MaisPage() {
           </Link>
         ))}
       </nav>
+
+      <div className="mt-8">
+        <SectionLabel>Aparência</SectionLabel>
+        <div className="mt-2 flex overflow-hidden rounded-xl bg-[color:var(--fill-subtle)] p-1">
+          {(["system", "light", "dark"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTheme(t)}
+              className="a-body flex-1 rounded-lg py-2 capitalize transition-colors duration-200"
+              style={
+                theme === t
+                  ? { background: "var(--bg)", color: "var(--label)", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }
+                  : { color: "var(--label-secondary)" }
+              }
+            >
+              {t === "system" ? "Sistema" : t === "light" ? "Claro" : "Escuro"}
+            </button>
+          ))}
+        </div>
+      </div>
     </main>
   );
 }

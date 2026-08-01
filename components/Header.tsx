@@ -9,6 +9,7 @@ const NAV = [
   { href: "/", label: "Hoje" },
   { href: "/inbox", label: "Inbox" },
   { href: "/semana", label: "Semana" },
+  { href: "/habitos", label: "Hábitos" },
   { href: "/mes", label: "Mês" },
   { href: "/ano", label: "Ano" },
   { href: "/dados", label: "Dados" },
@@ -18,6 +19,7 @@ const MOBILE_TABS = [
   { href: "/", label: "Hoje", icon: "today" },
   { href: "/inbox", label: "Inbox", icon: "inbox" },
   { href: "/semana", label: "Semana", icon: "week" },
+  { href: "/habitos", label: "Hábitos", icon: "habits" },
   { href: "/mais", label: "Mais", icon: "more" },
 ] as const;
 
@@ -97,6 +99,12 @@ function NavIcon({ icon }: { icon: (typeof MOBILE_TABS)[number]["icon"] }) {
           <circle cx="12" cy="6" r="1" fill="currentColor" stroke="none" />
           <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
           <circle cx="12" cy="18" r="1" fill="currentColor" stroke="none" />
+        </>
+      )}
+      {icon === "habits" && (
+        <>
+          <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+          <path d="m9 12 2 2 4-4" />
         </>
       )}
     </svg>
@@ -181,14 +189,13 @@ export default function Header() {
 
       <nav
         aria-label="Navegação principal"
-        className="fixed inset-x-0 bottom-0 z-40 h-[calc(56px+env(safe-area-inset-bottom))] border-t backdrop-blur-xl sm:hidden"
+        className="fixed inset-x-4 bottom-[calc(16px+env(safe-area-inset-bottom))] z-40 h-[64px] rounded-3xl border shadow-2xl backdrop-blur-2xl sm:hidden transition-all duration-300"
         style={{
-          borderColor: "var(--separator)",
-          background: "color-mix(in oklab, var(--bg) 88%, transparent)",
-          paddingBottom: "env(safe-area-inset-bottom)",
+          borderColor: "color-mix(in oklab, var(--separator) 50%, transparent)",
+          background: "color-mix(in oklab, var(--bg-elevated) 70%, transparent)",
         }}
       >
-        <div className="mx-auto grid h-full max-w-xl grid-cols-4 px-2">
+        <div className="mx-auto flex h-full max-w-xl items-center justify-between px-3">
           {MOBILE_TABS.map((item) => {
             const active =
               item.href === "/"
@@ -203,9 +210,18 @@ export default function Header() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className="flex min-h-[44px] flex-col items-center justify-center gap-0.5 rounded-xl transition-colors duration-200"
-                style={{ color: active ? "var(--accent-text)" : "var(--label-secondary)" }}
+                className="group relative flex flex-1 flex-col items-center justify-center gap-1 rounded-3xl h-[52px] transition-all duration-300"
+                style={{ 
+                  color: active ? "var(--label)" : "var(--label-secondary)"
+                }}
               >
+                {active && (
+                  <span 
+                    aria-hidden
+                    className="absolute inset-0 rounded-3xl opacity-[0.08] dark:opacity-[0.15]"
+                    style={{ background: "var(--gemini-grad)" }}
+                  />
+                )}
                 <NavIcon icon={item.icon} />
                 <span className="text-[11px] leading-[13px]">{item.label}</span>
               </Link>

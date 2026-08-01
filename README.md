@@ -16,6 +16,7 @@ Planejador diário local-first. Regra **1 tarefa grande, 3 médias, 5 pequenas**
 | **Mês** | `/mes` | Grade mensal com destaque de dias "perfeitos" (todos os hábitos cumpridos) |
 | **Ano / Calendário** | `/ano` | Visão anual em formato de calendário de pontos |
 | **Objetivos** | `/objetivos` | Mural de foco trimestral (Q1–Q4), texto livre para o "Norte" e radar de Áreas da vida |
+| **Primeiros passos** | `/primeiros-passos` | Checklist permanente que ensina o fluxo básico do Planner |
 | **Perfil** | `/perfil` | Métricas vitalícias (foco, tarefas e hábitos concluídos) e conta |
 | **Dados** | `/dados` | Export/import de backup JSON, status de sync com Supabase, backups automáticos locais |
 
@@ -28,6 +29,7 @@ Planejador diário local-first. Regra **1 tarefa grande, 3 médias, 5 pequenas**
 - **Modo Foco**: cronômetro regressivo baseado na duração do bloco (ou 25min padrão se a tarefa não tem bloco). Pausa de verdade — acumula tempo decorrido em vez de reiniciar. Ao bater o alvo, passa a contar tempo extra em vez de zerar.
 - **Hábitos**: lista simples com toggle diário. "Dia perfeito" = todos os hábitos ativos marcados naquela data — é o que acende o destaque verde no Mês.
 - **Áreas da vida**: tarefas e hábitos podem receber uma área opcional (`Corpo`, `Mente`, `Social`, `Espiritual`, `Financeiro`, `Profissional`). Itens sem área não entram no radar. A tela `/objetivos` usa execução real dos últimos 30 dias para mostrar distribuição por área, sem comunicar isso como nota ou julgamento.
+- **Primeiros passos**: `/primeiros-passos` é uma checklist acionável de 7 etapas. O progresso é derivado do uso real sempre que possível: modo escolhido, tarefa criada, tarefa planejada, timeblock, hábito marcado, área classificada e dia encerrado. No primeiro acesso sem dados, a Home mostra um convite leve que pode ser dispensado.
 
 ---
 

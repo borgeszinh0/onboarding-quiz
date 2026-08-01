@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { todayISO } from "@/lib/planner-store";
+import { todayISO, usePlanner } from "@/lib/planner-store";
 import { DailyFunnel } from "@/components/planner/DailyFunnel";
 import { DailySummary } from "@/components/planner/DailySummary";
 import { DailyProgress } from "@/components/planner/DailyProgress";
 import { DailyPlanning } from "@/components/planner/DailyPlanning";
 import { DailyShutdown } from "@/components/planner/DailyShutdown";
 import { ScheduleRuler } from "@/components/planner/ScheduleRuler";
+import { FirstStepsInvite } from "@/components/planner/FirstStepsInvite";
 
 import { FocusMode } from "@/components/planner/FocusMode";
 
@@ -29,6 +30,7 @@ function greeting(hour: number): string {
 }
 
 export default function Home() {
+  const { state, hydrated } = usePlanner();
   const [focusTaskId, setFocusTaskId] = useState<string | null>(null);
   const [view, setView] = useState<"funnel" | "schedule">("funnel");
   const date = todayISO();
@@ -45,6 +47,8 @@ export default function Home() {
           </h1>
           <DailyProgress date={date} />
         </header>
+
+        <FirstStepsInvite state={state} hydrated={hydrated} />
 
         <DailyPlanning date={date} />
 

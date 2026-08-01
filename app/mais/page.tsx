@@ -4,11 +4,12 @@ import Link from "next/link";
 import { PageTitle } from "@/components/apple/ui";
 
 const MORE_ITEMS = [
-  { href: "/perfil", label: "Meu Perfil & Métricas" },
-  { href: "/objetivos", label: "Objetivos do Ano" },
+  { href: "/primeiros-passos", label: "Primeiros passos" },
+  { href: "/objetivos", label: "Objetivos" },
+  { href: "/perfil", label: "Perfil" },
+  { href: "/dados", label: "Dados" },
   { href: "/mes", label: "Calendário do Mês" },
   { href: "/ano", label: "Visão Anual" },
-  { href: "/dados", label: "Backup e Dados" },
 ];
 
 export default function MaisPage() {

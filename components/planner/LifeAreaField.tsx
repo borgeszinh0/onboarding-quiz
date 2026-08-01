@@ -14,7 +14,15 @@ export function LifeAreaBadge({ area }: { area?: LifeArea | null }) {
   }
 
   return (
-    <span className="a-caption text-label-secondary">
+    <span
+      className="a-caption inline-flex items-center gap-1.5"
+      style={{ color: LIFE_AREA_COLOR[area] }}
+    >
+      <span
+        className="h-1.5 w-1.5 rounded-full"
+        style={{ background: LIFE_AREA_COLOR[area] }}
+        aria-hidden
+      />
       {LIFE_AREA_LABEL[area]}
     </span>
   );

@@ -345,9 +345,10 @@ interface HabitScoreDay extends HabitDay {
 }
 
 function HabitPointsChart({ days, disabled }: { days: HabitScoreDay[]; disabled: boolean }) {
-  const width = 132;
+  const width = 156;
   const height = 64;
   const horizontalPadding = 5;
+  const today = todayISO();
   const points = days.map((day, index) => {
     const x =
       horizontalPadding +
@@ -355,28 +356,42 @@ function HabitPointsChart({ days, disabled }: { days: HabitScoreDay[]; disabled:
     const y = getHabitPointY(day.score, height);
     return { ...day, x, y };
   });
-  const line = points.map((point) => `${point.x},${point.y}`).join(" ");
+  const visiblePoints = points.filter((point) => point.iso <= today);
+  const line = visiblePoints.map((point) => `${point.x},${point.y}`).join(" ");
+  const baseY = height - 4;
+  const area =
+    visiblePoints.length > 0
+      ? `${visiblePoints[0].x},${baseY} ${line} ${visiblePoints[visiblePoints.length - 1].x},${baseY}`
+      : "";
+  const hasVisibleData = visiblePoints.some((point) => point.score > 0);
 
   return (
     <div>
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        className="block h-16 w-[132px]"
+        className="block h-16 w-[156px]"
         role="img"
         aria-label="Pontuação semanal dos hábitos"
       >
-        {!disabled && points.some((point) => point.score > 0) && (
-          <polyline
-            points={line}
-            fill="none"
-            stroke="var(--metric-habits)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity="0.78"
-          />
+        {!disabled && hasVisibleData && (
+          <>
+            <polygon
+              points={area}
+              fill="var(--metric-habits)"
+              opacity="0.14"
+            />
+            <polyline
+              points={line}
+              fill="none"
+              stroke="var(--metric-habits)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity="0.82"
+            />
+          </>
         )}
-        {points.map((point) => {
+        {visiblePoints.map((point) => {
           const active = point.score > 0;
           const complete = point.score >= 1;
 

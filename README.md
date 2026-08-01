@@ -63,7 +63,7 @@ components/planner/
   DailyShutdown.tsx       Fechamento do dia com leitura de aderência ao modo escolhido
   FocusMode.tsx           Overlay de tela cheia do cronômetro
   HabitBar.tsx            Barra fixa de hábitos no rodapé
-  LifeAreaField.tsx      Select compacto e badge de classificação por área
+  LifeAreaField.tsx      Menu compacto custom e badge de classificação por área
   LifeAreasPanel.tsx      Radar + legenda + tabela de distribuição em /objetivos
 
 components/apple/ui.tsx  Primitivas de UI legadas no nome, agora renderizadas pelo tema Raycast-like — Card, Button, PageTitle, SectionLabel

@@ -19,12 +19,12 @@ export const LIFE_AREA_LABEL: Record<LifeArea, string> = {
 };
 
 export const LIFE_AREA_COLOR: Record<LifeArea, string> = {
-  body: "#22c55e",
+  body: "#34d399",
   mind: "#38bdf8",
-  social: "#a78bfa",
-  spiritual: "#f8fafc",
-  financial: "#f59e0b",
-  professional: "#8b5cf6",
+  social: "#fb7185",
+  spiritual: "#c084fc",
+  financial: "#fbbf24",
+  professional: "#818cf8",
 };
 
 export interface LifeAreaDetail {

@@ -5,7 +5,7 @@ import { usePlanner, getInboxTasks } from "@/lib/planner-store";
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { parseNaturalInput } from "@/lib/parser";
 import { Plus, X } from "lucide-react";
-import { LifeAreaSelect } from "./LifeAreaField";
+import { LifeAreaMenu } from "./LifeAreaField";
 import type { LifeArea } from "@/lib/planner-types";
 import {
   DAY_MODE_RULES,
@@ -79,7 +79,7 @@ export function InboxCapture() {
   return (
     <section className="space-y-3">
       <SectionLabel>Inbox</SectionLabel>
-      <Card className="p-5">
+      <Card className="p-5" allowOverflow>
         <div className="mb-4 flex gap-2">
           <input
             type="text"
@@ -100,7 +100,7 @@ export function InboxCapture() {
           </button>
         </div>
         <div className="mb-4">
-          <LifeAreaSelect value={lifeArea} onChange={setLifeArea} label="Área da nova tarefa" />
+          <LifeAreaMenu value={lifeArea} onChange={setLifeArea} label="Área da nova tarefa" />
         </div>
 
         {items.length === 0 ? (
@@ -165,29 +165,31 @@ function InboxGroup({
       <p className="a-caption mb-1.5 uppercase text-label-secondary">{title}</p>
       <ul className="divide-y divide-separator">
         {items.map(({ task, group }) => (
-          <li key={task.id} className="flex min-h-[44px] items-start gap-3 py-3">
-            <div className="min-w-0 flex-1">
-              <span className="a-body block truncate">{task.title}</span>
+          <li key={task.id} className="space-y-2 py-3">
+            <div className="min-w-0">
+              <span className="a-body block truncate text-label">{task.title}</span>
+            </div>
+            <div className="flex min-h-[44px] items-center justify-between gap-3">
               <span className="a-caption text-label-secondary">
                 {getFitLabel(mode, group)}
               </span>
-              <div className="mt-2">
-                <LifeAreaSelect
+              <div className="flex shrink-0 items-center gap-2">
+                <LifeAreaMenu
                   value={task.lifeArea}
                   onChange={(area) => onSetArea(task.id, area)}
                   label={`Área de ${task.title}`}
                   compact
                 />
+                <button
+                  type="button"
+                  onClick={() => onRemove(task.id)}
+                  aria-label={`Remover ${task.title}`}
+                  className="a-subheadline flex h-11 w-11 shrink-0 items-center justify-center text-label-secondary transition-colors hover-text-danger"
+                >
+                  <X size={20} />
+                </button>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => onRemove(task.id)}
-              aria-label={`Remover ${task.title}`}
-              className="a-subheadline flex h-11 w-11 shrink-0 items-center justify-center text-label-secondary transition-colors hover-text-danger"
-            >
-              <X size={20} />
-            </button>
           </li>
         ))}
       </ul>

@@ -19,9 +19,14 @@ type SyncStatus = "idle" | "pulling" | "saving" | "synced" | "error";
 interface SyncValue {
   status: SyncStatus;
   lastSyncedAt: number | null;
+  resetRemote: () => Promise<{ error: string | null }>;
 }
 
-const SyncContext = createContext<SyncValue>({ status: "idle", lastSyncedAt: null });
+const SyncContext = createContext<SyncValue>({
+  status: "idle",
+  lastSyncedAt: null,
+  resetRemote: async () => ({ error: null }),
+});
 
 const PUSH_DEBOUNCE_MS = 1500;
 
@@ -67,6 +72,15 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
 
   const taskCount = planner.tasks.length;
   const habitCount = planner.habits.length;
+
+  const resetRemote = async () => {
+    if (!supabase || !user) return { error: null };
+    setStatus("saving");
+    const { error } = await supabase.from("app_state").delete().eq("user_id", user.id);
+    setStatus(error ? "error" : "synced");
+    if (!error) setLastSyncedAt(Date.now());
+    return { error: error?.message ?? null };
+  };
 
   // ---- Daily local auto-backup snapshot ----
   useEffect(() => {
@@ -149,7 +163,7 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   }, [planner, supabase, user]);
 
   return (
-    <SyncContext.Provider value={{ status, lastSyncedAt }}>
+    <SyncContext.Provider value={{ status, lastSyncedAt, resetRemote }}>
       {children}
     </SyncContext.Provider>
   );

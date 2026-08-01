@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { usePlanner } from "@/lib/planner-store";
 import { useAuth } from "@/lib/auth-context";
+import { useSync } from "@/lib/cloud-sync";
 import {
   buildBackup,
   downloadBackup,
@@ -42,6 +43,7 @@ function useAutoBackups(version: number): AutoBackupEntry[] {
 export default function DadosPage() {
   const { state: planner, dispatch, hydrated } = usePlanner();
   const { user, configured } = useAuth();
+  const { resetRemote } = useSync();
 
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
@@ -71,12 +73,17 @@ export default function DadosPage() {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     clearAutoBackups();
+    const remote = await resetRemote();
     dispatch({ type: "RESET" });
     setConfirmReset(false);
     setBackupsVersion((v) => v + 1);
-    setMsg({ kind: "ok", text: "App resetado. O planejador voltou ao estado inicial." });
+    setMsg(
+      remote.error
+        ? { kind: "err", text: `Dados locais resetados, mas a nuvem não foi limpa: ${remote.error}` }
+        : { kind: "ok", text: "App resetado. O planejador voltou ao estado inicial." }
+    );
   };
 
   const taskCount = planner.tasks.length;

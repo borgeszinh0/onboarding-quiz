@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,11 +24,16 @@ export default function LoginPage() {
     }
     setLoading(true);
     setError(null);
+    setNotice(null);
     const fn = mode === "in" ? signIn : signUp;
-    const { error } = await fn(email.trim(), password);
+    const result = await fn(email.trim(), password);
     setLoading(false);
-    if (error) {
-      setError(translate(error));
+    if (result.error) {
+      setError(translate(result.error));
+      return;
+    }
+    if (mode === "up" && "needsConfirmation" in result && result.needsConfirmation) {
+      setNotice("Conta criada. Confirme seu e-mail para entrar e sincronizar os dados.");
       return;
     }
     router.push("/");
@@ -82,6 +88,11 @@ export default function LoginPage() {
                   {error}
                 </p>
               )}
+              {notice && (
+                <p className="a-caption rounded-xl border border-[#D4C9B5] bg-white/50 p-3 text-[#4A433D]" role="status">
+                  {notice}
+                </p>
+              )}
               <button
                 type="submit"
                 disabled={loading}
@@ -102,6 +113,7 @@ export default function LoginPage() {
                 onClick={() => {
                   setMode(mode === "in" ? "up" : "in");
                   setError(null);
+                  setNotice(null);
                 }}
                 className="a-caption a-hit-44 text-[#B8392E] transition-colors hover:text-[#8B2A22]"
               >

@@ -15,7 +15,10 @@ interface AuthValue {
   loading: boolean;
   configured: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string) => Promise<{
+    error: string | null;
+    needsConfirmation?: boolean;
+  }>;
   signOut: () => Promise<void>;
 }
 
@@ -23,12 +26,11 @@ const AuthContext = createContext<AuthValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isSupabaseConfigured);
 
   useEffect(() => {
     const supabase = createClient();
     if (!supabase) {
-      setLoading(false);
       return;
     }
 
@@ -55,8 +57,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string) => {
     const supabase = createClient();
     if (!supabase) return { error: "Backend não configurado." };
-    const { error } = await supabase.auth.signUp({ email, password });
-    return { error: error?.message ?? null };
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo:
+          typeof window === "undefined"
+            ? undefined
+            : `${window.location.origin}/auth/callback`,
+      },
+    });
+    return {
+      error: error?.message ?? null,
+      needsConfirmation: !!data.user && !data.session,
+    };
   };
 
   const signOut = async () => {

@@ -145,14 +145,22 @@ Cálculo atual do radar (`lib/life-areas.ts`):
 
 1. Crie um projeto em [supabase.com](https://supabase.com).
 2. SQL Editor → cole e rode [`supabase/schema.sql`](supabase/schema.sql).
-3. Authentication → Providers → habilite **Email** (magic link).
-4. Authentication → URL Configuration → adicione a URL do site + `…/auth/callback` em Redirect URLs.
-5. Crie `.env.local` na raiz com:
+3. Authentication → Providers → habilite **Email** com login por senha.
+4. Authentication → URL Configuration:
+   - Site URL: `https://tea-quiz-sooty.vercel.app`
+   - Redirect URLs: `https://tea-quiz-sooty.vercel.app/auth/callback`
+   - Em desenvolvimento local, adicione também `http://localhost:3000/auth/callback`.
+5. Copie `.env.example` para `.env.local` e preencha:
    ```
    NEXT_PUBLIC_SUPABASE_URL=...
    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
    ```
-6. Na Vercel, adicione as mesmas duas env vars no projeto.
+6. Na Vercel, adicione as mesmas duas env vars no projeto:
+   ```
+   npx vercel env add NEXT_PUBLIC_SUPABASE_URL production
+   npx vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production
+   ```
+   Repita para `preview` se for testar deploys de preview.
 
 Sem as env vars, o botão de login some e o app usa só localStorage.
 

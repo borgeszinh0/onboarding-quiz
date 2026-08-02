@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { createPortal } from "react-dom";
 import type { LifeArea } from "@/lib/planner-types";
 import {
   LIFE_AREA_COLOR,
@@ -43,31 +44,16 @@ export function LifeAreaMenu({
 }) {
   const [open, setOpen] = useState(false);
   const id = useId();
-  const rootRef = useRef<HTMLDivElement>(null);
   const selectedLabel = value ? LIFE_AREA_LABEL[value] : noneLabel;
   const selectedColor = value ? LIFE_AREA_COLOR[value] : "rgba(255,255,255,.34)";
 
   useEffect(() => {
     if (!open) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
     };
-    window.addEventListener("pointerdown", onPointerDown);
-    return () => window.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.requestAnimationFrame(() => {
-      rootRef.current?.scrollIntoView({
-        block: "center",
-        inline: "nearest",
-        behavior: reduceMotion ? "auto" : "smooth",
-      });
-    });
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
   const choose = (area: LifeArea | null) => {
@@ -76,11 +62,11 @@ export function LifeAreaMenu({
   };
 
   return (
-    <div ref={rootRef} className={`relative ${compact ? "inline-flex" : "block w-full"}`}>
+    <div className={compact ? "inline-flex" : "block w-full"}>
       <button
         type="button"
         aria-label={`${label}: ${selectedLabel}`}
-        aria-haspopup="listbox"
+        aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? id : undefined}
         onClick={() => setOpen((value) => !value)}
@@ -118,37 +104,53 @@ export function LifeAreaMenu({
         </svg>
       </button>
 
-      {open && (
-        <div
-          id={id}
-          role="listbox"
-          aria-label={label}
-          className={`absolute right-0 top-full z-[70] mt-2 rounded-2xl border p-1.5 shadow-[0_24px_72px_rgba(0,0,0,.58)] ${
-            compact ? "w-56" : "w-full min-w-56"
-          }`}
-          style={{
-            background: "rgba(12, 12, 16, 0.94)",
-            borderColor: "rgba(255,255,255,.16)",
-            backdropFilter: "blur(18px) saturate(130%)",
-          }}
-        >
-          <LifeAreaOption
-            selected={!value}
-            label={noneLabel}
-            color="rgba(255,255,255,.34)"
-            onSelect={() => choose(null)}
-          />
-          {LIFE_AREA_ORDER.map((area) => (
-            <LifeAreaOption
-              key={area}
-              selected={value === area}
-              label={LIFE_AREA_LABEL[area]}
-              color={LIFE_AREA_COLOR[area]}
-              onSelect={() => choose(area)}
+      {open &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[90] flex items-center justify-center px-5"
+            role="dialog"
+            aria-modal="true"
+            aria-label={label}
+          >
+            <button
+              type="button"
+              className="absolute inset-0 cursor-default bg-[rgba(0,0,0,.42)] backdrop-blur-[8px]"
+              aria-label="Fechar seleção de área"
+              onClick={() => setOpen(false)}
             />
-          ))}
-        </div>
-      )}
+            <div
+              id={id}
+              role="listbox"
+              aria-label={label}
+              className="relative z-10 w-full max-w-[320px] rounded-[24px] border p-2 shadow-[0_24px_72px_rgba(0,0,0,.58)]"
+              style={{
+                background: "rgba(12, 12, 16, 0.96)",
+                borderColor: "rgba(255,255,255,.16)",
+                backdropFilter: "blur(18px) saturate(130%)",
+              }}
+            >
+              <div className="px-3 pb-2 pt-2">
+                <p className="a-caption text-label-secondary">{label}</p>
+              </div>
+              <LifeAreaOption
+                selected={!value}
+                label={noneLabel}
+                color="rgba(255,255,255,.34)"
+                onSelect={() => choose(null)}
+              />
+              {LIFE_AREA_ORDER.map((area) => (
+                <LifeAreaOption
+                  key={area}
+                  selected={value === area}
+                  label={LIFE_AREA_LABEL[area]}
+                  color={LIFE_AREA_COLOR[area]}
+                  onSelect={() => choose(area)}
+                />
+              ))}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

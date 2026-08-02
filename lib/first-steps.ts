@@ -1,8 +1,6 @@
 import type { PlannerState } from "./planner-types";
 import { todayISO } from "./planner-store";
 
-export const FIRST_STEPS_SEEN_KEY = "planner-first-steps-seen";
-
 export type FirstStepId =
   | "day-mode"
   | "inbox"
@@ -111,13 +109,4 @@ export function getFirstStepsProgress(state: PlannerState, date = todayISO()) {
   const steps = getFirstSteps(state, date);
   const done = steps.filter((step) => step.done).length;
   return { steps, done, total: steps.length };
-}
-
-export function shouldShowFirstStepsInvite(state: PlannerState) {
-  if (typeof window === "undefined") return false;
-  return (
-    state.tasks.length === 0 &&
-    state.dayLogs.length === 0 &&
-    localStorage.getItem(FIRST_STEPS_SEEN_KEY) !== "true"
-  );
 }

@@ -87,7 +87,7 @@ export default function PerfilPage() {
                 saving={profileState.saving}
                 onSave={profileState.updateDisplayName}
               />
-              {profileState.error && (
+              {profileState.error && !profileState.profile && (
                 <p className="a-caption w-full rounded-xl border border-[rgba(244,63,94,.28)] bg-[rgba(244,63,94,.08)] p-3 text-danger" role="alert">
                   {profileState.error}
                 </p>

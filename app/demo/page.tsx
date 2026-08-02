@@ -18,7 +18,7 @@ export default function DemoPage() {
   };
 
   return (
-    <main className="page-with-bottom-dock mx-auto w-full max-w-xl px-5 pt-8">
+    <main className="page-shell page-with-dock mx-auto w-full max-w-xl px-5">
       <PageTitle
         eyebrow="Demo"
         title="Dados realistas"

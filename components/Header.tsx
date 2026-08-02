@@ -193,7 +193,7 @@ export default function Header() {
 
       <nav
         aria-label="Navegação principal"
-        className="liquid-dock fixed inset-x-[18px] bottom-dock-safe z-40 h-[72px] rounded-full sm:hidden"
+        className="liquid-dock z-40 rounded-full sm:hidden"
       >
         <div className="relative z-10 mx-auto flex h-full max-w-xl items-center justify-between px-3.5">
           {MOBILE_TABS.map((item) => {

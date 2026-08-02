@@ -35,7 +35,7 @@ export default function Home() {
 
   return (
     <>
-      <main className="mx-auto w-full max-w-xl px-5 pb-main-safe pt-8">
+      <main className="page-shell page-with-dock mx-auto w-full max-w-xl px-5">
         <header className="mb-6">
           <p className="a-subheadline text-label-secondary" suppressHydrationWarning>
             {WEEKDAYS[new Date().getDay()]}

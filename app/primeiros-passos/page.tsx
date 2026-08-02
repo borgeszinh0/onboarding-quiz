@@ -34,7 +34,7 @@ export default function PrimeirosPassosPage() {
   const firstOpenStep = steps.find((step) => !step.done)?.id ?? steps[0]?.id;
 
   return (
-    <main className="page-with-bottom-dock mx-auto w-full max-w-3xl px-5 pt-8">
+    <main className="page-shell page-with-dock mx-auto w-full max-w-3xl px-5">
       <Link
         href="/mais"
         className="mb-8 inline-flex a-hit-44 items-center -ml-2 a-caption text-label-secondary hover-text-label"

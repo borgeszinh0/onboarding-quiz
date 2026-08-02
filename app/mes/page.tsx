@@ -58,7 +58,7 @@ export default function MesPage() {
   const perfectCount = monthDates.filter((d) => isPerfectDay(state, d)).length;
 
   return (
-    <main className="page-with-bottom-dock mx-auto w-full max-w-xl px-5 pt-8">
+    <main className="page-shell page-with-dock mx-auto w-full max-w-xl px-5">
       <PageTitle eyebrow="Mês" title="Streaks" />
 
       <Card className="p-5">

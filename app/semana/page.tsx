@@ -103,7 +103,7 @@ export default function SemanaPage() {
   const focusSessionsDone = stats.reduce((sum, day) => sum + day.focusSessionsDone, 0);
 
   return (
-    <main className="page-with-bottom-dock mx-auto w-full max-w-xl px-5 pt-8 sm:max-w-3xl">
+    <main className="page-shell page-with-dock mx-auto w-full max-w-xl px-5 sm:max-w-3xl">
       <PageTitle eyebrow="Esta semana" title="Ritmo" />
 
       <p className="a-body -mt-5 mb-6 text-label-secondary">

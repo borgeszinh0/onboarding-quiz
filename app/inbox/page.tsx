@@ -10,7 +10,7 @@ export default function InboxPage() {
   if (!hydrated) return <main aria-busy="true" />;
 
   return (
-    <main className="page-with-bottom-dock mx-auto w-full max-w-xl px-5 pt-8">
+    <main className="page-shell page-with-dock mx-auto w-full max-w-xl px-5">
       <PageTitle
         eyebrow="Inbox"
         title="Caixa de captura"

@@ -33,7 +33,7 @@
 
   --dock-height: 72px;
   --dock-bottom-offset: 18px;
-  --dock-readability-gap: 48px;
+  --dock-readability-gap: 56px;
   --bottom-nav-clearance: calc(
     var(--dock-height) + var(--dock-bottom-offset) +
       var(--dock-readability-gap) + env(safe-area-inset-bottom)
@@ -777,9 +777,14 @@ body {
   --tw-ring-color: var(--accent-text);
 }
 
+.page-with-dock,
 .page-with-bottom-dock,
 .scroll-content-with-bottom-dock {
   padding-bottom: var(--bottom-nav-clearance);
+}
+
+.page-shell {
+  padding-top: max(32px, calc(20px + env(safe-area-inset-top)));
 }
 
 .scroll-content-with-bottom-dock {
@@ -793,10 +798,6 @@ body {
 
 .pb-main-safe {
   padding-bottom: var(--bottom-nav-clearance);
-}
-
-.bottom-dock-safe {
-  bottom: calc(var(--dock-bottom-offset) + env(safe-area-inset-bottom));
 }
 
 .energy-option {
@@ -892,6 +893,11 @@ body {
 }
 
 .liquid-dock {
+  position: fixed;
+  left: 18px;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  height: 72px;
   overflow: hidden;
   isolation: isolate;
   background: var(--dock-bg);

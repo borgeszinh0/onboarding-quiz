@@ -47,7 +47,7 @@ export default function AnoPage() {
   const completion = annualTotal > 0 ? Math.round((annualDone / annualTotal) * 100) : 0;
 
   return (
-    <main className="page-with-bottom-dock mx-auto w-full max-w-xl px-5 pt-8">
+    <main className="page-shell page-with-dock mx-auto w-full max-w-xl px-5">
       <div className="mb-8 flex items-start justify-between">
         <PageTitle
           eyebrow="Visão Anual"

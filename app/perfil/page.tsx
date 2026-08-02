@@ -22,7 +22,7 @@ export default function PerfilPage() {
   const focusMins = Math.floor((focusMs % (1000 * 60 * 60)) / (1000 * 60));
 
   return (
-    <main className="page-with-bottom-dock mx-auto w-full max-w-5xl px-5 pt-8">
+    <main className="page-shell page-with-dock mx-auto w-full max-w-5xl px-5">
       <div className="mx-auto w-full max-w-xl">
         <Link href="/mais" className="mb-8 inline-flex a-hit-44 items-center -ml-2 a-caption text-label-secondary hover-text-label">
         ← Voltar

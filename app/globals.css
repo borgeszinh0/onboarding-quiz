@@ -34,6 +34,9 @@
   --dock-height: 72px;
   --dock-bottom-offset: 18px;
   --dock-readability-gap: 56px;
+  --dock-bottom-position: calc(
+    var(--dock-bottom-offset) + env(safe-area-inset-bottom)
+  );
   --bottom-nav-clearance: calc(
     var(--dock-height) + var(--dock-bottom-offset) +
       var(--dock-readability-gap) + env(safe-area-inset-bottom)
@@ -559,6 +562,7 @@
 
 html,
 body {
+  min-height: 100%;
   background:
     var(--bg-radial),
     var(--bg);
@@ -567,6 +571,10 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overscroll-behavior-y: none;
+}
+
+body {
+  min-height: 100dvh;
 }
 
 /* ---------- Primitivas ---------- */
@@ -784,6 +792,7 @@ body {
 }
 
 .page-shell {
+  min-height: 100dvh;
   padding-top: max(32px, calc(20px + env(safe-area-inset-top)));
 }
 
@@ -896,7 +905,7 @@ body {
   position: fixed;
   left: 18px;
   right: 18px;
-  bottom: 18px;
+  bottom: var(--dock-bottom-position);
   height: 72px;
   overflow: hidden;
   isolation: isolate;

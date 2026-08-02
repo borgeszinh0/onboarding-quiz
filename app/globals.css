@@ -32,7 +32,7 @@
   --space-2xl: 96px;
 
   --dock-height: 72px;
-  --dock-bottom-offset: 18px;
+  --dock-bottom-offset: 26px;
   --dock-readability-gap: 56px;
   --dock-bottom-position: calc(
     var(--dock-bottom-offset) + env(safe-area-inset-bottom)

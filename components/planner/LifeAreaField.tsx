@@ -71,7 +71,7 @@ export function LifeAreaMenu({
   }, [open]);
 
   const choose = (area: LifeArea | null) => {
-    onChange(area);
+    onChange(area === value ? null : area);
     setOpen(false);
   };
 

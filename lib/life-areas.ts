@@ -250,7 +250,7 @@ function getTaskLifeArea(task: Task): LifeArea | null {
 }
 
 function getHabitLifeArea(habit: Habit): LifeArea | null {
-  return habit.lifeArea ?? inferLifeArea(habit.title);
+  return habit.lifeArea ?? null;
 }
 
 function inferLifeArea(title: string): LifeArea | null {

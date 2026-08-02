@@ -12,7 +12,7 @@ import {
 import { Card, SectionLabel, BottomSheet } from "@/components/apple/ui";
 import type { Habit, LifeArea } from "@/lib/planner-types";
 import { Check, Flame, MoreHorizontal, Plus } from "lucide-react";
-import { LifeAreaMenu } from "./LifeAreaField";
+import { LifeAreaBadge, LifeAreaMenu } from "./LifeAreaField";
 
 export function HabitTracker() {
   const { state } = usePlanner();
@@ -203,6 +203,11 @@ function HabitCard({
           <p className="a-caption mt-1 text-label-secondary">
             Sequência de {streak} {streak === 1 ? "dia" : "dias"}
           </p>
+          {habit.lifeArea && (
+            <p className="mt-2">
+              <LifeAreaBadge area={habit.lifeArea} />
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col items-center gap-2">
@@ -251,6 +256,9 @@ function HabitCard({
             className="a-subheadline mt-1 min-h-[44px] w-full rounded-xl bg-bg px-3 text-label"
           />
           <div className="mt-3">
+            <p className="a-caption mb-1 text-label-secondary">
+              Opcional. Ajuda o radar em Objetivos a entender que área esse hábito fortalece.
+            </p>
             <LifeAreaMenu
               value={habit.lifeArea}
               onChange={(lifeArea) => dispatch({ type: "SET_HABIT_AREA", id: habit.id, lifeArea })}
@@ -312,7 +320,13 @@ function HabitManager() {
           <Plus size={24} />
         </button>
       </div>
-      <LifeAreaMenu value={lifeArea} onChange={setLifeArea} label="Área do novo hábito" />
+      <div>
+        <p className="a-caption mb-1 text-label-secondary">Área da vida</p>
+        <LifeAreaMenu value={lifeArea} onChange={setLifeArea} label="Área do novo hábito" />
+        <p className="a-caption mt-2 text-label-secondary">
+          Opcional. Ajuda o radar em Objetivos a entender que área esse hábito fortalece.
+        </p>
+      </div>
 
       {state.habits.length > 0 && (
         <ul className="space-y-1">
@@ -321,14 +335,31 @@ function HabitManager() {
               <button
                 type="button"
                 onClick={() => dispatch({ type: "TOGGLE_HABIT_ACTIVE", id: habit.id })}
-                className="a-subheadline min-h-[44px] min-w-0 flex-1 text-left"
+                className="min-h-[44px] min-w-0 flex-1 text-left"
                 style={
                   habit.isActive ? undefined : { color: "var(--label-secondary)" }
                 }
               >
-                {habit.title}
-                {!habit.isActive && " · pausado"}
+                <span className="a-subheadline block">{habit.title}</span>
+                <span className="mt-1 block">
+                  {habit.lifeArea ? (
+                    <LifeAreaBadge area={habit.lifeArea} />
+                  ) : (
+                    <span className="a-caption text-label-secondary">
+                      Sem área{!habit.isActive ? " · pausado" : ""}
+                    </span>
+                  )}
+                  {habit.lifeArea && !habit.isActive && (
+                    <span className="a-caption text-label-secondary"> · pausado</span>
+                  )}
+                </span>
               </button>
+              <LifeAreaMenu
+                value={habit.lifeArea}
+                onChange={(lifeArea) => dispatch({ type: "SET_HABIT_AREA", id: habit.id, lifeArea })}
+                label={`Área de ${habit.title}`}
+                compact
+              />
               <button
                 type="button"
                 onClick={() => dispatch({ type: "REMOVE_HABIT", id: habit.id })}

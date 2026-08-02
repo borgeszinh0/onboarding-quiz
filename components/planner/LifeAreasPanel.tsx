@@ -24,6 +24,8 @@ export function LifeAreasPanel({ state }: { state: PlannerState }) {
   const [selectedArea, setSelectedArea] = useState<LifeArea>(data.rows[0].area);
   const [managing, setManaging] = useState(false);
   const selected = data.rows.find((row) => row.area === selectedArea) ?? data.rows[0];
+  const hasHabitsWithoutArea = state.habits.some((habit) => !habit.lifeArea);
+  const hasClassifiedHabits = state.habits.some((habit) => !!habit.lifeArea);
 
   if (data.classifiedItems === 0) {
     return (
@@ -32,11 +34,16 @@ export function LifeAreasPanel({ state }: { state: PlannerState }) {
           <div>
             <h2 className="a-title-2 text-label">Áreas da vida</h2>
             <p className="a-body mt-2 text-label-secondary">
-              Classifique tarefas e hábitos por área para ver seu mapa.
+              {hasHabitsWithoutArea
+                ? "Classifique seus hábitos por área para que eles entrem no radar."
+                : "Classifique tarefas e hábitos por área para ver seu mapa."}
             </p>
           </div>
-          <Link href="/inbox" className="a-btn a-btn-secondary inline-flex">
-            Classificar tarefas
+          <Link
+            href={hasHabitsWithoutArea ? "/habitos" : "/inbox"}
+            className="a-btn a-btn-secondary inline-flex"
+          >
+            {hasHabitsWithoutArea ? "Classificar hábitos" : "Classificar tarefas"}
           </Link>
         </div>
       </Card>
@@ -53,7 +60,8 @@ export function LifeAreasPanel({ state }: { state: PlannerState }) {
               <ManageTargetsButton onClick={() => setManaging(true)} />
             </div>
             <p className="a-body mt-2 text-label-secondary">
-              Para onde suas ações foram nos últimos 30 dias.
+              Distribuição das suas ações concluídas nos últimos 30 dias.
+              Inclui tarefas, foco e hábitos classificados por área.
             </p>
           </div>
 
@@ -72,7 +80,8 @@ export function LifeAreasPanel({ state }: { state: PlannerState }) {
               <ManageTargetsButton onClick={() => setManaging(true)} />
             </div>
             <p className="a-body mt-2 text-label-secondary">
-              Para onde suas ações foram nos últimos 30 dias.
+              Distribuição das suas ações concluídas nos últimos 30 dias.
+              Inclui tarefas, foco e hábitos classificados por área.
             </p>
           </div>
 
@@ -81,6 +90,12 @@ export function LifeAreasPanel({ state }: { state: PlannerState }) {
           {data.isEarly && (
             <p className="a-caption rounded-xl border border-separator bg-fill-subtle px-3 py-2 text-label-secondary">
               Dados iniciais. O mapa fica mais útil após alguns dias de uso.
+            </p>
+          )}
+
+          {hasClassifiedHabits && !data.hasAnyExecution && (
+            <p className="a-caption rounded-xl border border-separator bg-fill-subtle px-3 py-2 text-label-secondary">
+              Hábitos classificados aparecem no radar quando forem concluídos.
             </p>
           )}
 
@@ -441,7 +456,7 @@ function AreaDetail({
       <div className="grid grid-cols-3 gap-2">
         <DetailMetric label="tarefas" value={row.detail.tasksCompleted} />
         <DetailMetric label="foco" value={formatFocus(row.detail.focusMinutes)} />
-        <DetailMetric label="hábitos" value={row.detail.linkedHabits} />
+        <DetailMetric label="hábitos concluídos" value={row.detail.habitCompletions} />
       </div>
     </div>
   );

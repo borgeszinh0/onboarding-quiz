@@ -131,7 +131,7 @@ Cálculo atual do radar (`lib/life-areas.ts`):
 
 - Conta somente execução real: tarefas concluídas, sessões de foco concluídas e hábitos concluídos.
 - Ignora tarefas apenas criadas/planejadas e hábitos pausados.
-- Área explícita vence sempre. Quando um item antigo ainda não tem área salva, o radar tenta inferir a área pelo título apenas para cálculo visual; essa inferência não altera o dado salvo nem aparece como categoria da tarefa.
+- Área explícita vence sempre. Quando uma tarefa antiga ainda não tem área salva, o radar tenta inferir a área pelo título apenas para cálculo visual; essa inferência não altera o dado salvo nem aparece como categoria da tarefa. Hábitos sem área explícita não entram no radar.
 - Pontos: pequena `+1`, média `+2`, grande `+3`, foco `+1` por 25 minutos completos, hábito concluído `+1`.
 - `Atual` = últimos 30 dias; `Anterior` = 30 dias anteriores, escondido quando não há dados.
 - Valores são normalizados relativamente ao maior volume do período para mostrar distribuição/concentração. Não tratar como nota de vida.

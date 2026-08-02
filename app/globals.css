@@ -896,7 +896,7 @@ body {
   position: fixed;
   left: 18px;
   right: 18px;
-  bottom: calc(18px + env(safe-area-inset-bottom));
+  bottom: 18px;
   height: 72px;
   overflow: hidden;
   isolation: isolate;

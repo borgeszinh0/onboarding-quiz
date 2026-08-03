@@ -7,6 +7,7 @@ const MORE_ITEMS = [
   { href: "/primeiros-passos", label: "Primeiros passos" },
   { href: "/objetivos", label: "Objetivos" },
   { href: "/perfil", label: "Perfil" },
+  { href: "/historico", label: "Histórico dos Dias" },
   { href: "/dados", label: "Dados" },
   { href: "/mes", label: "Calendário do Mês" },
   { href: "/ano", label: "Visão Anual" },

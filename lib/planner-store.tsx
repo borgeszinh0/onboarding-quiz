@@ -42,6 +42,54 @@ function makeId(prefix: string): string {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
+function endOfLocalDayTimestamp(date: string): number {
+  return new Date(`${date}T23:59:59.999`).getTime();
+}
+
+function getDaySnapshot(
+  state: PlannerState,
+  date: string,
+  autoMovedToInboxCount = 0
+): Pick<
+  DayLog,
+  | "shutdownTaskDone"
+  | "shutdownTaskTotal"
+  | "shutdownHabitDone"
+  | "shutdownHabitTotal"
+  | "shutdownFocusMinutes"
+  | "autoMovedToInboxCount"
+> {
+  const tasks = state.tasks.filter((task) => task.category !== "inbox" && task.date === date);
+  const habits = state.habits.filter((habit) => habit.isActive);
+  const habitLogs = state.habitLogs.filter((log) => log.date === date && log.done);
+  const focusMinutes = Math.floor(
+    state.focusSessions
+      .filter((session) => session.date === date)
+      .reduce((total, session) => total + session.elapsedMs, 0) / 60000
+  );
+
+  return {
+    shutdownTaskDone: tasks.filter((task) => task.status === "done").length,
+    shutdownTaskTotal: tasks.length,
+    shutdownHabitDone: habits.filter((habit) =>
+      habitLogs.some((log) => log.habitId === habit.id)
+    ).length,
+    shutdownHabitTotal: habits.length,
+    shutdownFocusMinutes: focusMinutes,
+    autoMovedToInboxCount,
+  };
+}
+
+function upsertDayLog(state: PlannerState, date: string, patch: Partial<DayLog>): DayLog[] {
+  const existingIdx = state.dayLogs.findIndex((log) => log.date === date);
+  if (existingIdx >= 0) {
+    const nextLogs = [...state.dayLogs];
+    nextLogs[existingIdx] = { ...nextLogs[existingIdx], ...patch, date };
+    return nextLogs;
+  }
+  return [...state.dayLogs, { date, ...patch }];
+}
+
 type Action =
   | { type: "HYDRATE"; state: Partial<PlannerState> }
   | {
@@ -109,11 +157,13 @@ function reducer(state: PlannerState, action: Action): PlannerState {
       const existingIdx = state.dayLogs.findIndex((l) => l.date === action.date);
       const newLog: DayLog = {
         date: action.date,
+        ...getDaySnapshot(state, action.date),
         shutdownAt: Date.now(),
+        shutdownSource: "manual",
       };
       if (existingIdx >= 0) {
         const newLogs = [...state.dayLogs];
-        newLogs[existingIdx] = { ...newLogs[existingIdx], shutdownAt: Date.now() };
+        newLogs[existingIdx] = { ...newLogs[existingIdx], ...newLog };
         return { ...state, dayLogs: newLogs };
       }
       return { ...state, dayLogs: [...state.dayLogs, newLog] };
@@ -316,6 +366,23 @@ function reducer(state: PlannerState, action: Action): PlannerState {
     case "ROLLOVER": {
       if (state.lastRolloverDate === action.today) return state;
 
+      const datesToAutoClose = new Set<string>();
+      for (const log of state.dayLogs) {
+        if (log.date < action.today && !log.shutdownAt) datesToAutoClose.add(log.date);
+      }
+      for (const task of state.tasks) {
+        if (task.date && task.date < action.today) datesToAutoClose.add(task.date);
+      }
+      for (const block of state.timeBlocks) {
+        if (block.date < action.today) datesToAutoClose.add(block.date);
+      }
+      for (const log of state.habitLogs) {
+        if (log.date < action.today) datesToAutoClose.add(log.date);
+      }
+      for (const session of state.focusSessions) {
+        if (session.date < action.today) datesToAutoClose.add(session.date);
+      }
+
       const overdueIds = new Set(
         state.tasks
           .filter(
@@ -327,8 +394,28 @@ function reducer(state: PlannerState, action: Action): PlannerState {
           )
           .map((t) => t.id)
       );
-      if (overdueIds.size === 0) {
-        return { ...state, lastRolloverDate: action.today };
+
+      let dayLogs = state.dayLogs;
+      for (const date of datesToAutoClose) {
+        const existing = dayLogs.find((log) => log.date === date);
+        if (existing?.shutdownAt) continue;
+
+        const autoMovedToInboxCount = state.tasks.filter(
+          (task) =>
+            task.date === date &&
+            task.category !== "inbox" &&
+            task.status === "pending"
+        ).length;
+
+        dayLogs = upsertDayLog(
+          { ...state, dayLogs },
+          date,
+          {
+            ...getDaySnapshot(state, date, autoMovedToInboxCount),
+            shutdownAt: endOfLocalDayTimestamp(date),
+            shutdownSource: "auto",
+          }
+        );
       }
 
       return {
@@ -337,6 +424,7 @@ function reducer(state: PlannerState, action: Action): PlannerState {
           overdueIds.has(t.id) ? { ...t, category: "inbox", date: null } : t
         ),
         timeBlocks: state.timeBlocks.filter((b) => !overdueIds.has(b.taskId)),
+        dayLogs,
         lastRolloverDate: action.today,
       };
     }
@@ -371,10 +459,14 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     setHydrated(true);
   }, []);
 
-  // Virada de dia: tarefas passadas não concluídas voltam pro Inbox.
+  // Virada de dia: dias passados ganham fechamento automático e pendências
+  // voltam pro Inbox sem fingir que houve encerramento manual.
   useEffect(() => {
     if (!hydrated) return;
-    dispatch({ type: "ROLLOVER", today: todayISO() });
+    const run = () => dispatch({ type: "ROLLOVER", today: todayISO() });
+    run();
+    const id = window.setInterval(run, 60_000);
+    return () => window.clearInterval(id);
   }, [hydrated]);
 
   useEffect(() => {

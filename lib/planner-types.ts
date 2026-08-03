@@ -75,6 +75,13 @@ export interface DayLog {
   plannedShutdown?: string;
   plannedAt?: number;
   shutdownAt?: number;
+  shutdownSource?: "manual" | "auto";
+  shutdownTaskDone?: number;
+  shutdownTaskTotal?: number;
+  shutdownHabitDone?: number;
+  shutdownHabitTotal?: number;
+  shutdownFocusMinutes?: number;
+  autoMovedToInboxCount?: number;
 }
 
 /** Q1–Q4. Cada trimestre guarda 1–2 frases de foco, texto livre. */

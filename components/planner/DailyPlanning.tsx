@@ -43,15 +43,42 @@ export function DailyPlanning({ date }: { date: string }) {
   const { state, dispatch } = usePlanner();
   const [intention, setIntention] = useState("");
   const [energy, setEnergy] = useState<DayMode | undefined>();
+  const [modeEditing, setModeEditing] = useState(false);
 
   const dayLog = state.dayLogs.find((l) => l.date === date);
   const isPlanned = !!dayLog?.plannedAt;
   const selectedEnergy = energy ?? dayLog?.mode ?? dayLog?.energy;
+  const showModeSelector = modeEditing || !selectedEnergy;
 
   if (isPlanned) {
     return (
       <section className="mb-6">
         <Card className="p-5">
+          <PlannedDayModeSummary
+            selectedEnergy={selectedEnergy}
+            editing={showModeSelector}
+            onEdit={() => setModeEditing(true)}
+          />
+          {showModeSelector && (
+            <div className="mb-5">
+              <DayModeSelector
+                selectedEnergy={selectedEnergy}
+                onSelect={(level) => {
+                  setEnergy(level);
+                  setModeEditing(false);
+                  dispatch({
+                    type: "PLAN_DAY",
+                    date,
+                    payload: {
+                      intention: dayLog.intention,
+                      mode: level,
+                      energy: level,
+                    },
+                  });
+                }}
+              />
+            </div>
+          )}
           <PlannedIntentionEditor
             key={`${date}:${dayLog.intention ?? ""}`}
             intention={dayLog.intention ?? ""}
@@ -64,17 +91,6 @@ export function DailyPlanning({ date }: { date: string }) {
                   mode: selectedEnergy,
                   energy: selectedEnergy,
                 },
-              });
-            }}
-          />
-          <DayModeSelector
-            selectedEnergy={selectedEnergy}
-            onSelect={(level) => {
-              setEnergy(level);
-              dispatch({
-                type: "PLAN_DAY",
-                date,
-                payload: { intention: dayLog.intention, energy: level },
               });
             }}
           />
@@ -216,6 +232,61 @@ function PlannedIntentionEditor({
   );
 }
 
+function PlannedDayModeSummary({
+  selectedEnergy,
+  editing,
+  onEdit,
+}: {
+  selectedEnergy?: DayMode;
+  editing: boolean;
+  onEdit: () => void;
+}) {
+  const option = selectedEnergy ? ENERGY_OPTIONS[selectedEnergy] : undefined;
+
+  return (
+    <div className="mb-5">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <p className="a-subheadline text-label-secondary">Tipo do dia</p>
+        {!editing && (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="a-caption min-h-[44px] rounded-full px-3 text-accent transition-colors hover-bg-fill-subtle"
+          >
+            Alterar
+          </button>
+        )}
+      </div>
+      {option ? (
+        <div
+          className={`energy-option ${option.className} rounded-[18px] border p-3.5`}
+          style={{
+            backgroundColor: "var(--energy-selected-bg)",
+            borderColor:
+              "color-mix(in oklab, var(--energy-color) 42%, transparent)",
+          }}
+        >
+          <span className="flex items-baseline justify-between gap-3">
+            <span className="text-[15px] font-medium leading-5 text-label">
+              Hoje é um dia de {option.label.toLowerCase()}
+            </span>
+            <span className="text-[13px] font-medium leading-[18px] text-energy">
+              {option.mode}
+            </span>
+          </span>
+          <span className="mt-1 block text-[13px] leading-[18px] text-label-secondary">
+            {option.consequence}
+          </span>
+        </div>
+      ) : (
+        <p className="a-body text-label-secondary">
+          Defina a energia de hoje para o app priorizar as tarefas certas.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function DayModeSelector({
   selectedEnergy,
   onSelect,
@@ -225,7 +296,12 @@ function DayModeSelector({
 }) {
   return (
     <div>
-      <span className="a-subheadline mb-2 block text-label-secondary">Modo do dia</span>
+      <span className="a-subheadline mb-1 block text-label">
+        Como está sua energia hoje?
+      </span>
+      <p className="mb-3 text-[13px] leading-[18px] text-label-secondary">
+        Essa escolha define qual tipo de tarefa o app vai favorecer neste dia.
+      </p>
       <div className="grid gap-2.5">
         {(["low", "medium", "high"] as const).map((level) => {
           const option = ENERGY_OPTIONS[level];

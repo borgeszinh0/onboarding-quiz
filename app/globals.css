@@ -938,49 +938,76 @@ body {
 }
 
 /* Entrada animada ao abrir o app (referência: bleed colorido do app Gemini
-   ao iniciar). Toca uma vez quando a dock monta e some — depois fica
-   estática. ::before é o glow em si; ::after é a textura de pontos que se
-   dissolve por cima, imitando o halftone do vídeo de referência. */
-.dock-underlay::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--dock-underlay-glow);
-  opacity: 0;
-  animation: dock-glow-in 2.8s cubic-bezier(0.16, 0.8, 0.24, 1) forwards;
-}
-
+   ao iniciar, que sobe como uma onda em vez de um fade reto). Toca uma vez
+   quando a dock monta e depois fica estática. ::before (glow) e ::after
+   (pontos) usam a MESMA máscara ondulada e a MESMA animação de posição —
+   sobem e deslizam juntos, como uma coisa só. Os pontos, além disso,
+   se dissolvem no final (o glow fica). */
+.dock-underlay::before,
 .dock-underlay::after {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.55) 1px, transparent 1.5px);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40' preserveAspectRatio='none'%3E%3Cpath d='M0,16 C12.5,4 37.5,4 50,16 C62.5,28 87.5,28 100,16 L100,40 L0,40 Z' fill='white'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40' preserveAspectRatio='none'%3E%3Cpath d='M0,16 C12.5,4 37.5,4 50,16 C62.5,28 87.5,28 100,16 L100,40 L0,40 Z' fill='white'/%3E%3C/svg%3E");
+  mask-repeat: repeat-x;
+  -webkit-mask-repeat: repeat-x;
+  mask-size: 160px 240%;
+  -webkit-mask-size: 160px 240%;
+}
+
+.dock-underlay::before {
+  background: var(--dock-underlay-glow);
+  opacity: 0;
+  animation:
+    dock-wave-rise 3.2s cubic-bezier(0.16, 0.8, 0.24, 1) forwards,
+    dock-glow-fade-in 3.2s cubic-bezier(0.16, 0.8, 0.24, 1) forwards;
+}
+
+.dock-underlay::after {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.6) 1px, transparent 1.5px);
   background-size: 7px 7px;
   mix-blend-mode: overlay;
   opacity: 0;
-  animation: dock-dots-sweep 2.6s ease-out forwards;
+  animation:
+    dock-wave-rise 3.2s cubic-bezier(0.16, 0.8, 0.24, 1) forwards,
+    dock-dots-fade 3.2s ease-out forwards;
 }
 
-@keyframes dock-glow-in {
+/* Mesmo movimento pras duas camadas: a onda sobe (mask desliza de baixo
+   pra cima) e deriva um pouco pro lado, como se estivesse se propagando. */
+@keyframes dock-wave-rise {
+  0% {
+    mask-position: 30px 130%;
+    -webkit-mask-position: 30px 130%;
+  }
+  100% {
+    mask-position: -70px 0%;
+    -webkit-mask-position: -70px 0%;
+  }
+}
+
+@keyframes dock-glow-fade-in {
   0% {
     opacity: 0;
-    transform: scale(0.88);
+  }
+  15% {
+    opacity: 0.85;
   }
   100% {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
-@keyframes dock-dots-sweep {
+@keyframes dock-dots-fade {
   0% {
     opacity: 0;
   }
-  25% {
-    opacity: 0.75;
+  15% {
+    opacity: 0.8;
   }
-  55% {
-    opacity: 0.6;
+  60% {
+    opacity: 0.5;
   }
   100% {
     opacity: 0;
@@ -988,12 +1015,16 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dock-underlay::before {
+  .dock-underlay::before,
+  .dock-underlay::after {
+    mask-image: none;
+    -webkit-mask-image: none;
     animation: none;
+  }
+  .dock-underlay::before {
     opacity: 1;
   }
   .dock-underlay::after {
-    animation: none;
     opacity: 0;
   }
 }

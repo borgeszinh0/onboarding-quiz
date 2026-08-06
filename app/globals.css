@@ -926,13 +926,17 @@ body {
   mask-image: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(0, 0, 0, 0.62) 58%,
+    transparent 48%,
+    rgba(0, 0, 0, 0.5) 58%,
+    #000 78%,
     #000 100%
   );
   -webkit-mask-image: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(0, 0, 0, 0.62) 58%,
+    transparent 48%,
+    rgba(0, 0, 0, 0.5) 58%,
+    #000 78%,
     #000 100%
   );
   pointer-events: none;

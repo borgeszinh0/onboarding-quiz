@@ -917,10 +917,8 @@ body {
 }
 
 .dock-underlay {
-  height: 46vh;
-  background:
-    var(--dock-underlay-glow),
-    var(--dock-underlay-bg);
+  height: 34vh;
+  background: var(--dock-underlay-bg);
   backdrop-filter: blur(18px) saturate(112%);
   -webkit-backdrop-filter: blur(18px) saturate(112%);
   mask-image: linear-gradient(
@@ -936,6 +934,65 @@ body {
     #000 100%
   );
   pointer-events: none;
+  overflow: hidden;
+}
+
+/* Entrada animada ao abrir o app (referência: bleed colorido do app Gemini
+   ao iniciar). Toca uma vez quando a dock monta e some — depois fica
+   estática. ::before é o glow em si; ::after é a textura de pontos que se
+   dissolve por cima, imitando o halftone do vídeo de referência. */
+.dock-underlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--dock-underlay-glow);
+  opacity: 0;
+  animation: dock-glow-in 1.2s cubic-bezier(0.16, 0.8, 0.24, 1) forwards;
+}
+
+.dock-underlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.55) 1px, transparent 1.5px);
+  background-size: 7px 7px;
+  mix-blend-mode: overlay;
+  opacity: 0;
+  animation: dock-dots-sweep 1s ease-out forwards;
+}
+
+@keyframes dock-glow-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes dock-dots-sweep {
+  0% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-underlay::before {
+    animation: none;
+    opacity: 1;
+  }
+  .dock-underlay::after {
+    animation: none;
+    opacity: 0;
+  }
 }
 
 /* Tinge o brilho da dock com a cor da energia escolhida no dia

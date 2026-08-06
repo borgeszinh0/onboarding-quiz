@@ -1,5 +1,5 @@
 // Service worker — app shell cache (offline-first para navegação).
-const CACHE = "valores-v1";
+const CACHE = "valores-v2";
 const APP_SHELL = ["/", "/quiz", "/plano", "/resultado", "/dados", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

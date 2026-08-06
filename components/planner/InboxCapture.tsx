@@ -6,6 +6,7 @@ import { Card, SectionLabel } from "@/components/apple/ui";
 import { parseNaturalInput } from "@/lib/parser";
 import { Plus, X } from "lucide-react";
 import { LifeAreaMenu } from "./LifeAreaField";
+import { TaskDetailModal } from "./TaskDetailModal";
 import type { LifeArea } from "@/lib/planner-types";
 import { filterTasksByLifeArea } from "@/lib/life-areas";
 import {
@@ -26,6 +27,7 @@ export function InboxCapture() {
   const { state, dispatch } = usePlanner();
   const [title, setTitle] = useState("");
   const [areaFilter, setAreaFilter] = useState<LifeArea | null>(null);
+  const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
   const items = getInboxTasks(state);
   const visibleItems = filterTasksByLifeArea(items, areaFilter);
   const today = new Date();
@@ -135,6 +137,7 @@ export function InboxCapture() {
               mode={mode}
               onSetArea={(id, area) => dispatch({ type: "SET_TASK_AREA", id, lifeArea: area })}
               onRemove={(id) => dispatch({ type: "REMOVE_TASK", id })}
+              onOpenDetail={setDetailTaskId}
             />
             <InboxGroup
               title="Também cabem"
@@ -142,6 +145,7 @@ export function InboxCapture() {
               mode={mode}
               onSetArea={(id, area) => dispatch({ type: "SET_TASK_AREA", id, lifeArea: area })}
               onRemove={(id) => dispatch({ type: "REMOVE_TASK", id })}
+              onOpenDetail={setDetailTaskId}
             />
             <InboxGroup
               title="Melhor guardar"
@@ -149,10 +153,13 @@ export function InboxCapture() {
               mode={mode}
               onSetArea={(id, area) => dispatch({ type: "SET_TASK_AREA", id, lifeArea: area })}
               onRemove={(id) => dispatch({ type: "REMOVE_TASK", id })}
+              onOpenDetail={setDetailTaskId}
             />
           </div>
         )}
       </Card>
+
+      <TaskDetailModal taskId={detailTaskId} onClose={() => setDetailTaskId(null)} />
     </section>
   );
 }
@@ -163,12 +170,14 @@ function InboxGroup({
   mode,
   onSetArea,
   onRemove,
+  onOpenDetail,
 }: {
   title: string;
   items: ReturnType<typeof sortTasksForMode>;
   mode: ReturnType<typeof getDayMode>;
   onSetArea: (id: string, area: LifeArea | null) => void;
   onRemove: (id: string) => void;
+  onOpenDetail: (id: string) => void;
 }) {
   if (items.length === 0) return null;
 
@@ -178,9 +187,13 @@ function InboxGroup({
       <ul className="divide-y divide-separator">
         {items.map(({ task, group }) => (
           <li key={task.id} className="space-y-2 py-3">
-            <div className="min-w-0">
+            <button
+              type="button"
+              onClick={() => onOpenDetail(task.id)}
+              className="block min-w-0 w-full text-left"
+            >
               <span className="a-body block truncate text-label">{task.title}</span>
-            </div>
+            </button>
             <div className="flex min-h-[44px] items-center justify-between gap-3">
               <span className="a-caption text-label-secondary">
                 {getFitLabel(mode, group)}

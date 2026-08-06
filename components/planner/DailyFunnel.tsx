@@ -21,6 +21,7 @@ import {
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { ScheduleTaskControl, ScheduleForm } from "./ScheduleTaskControl";
 import { LifeAreaBadge } from "./LifeAreaField";
+import { TaskDetailModal } from "./TaskDetailModal";
 import { Inbox } from "lucide-react";
 
 /** Mesmas cores, mas seguras como cor de TEXTO (ver --accent-text em globals.css). */
@@ -45,6 +46,7 @@ export function DailyFunnel({
   const [openSlot, setOpenSlot] = useState<Exclude<TaskCategory, "inbox"> | null>(
     null
   );
+  const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
   const dayMode = getDayMode(state, date);
   const modeRules = DAY_MODE_RULES[dayMode];
   const hasBigTask = getTasksForSlot(state, date, "big").length > 0;
@@ -97,6 +99,7 @@ export function DailyFunnel({
                     task={task}
                     date={date}
                     onFocus={onFocus}
+                    onOpenDetail={setDetailTaskId}
                   />
                 ))}
               </ul>
@@ -127,6 +130,12 @@ export function DailyFunnel({
           </Card>
         );
       })}
+
+      <TaskDetailModal
+        taskId={detailTaskId}
+        onClose={() => setDetailTaskId(null)}
+        onFocus={onFocus}
+      />
     </section>
   );
 }
@@ -135,10 +144,12 @@ function SlotTaskRow({
   task,
   date,
   onFocus,
+  onOpenDetail,
 }: {
   task: Task;
   date: string;
   onFocus: (taskId: string) => void;
+  onOpenDetail: (taskId: string) => void;
 }) {
   const { dispatch } = usePlanner();
   const [scheduling, setScheduling] = useState(false);
@@ -173,7 +184,11 @@ function SlotTaskRow({
             )}
           </span>
         </button>
-        <div className="min-w-0 flex-1">
+        <button
+          type="button"
+          onClick={() => onOpenDetail(task.id)}
+          className="min-w-0 flex-1 text-left"
+        >
           <span
             className="a-body block truncate"
             style={
@@ -189,7 +204,7 @@ function SlotTaskRow({
               <LifeAreaBadge area={task.lifeArea} />
             </span>
           )}
-        </div>
+        </button>
         <div className="flex shrink-0 items-center gap-2">
           {task.status !== "done" && (
             <ScheduleTaskControl

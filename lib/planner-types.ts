@@ -14,6 +14,12 @@ export type LifeArea =
 
 export type TaskStatus = "pending" | "done";
 
+export interface Subtask {
+  id: string;
+  title: string;
+  done: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -23,6 +29,8 @@ export interface Task {
   date: string | null;
   estimatedMinutes?: number;
   lifeArea?: LifeArea | null;
+  notes?: string;
+  subtasks?: Subtask[];
   createdAt: number;
 }
 

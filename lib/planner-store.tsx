@@ -102,10 +102,13 @@ type Action =
       lifeArea?: LifeArea | null;
     }
   | { type: "MOVE_TASK"; id: string; category: TaskCategory; date: string | null }
-  | { type: "UPDATE_TASK"; id: string; title: string }
+  | { type: "UPDATE_TASK"; id: string; title?: string; notes?: string }
   | { type: "SET_TASK_AREA"; id: string; lifeArea: LifeArea | null }
   | { type: "TOGGLE_TASK_DONE"; id: string }
   | { type: "REMOVE_TASK"; id: string }
+  | { type: "ADD_SUBTASK"; taskId: string; title: string }
+  | { type: "TOGGLE_SUBTASK"; taskId: string; subtaskId: string }
+  | { type: "REMOVE_SUBTASK"; taskId: string; subtaskId: string }
   | {
       type: "ADD_TIME_BLOCK";
       taskId: string;
@@ -231,7 +234,54 @@ function reducer(state: PlannerState, action: Action): PlannerState {
       return {
         ...state,
         tasks: state.tasks.map((t) =>
-          t.id === action.id ? { ...t, title: action.title } : t
+          t.id === action.id
+            ? {
+                ...t,
+                ...(action.title !== undefined ? { title: action.title } : {}),
+                ...(action.notes !== undefined ? { notes: action.notes } : {}),
+              }
+            : t
+        ),
+      };
+
+    case "ADD_SUBTASK":
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.taskId
+            ? {
+                ...t,
+                subtasks: [
+                  ...(t.subtasks ?? []),
+                  { id: makeId("subtask"), title: action.title, done: false },
+                ],
+              }
+            : t
+        ),
+      };
+
+    case "TOGGLE_SUBTASK":
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.taskId
+            ? {
+                ...t,
+                subtasks: (t.subtasks ?? []).map((s) =>
+                  s.id === action.subtaskId ? { ...s, done: !s.done } : s
+                ),
+              }
+            : t
+        ),
+      };
+
+    case "REMOVE_SUBTASK":
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.taskId
+            ? { ...t, subtasks: (t.subtasks ?? []).filter((s) => s.id !== action.subtaskId) }
+            : t
         ),
       };
 

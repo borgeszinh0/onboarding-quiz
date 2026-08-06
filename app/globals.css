@@ -917,7 +917,7 @@ body {
 }
 
 .dock-underlay {
-  height: calc(var(--bottom-nav-clearance) + 56px);
+  height: 46vh;
   background:
     var(--dock-underlay-glow),
     var(--dock-underlay-bg);
@@ -926,13 +926,13 @@ body {
   mask-image: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(0, 0, 0, 0.62) 28%,
+    rgba(0, 0, 0, 0.62) 58%,
     #000 100%
   );
   -webkit-mask-image: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(0, 0, 0, 0.62) 28%,
+    rgba(0, 0, 0, 0.62) 58%,
     #000 100%
   );
   pointer-events: none;
@@ -940,31 +940,31 @@ body {
 
 /* Tinge o brilho da dock com a cor da energia escolhida no dia
    (Manutenção/Execução/Criação). Sem seleção, mantém o glow padrão.
-   Glow forte e saturado (referência: bleed colorido no rodapé do app Gemini). */
+   Bleed vertical full-width — mesmo formato/proporção do rodapé do app Gemini. */
 .dock-underlay[data-energy="low"] {
-  --dock-underlay-glow: radial-gradient(
-    120% 100% at 50% 100%,
-    rgba(52, 168, 83, 0.65),
-    rgba(52, 168, 83, 0.28) 45%,
-    transparent 78%
+  --dock-underlay-glow: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(52, 168, 83, 0.22) 55%,
+    rgba(52, 168, 83, 0.7) 100%
   );
 }
 
 .dock-underlay[data-energy="medium"] {
-  --dock-underlay-glow: radial-gradient(
-    120% 100% at 50% 100%,
-    rgba(66, 133, 244, 0.65),
-    rgba(66, 133, 244, 0.28) 45%,
-    transparent 78%
+  --dock-underlay-glow: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(66, 133, 244, 0.22) 55%,
+    rgba(66, 133, 244, 0.7) 100%
   );
 }
 
 .dock-underlay[data-energy="high"] {
-  --dock-underlay-glow: radial-gradient(
-    120% 100% at 50% 100%,
-    rgba(155, 114, 203, 0.68),
-    rgba(155, 114, 203, 0.3) 45%,
-    transparent 78%
+  --dock-underlay-glow: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(155, 114, 203, 0.24) 55%,
+    rgba(155, 114, 203, 0.72) 100%
   );
 }
 

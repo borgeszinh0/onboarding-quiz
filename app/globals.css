@@ -939,28 +939,32 @@ body {
 }
 
 /* Tinge o brilho da dock com a cor da energia escolhida no dia
-   (Manutenção/Execução/Criação). Sem seleção, mantém o glow padrão. */
+   (Manutenção/Execução/Criação). Sem seleção, mantém o glow padrão.
+   Glow forte e saturado (referência: bleed colorido no rodapé do app Gemini). */
 .dock-underlay[data-energy="low"] {
   --dock-underlay-glow: radial-gradient(
-    76% 68% at 50% 48%,
-    rgba(52, 168, 83, 0.1),
-    transparent 72%
+    120% 100% at 50% 100%,
+    rgba(52, 168, 83, 0.65),
+    rgba(52, 168, 83, 0.28) 45%,
+    transparent 78%
   );
 }
 
 .dock-underlay[data-energy="medium"] {
   --dock-underlay-glow: radial-gradient(
-    76% 68% at 50% 48%,
-    rgba(66, 133, 244, 0.1),
-    transparent 72%
+    120% 100% at 50% 100%,
+    rgba(66, 133, 244, 0.65),
+    rgba(66, 133, 244, 0.28) 45%,
+    transparent 78%
   );
 }
 
 .dock-underlay[data-energy="high"] {
   --dock-underlay-glow: radial-gradient(
-    76% 68% at 50% 48%,
-    rgba(155, 114, 203, 0.12),
-    transparent 72%
+    120% 100% at 50% 100%,
+    rgba(155, 114, 203, 0.68),
+    rgba(155, 114, 203, 0.3) 45%,
+    transparent 78%
   );
 }
 

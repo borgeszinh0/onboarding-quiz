@@ -947,7 +947,7 @@ body {
   inset: 0;
   background: var(--dock-underlay-glow);
   opacity: 0;
-  animation: dock-glow-in 1.2s cubic-bezier(0.16, 0.8, 0.24, 1) forwards;
+  animation: dock-glow-in 2.8s cubic-bezier(0.16, 0.8, 0.24, 1) forwards;
 }
 
 .dock-underlay::after {
@@ -958,7 +958,7 @@ body {
   background-size: 7px 7px;
   mix-blend-mode: overlay;
   opacity: 0;
-  animation: dock-dots-sweep 1s ease-out forwards;
+  animation: dock-dots-sweep 2.6s ease-out forwards;
 }
 
 @keyframes dock-glow-in {
@@ -976,7 +976,10 @@ body {
   0% {
     opacity: 0;
   }
-  35% {
+  25% {
+    opacity: 0.75;
+  }
+  55% {
     opacity: 0.6;
   }
   100% {

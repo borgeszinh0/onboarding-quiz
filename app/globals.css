@@ -919,10 +919,18 @@ body {
 .dock-underlay {
   height: 34vh;
   background:
+    linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      transparent 22%,
+      transparent 66%,
+      rgba(255, 255, 255, 0.07) 100%
+    ),
     var(--dock-underlay-glow),
     var(--dock-underlay-bg);
-  backdrop-filter: blur(18px) saturate(112%);
-  -webkit-backdrop-filter: blur(18px) saturate(112%);
+  background-blend-mode: overlay, normal, normal;
+  backdrop-filter: blur(22px) saturate(165%) brightness(1.06);
+  -webkit-backdrop-filter: blur(22px) saturate(165%) brightness(1.06);
   mask-image: linear-gradient(
     180deg,
     transparent 0%,

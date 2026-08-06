@@ -196,7 +196,7 @@ export default function Header() {
       <div
         aria-hidden
         data-energy={dockEnergy}
-        className="dock-underlay fixed inset-x-0 bottom-0 z-30 backdrop-blur-[18px] backdrop-saturate-[112%] sm:hidden"
+        className="dock-underlay fixed inset-x-0 bottom-0 z-30 sm:hidden"
       />
 
       <nav

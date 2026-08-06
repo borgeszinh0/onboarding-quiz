@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BottomSheet } from "@/components/apple/ui";
 import { usePlanner, getTimeBlockForTask } from "@/lib/planner-store";
 import { LifeAreaMenu } from "./LifeAreaField";
 import { ScheduleForm } from "./ScheduleTaskControl";
 import { Clock3, Plus, X } from "lucide-react";
+
+/** Espera de digitação antes de gravar no estado global (e no localStorage). */
+const SAVE_DEBOUNCE_MS = 400;
 
 /**
  * Folha de detalhe de uma tarefa: nome completo, horário, categoria (área da
@@ -29,7 +32,46 @@ export function TaskDetailModal({
   const block = task ? getTimeBlockForTask(state, task.id) : null;
   const canSchedule = !!task && task.category !== "inbox" && !!task.date;
 
+  // Título e notas ficam em estado local e só gravam no store (e no
+  // localStorage) depois de uma pausa na digitação — evita serializar o
+  // planner inteiro a cada tecla.
+  const [titleDraft, setTitleDraft] = useState(task?.title ?? "");
+  const [notesDraft, setNotesDraft] = useState(task?.notes ?? "");
+  const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setTitleDraft(task?.title ?? "");
+    setNotesDraft(task?.notes ?? "");
+  }, [task?.id]);
+
+  const commitTitle = (value: string) => {
+    if (task) dispatch({ type: "UPDATE_TASK", id: task.id, title: value });
+  };
+  const commitNotes = (value: string) => {
+    if (task) dispatch({ type: "UPDATE_TASK", id: task.id, notes: value });
+  };
+
+  const onTitleChange = (value: string) => {
+    setTitleDraft(value);
+    if (titleTimer.current) clearTimeout(titleTimer.current);
+    titleTimer.current = setTimeout(() => commitTitle(value), SAVE_DEBOUNCE_MS);
+  };
+  const onNotesChange = (value: string) => {
+    setNotesDraft(value);
+    if (notesTimer.current) clearTimeout(notesTimer.current);
+    notesTimer.current = setTimeout(() => commitNotes(value), SAVE_DEBOUNCE_MS);
+  };
+
   const close = () => {
+    if (titleTimer.current) {
+      clearTimeout(titleTimer.current);
+      commitTitle(titleDraft);
+    }
+    if (notesTimer.current) {
+      clearTimeout(notesTimer.current);
+      commitNotes(notesDraft);
+    }
     setScheduling(false);
     setSubtaskTitle("");
     onClose();
@@ -47,10 +89,8 @@ export function TaskDetailModal({
         <div className="space-y-6">
           <input
             type="text"
-            value={task.title}
-            onChange={(e) =>
-              dispatch({ type: "UPDATE_TASK", id: task.id, title: e.target.value })
-            }
+            value={titleDraft}
+            onChange={(e) => onTitleChange(e.target.value)}
             aria-label="Nome da tarefa"
             className="a-title-2 w-full rounded-xl bg-transparent px-0 text-label outline-none"
             placeholder="Nome da tarefa"
@@ -122,10 +162,8 @@ export function TaskDetailModal({
           <div>
             <p className="a-caption mb-2 text-label-secondary">Detalhes</p>
             <textarea
-              value={task.notes ?? ""}
-              onChange={(e) =>
-                dispatch({ type: "UPDATE_TASK", id: task.id, notes: e.target.value })
-              }
+              value={notesDraft}
+              onChange={(e) => onNotesChange(e.target.value)}
               placeholder="Escreva detalhes, contexto ou links…"
               rows={3}
               className="a-subheadline w-full resize-none rounded-xl bg-fill-subtle px-3 py-2.5 text-label outline-none"

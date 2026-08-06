@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useSync } from "@/lib/cloud-sync";
+import { usePlanner, todayISO } from "@/lib/planner-store";
+import { getDayMode, getModeSource } from "@/lib/day-mode";
 
 const NAV = [
   { href: "/", label: "Hoje" },
@@ -114,9 +116,14 @@ function NavIcon({ icon, active }: { icon: (typeof MOBILE_TABS)[number]["icon"],
 export default function Header() {
   const pathname = usePathname();
   const { user, configured, signOut } = useAuth();
+  const { state } = usePlanner();
 
   // Sem cromo na tela de autenticação.
   if (pathname === "/login") return null;
+
+  const today = todayISO();
+  const dockEnergy =
+    getModeSource(state, today) === "chosen" ? getDayMode(state, today) : undefined;
 
   return (
     <>
@@ -188,6 +195,7 @@ export default function Header() {
 
       <div
         aria-hidden
+        data-energy={dockEnergy}
         className="dock-underlay fixed inset-x-0 bottom-0 z-30 backdrop-blur-[18px] backdrop-saturate-[112%] sm:hidden"
       />
 

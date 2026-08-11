@@ -9,19 +9,17 @@ import { getDayMode, getModeSource } from "@/lib/day-mode";
 
 const NAV = [
   { href: "/", label: "Hoje" },
-  { href: "/inbox", label: "Inbox" },
   { href: "/semana", label: "Semana" },
-  { href: "/habitos", label: "Hábitos" },
-  { href: "/mes", label: "Mês" },
-  { href: "/ano", label: "Ano" },
-  { href: "/dados", label: "Dados" },
+  { href: "/objetivos", label: "Objetivos" },
+  { href: "/revisao", label: "Revisão" },
+  { href: "/mais", label: "Mais" },
 ];
 
 const MOBILE_TABS = [
   { href: "/", label: "Hoje", icon: "today" },
-  { href: "/inbox", label: "Inbox", icon: "inbox" },
   { href: "/semana", label: "Semana", icon: "week" },
-  { href: "/habitos", label: "Hábitos", icon: "habits" },
+  { href: "/objetivos", label: "Objetivos", icon: "target" },
+  { href: "/revisao", label: "Revisão", icon: "review" },
   { href: "/mais", label: "Mais", icon: "more" },
 ] as const;
 
@@ -68,19 +66,13 @@ function NavIcon({ icon, active }: { icon: (typeof MOBILE_TABS)[number]["icon"],
       strokeLinejoin="round"
       strokeWidth={active ? "2.5" : "1.75"}
     >
-      {icon === "today" && (
+{icon === "today" && (
         <>
           <path d="M8 2v4" />
           <path d="M16 2v4" />
           <path d="M4 9h16" />
           <rect x="4" y="5" width="16" height="17" rx="3" />
           <path d="M9 14h6" />
-        </>
-      )}
-      {icon === "inbox" && (
-        <>
-          <path d="M4 13h5l2 3h2l2-3h5" />
-          <path d="M5 13 7 5h10l2 8v5a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" />
         </>
       )}
       {icon === "week" && (
@@ -103,10 +95,17 @@ function NavIcon({ icon, active }: { icon: (typeof MOBILE_TABS)[number]["icon"],
           <circle cx="12" cy="18" r="1" fill="currentColor" stroke="none" />
         </>
       )}
-      {icon === "habits" && (
+      {icon === "target" && (
+        <>
+          <circle cx="12" cy="12" r="8" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="12" cy="12" r="0.5" fill="currentColor" stroke="none" />
+        </>
+      )}
+      {icon === "review" && (
         <>
           <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-          <path d="m9 12 2 2 4-4" />
+          <path d="m8 12 2.5 2.5L16 9" />
         </>
       )}
     </svg>
@@ -209,7 +208,7 @@ export default function Header() {
               item.href === "/"
                 ? pathname === "/"
                 : item.href === "/mais"
-                  ? ["/mais", "/mes", "/ano", "/dados"].some((href) =>
+                  ? ["/mais", "/mes", "/ano", "/dados", "/perfil", "/habitos", "/historico", "/primeiros-passos", "/objetivos"].some((href) =>
                       pathname === href || pathname.startsWith(`${href}/`)
                     )
                   : pathname === item.href || pathname.startsWith(`${item.href}/`);

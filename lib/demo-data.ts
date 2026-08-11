@@ -105,6 +105,16 @@ export function buildDemoPlannerState(referenceDate = new Date()): PlannerState 
       plannedShutdown: isWeekend ? "17:00" : "18:30",
       plannedAt: day.getTime() + 7 * 60 * 60 * 1000,
       shutdownAt: offset < 0 && dayIndex % 5 !== 1 ? day.getTime() + 20 * 60 * 60 * 1000 : undefined,
+      reflection:
+        offset < 0
+          ? ([undefined, "yes", "yes", "partial", "yes", "no", "partial"] as const)[
+              dayIndex % 7
+            ]
+          : undefined,
+      obstacle:
+        offset < 0 && dayIndex % 5 === 3
+          ? (["interrupted", "misestimated", "notImportant"] as const)[dayIndex % 3]
+          : null,
     });
 
     const dayTasks = createDayTasks({ date, dayIndex, taskPlan, dayTime: day.getTime() });
@@ -112,7 +122,7 @@ export function buildDemoPlannerState(referenceDate = new Date()): PlannerState 
 
     dayTasks
       .filter((task) => task.category !== "small" || dayIndex % 3 !== 0)
-      .slice(0, mode === "high" ? 4 : 3)
+      .slice(0, mode === "focus" ? 4 : 3)
       .forEach((task, blockIndex) => {
         const startHour = 9 + blockIndex * 2;
         const duration = getDuration(task.category, mode);
@@ -122,7 +132,7 @@ export function buildDemoPlannerState(referenceDate = new Date()): PlannerState 
           date,
           startTime: `${String(startHour).padStart(2, "0")}:00`,
           endTime: addMinutes(`${String(startHour).padStart(2, "0")}:00`, duration),
-          protected: task.category === "big" && mode === "high",
+          protected: task.category === "big" && mode === "focus",
         };
         timeBlocks.push(block);
 
@@ -172,22 +182,28 @@ export function buildDemoPlannerState(referenceDate = new Date()): PlannerState 
     habitLogs,
     dayLogs,
     focusSessions,
-    yearFocus: {
-      [currentYear]: {
-        Q1: "Validar rotina de foco e reduzir tarefas soltas no Inbox.",
-        Q2: "Concluir a primeira versão estável do sistema pessoal.",
-        Q3: "Aumentar consistência semanal sem depender de dias perfeitos.",
-        Q4: "Publicar o produto e revisar a estratégia para o próximo ciclo.",
+    goals: [
+      {
+        id: "demo_goal_0",
+        title: "Publicar a versão 1.0 do meu produto",
+        quarter: `${currentYear}-Q${Math.floor(today.getMonth() / 3) + 1}`,
+        why: "Sair do loop de projeto eterno e colocar algo no mundo.",
+        outcome: "100 usuários cadastrados na v1.0",
+        status: "active",
+        createdAt: today.getTime() - 40 * DAY_MS,
       },
-    },
-    lifeAreaTargets: {
-      body: 70,
-      mind: 65,
-      social: 45,
-      spiritual: 55,
-      financial: 40,
-      professional: 85,
-    },
+      {
+        id: "demo_goal_1",
+        title: "Consistência no corpo",
+        quarter: `${currentYear}-Q${Math.floor(today.getMonth() / 3) + 1}`,
+        why: "Energia física sustenta o resto.",
+        outcome: "3 treinos por semana durante 4 semanas seguidas.",
+        status: "active",
+        createdAt: today.getTime() - 35 * DAY_MS,
+      },
+    ],
+    weekRocks: [],
+    weekLogs: [],
     lastRolloverDate: toISODate(today),
   };
 }
@@ -215,6 +231,7 @@ function createDayTasks({
       estimatedMinutes:
         category === "big" ? 90 : category === "medium" ? 45 + (index % 2) * 15 : 15 + (index % 2) * 10,
       lifeArea: getTaskArea(category, dayIndex, index),
+      goalId: category === "big" ? "demo_goal_0" : undefined,
       createdAt: dayTime + sequence * 60_000,
     });
   };
@@ -261,13 +278,13 @@ function isHabitDoneForDemo(dayIndex: number, habitIndex: number, isWeekend: boo
 }
 
 function getModeForDay(dayIndex: number): DayMode {
-  const modes: DayMode[] = ["medium", "high", "low", "medium", "medium", "low", "high"];
+  const modes: DayMode[] = ["focus", "maintenance", "focus", "focus", "maintenance", "focus", "maintenance"];
   return modes[dayIndex % modes.length];
 }
 
 function getDuration(category: TaskCategory, mode: DayMode): number {
-  if (category === "big") return mode === "high" ? 90 : 60;
-  if (category === "medium") return mode === "low" ? 25 : 45;
+  if (category === "big") return mode === "focus" ? 90 : 45;
+  if (category === "medium") return mode === "maintenance" ? 25 : 60;
   return 15;
 }
 

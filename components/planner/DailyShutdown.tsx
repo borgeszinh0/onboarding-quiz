@@ -1,8 +1,17 @@
 "use client";
 
-import { usePlanner, minutesBetween } from "@/lib/planner-store";
+import { useState } from "react";
+import { usePlanner } from "@/lib/planner-store";
 import { Card } from "@/components/apple/ui";
-import { DAY_MODE_RULES, getDayMode, type FunnelCategory } from "@/lib/day-mode";
+import type { MotivationReflection, Obstacle } from "@/lib/planner-types";
+
+const OBSTACLES: Array<{ value: Obstacle; label: string }> = [
+  { value: "interrupted", label: "Fui interrompido" },
+  { value: "misestimated", label: "Estimei mal o esforço" },
+  { value: "notImportant", label: "Não era o importante" },
+  { value: "unclear", label: "Faltou clareza do próximo passo" },
+  { value: "other", label: "Outro motivo" },
+];
 
 function formatMins(m: number) {
   if (m === 0) return "0 min";
@@ -15,6 +24,8 @@ function formatMins(m: number) {
 
 export function DailyShutdown({ date }: { date: string }) {
   const { state, dispatch } = usePlanner();
+  const [reflection, setReflection] = useState<MotivationReflection | null>(null);
+  const [obstacle, setObstacle] = useState<Obstacle | null>(null);
 
   const dayLog = state.dayLogs.find((l) => l.date === date);
   const isShutdown = !!dayLog?.shutdownAt;
@@ -30,95 +41,93 @@ export function DailyShutdown({ date }: { date: string }) {
   const todayTasks = state.tasks.filter((t) => t.category !== "inbox" && t.date === date);
   const doneCount = todayTasks.filter((t) => t.status === "done").length;
   const pendingCount = todayTasks.length - doneCount;
-  const dayMode = getDayMode(state, date);
-  const modeRules = DAY_MODE_RULES[dayMode];
-  const categories: FunnelCategory[] = ["big", "medium", "small"];
-  const plannedTasksByCategory = Object.fromEntries(
-    categories.map((category) => [
-      category,
-      todayTasks.filter((task) => task.category === category).length,
-    ])
-  ) as Record<FunnelCategory, number>;
-  const completedTasksByCategory = Object.fromEntries(
-    categories.map((category) => [
-      category,
-      todayTasks.filter((task) => task.category === category && task.status === "done").length,
-    ])
-  ) as Record<FunnelCategory, number>;
-
-  const todayBlocks = state.timeBlocks.filter((b) => b.date === date);
-  const blockedMinutes = todayBlocks.reduce((acc, b) => acc + minutesBetween(b.startTime, b.endTime), 0);
-  const unblockedTasks = todayTasks.filter((t) => !todayBlocks.some((b) => b.taskId === t.id));
-  const estimatedUnblocked = unblockedTasks.reduce((acc, t) => acc + (t.estimatedMinutes || 0), 0);
-  const totalPlannedMinutes = blockedMinutes + estimatedUnblocked;
-
   const todaySessions = state.focusSessions?.filter((s) => s.date === date) || [];
-  const totalFocusMinutes = Math.floor(todaySessions.reduce((acc, s) => acc + s.elapsedMs, 0) / 60000);
-  const completionRate = todayTasks.length > 0 ? doneCount / todayTasks.length : 0;
-  const focusAlignment =
-    totalPlannedMinutes > 0 ? Math.min(1, totalFocusMinutes / totalPlannedMinutes) : 0;
-  const completedWeighted = categories.reduce((acc, category) => {
-    const weight = modeRules.preferredCategories.includes(category) ? 1 : 0.45;
-    return acc + completedTasksByCategory[category] * weight;
-  }, 0);
-  const completedTotal = Math.max(1, doneCount);
-  const categoryAlignment = doneCount > 0 ? completedWeighted / completedTotal : 0;
-  const modeFitScore = Math.round(
-    (categoryAlignment * 0.45 + completionRate * 0.35 + focusAlignment * 0.2) * 100
+  const totalFocusMinutes = Math.floor(
+    todaySessions.reduce((acc, s) => acc + s.elapsedMs, 0) / 60000
   );
-  const modeInsight =
-    dayMode === "low"
-      ? modeFitScore >= 70
-        ? "Você manteve o dia leve e concluiu pendências compatíveis."
-        : "Hoje teve mais carga do que o modo Manutenção recomendava."
-      : dayMode === "medium"
-        ? modeFitScore >= 70
-          ? "Você executou um dia equilibrado."
-          : "Execução funciona melhor com menos dispersão entre tarefas."
-        : completedTasksByCategory.big > 0
-          ? "Seu bloco principal recebeu foco protegido."
-          : "Modo Criação funciona melhor quando a tarefa grande vem primeiro.";
+
+  const askingObstacle = reflection !== null && reflection !== "yes";
 
   return (
     <div className="mt-12">
       <Card className="p-5">
         <h2 className="a-headline mb-2 text-label">Encerrar o dia</h2>
         <p className="a-body mb-4 text-label-secondary">
-          Você concluiu {doneCount} {doneCount === 1 ? "tarefa" : "tarefas"} hoje.
+          Você concluiu {doneCount} {doneCount === 1 ? "tarefa" : "tarefas"} hoje
+          {totalFocusMinutes > 0 && <> e focou por {formatMins(totalFocusMinutes)}</>}.
         </p>
 
-        {(todayTasks.length > 0 || totalPlannedMinutes > 0 || totalFocusMinutes > 0) && (
-          <div className="mb-6 rounded-xl bg-fill-subtle p-3">
-            <div className="mb-3 flex items-center justify-between gap-4">
-              <div className="flex flex-col">
-                <span className="a-caption text-label-secondary uppercase tracking-wider">Modo</span>
-                <span className="a-headline text-label">{modeRules.strategy}</span>
-              </div>
-              <div className="flex flex-col text-right">
-                <span className="a-caption text-label-secondary uppercase tracking-wider">Fit</span>
-                <span className="a-headline text-accent">{modeFitScore}/100</span>
-              </div>
+        <div className="mb-5">
+          <p className="a-subheadline mb-3 text-label">
+            O essencial de hoje foi concluído?
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {(
+              [
+                { value: "yes", label: "Sim" },
+                { value: "partial", label: "Parcial" },
+                { value: "no", label: "Não" },
+              ] as const
+            ).map((option) => {
+              const selected = reflection === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => setReflection(option.value)}
+                  className="a-body min-h-[44px] rounded-xl border px-3 transition-colors duration-200"
+                  style={{
+                    borderColor: selected
+                      ? "color-mix(in oklab, var(--accent) 42%, transparent)"
+                      : "var(--separator)",
+                    background: selected ? "var(--fill-subtle)" : "transparent",
+                    color: selected ? "var(--label)" : "var(--label-secondary)",
+                  }}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {askingObstacle && (
+          <div className="mb-5">
+            <p className="a-subheadline mb-3 text-label">
+              O que atrapalhou? (1 toque)
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {OBSTACLES.map((option) => {
+                const selected = obstacle === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setObstacle(selected ? null : option.value)}
+                    className="a-caption min-h-[36px] rounded-full border px-3 transition-colors duration-200"
+                    style={{
+                      borderColor: selected
+                        ? "color-mix(in oklab, var(--accent) 42%, transparent)"
+                        : "var(--separator)",
+                      color: selected ? "var(--label)" : "var(--label-secondary)",
+                      background: selected ? "var(--fill-subtle)" : "transparent",
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
             </div>
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex flex-col">
-                <span className="a-caption text-label-secondary uppercase tracking-wider">Planejado</span>
-                <span className="a-headline text-label">{formatMins(totalPlannedMinutes)}</span>
-              </div>
-              <div className="flex flex-col text-right">
-                <span className="a-caption text-label-secondary uppercase tracking-wider">Focado</span>
-                <span className="a-headline text-accent">{formatMins(totalFocusMinutes)}</span>
-              </div>
-            </div>
-            <p className="a-caption mt-3 text-label-secondary" role="status">
-              Planejado: {plannedTasksByCategory.big} grande, {plannedTasksByCategory.medium} média, {plannedTasksByCategory.small} pequena.
-              {" "}Concluído: {completedTasksByCategory.big} grande, {completedTasksByCategory.medium} média, {completedTasksByCategory.small} pequena.
-              {" "}{modeInsight}
+            <p className="a-caption mt-2 text-label-secondary">
+              Essa resposta alimenta a revisão semanal — ela é o dado que corrige o curso.
             </p>
           </div>
         )}
 
         {pendingCount > 0 && (
-          <div className="mb-6 rounded-xl bg-fill-subtle p-4">
+          <div className="mb-4 rounded-xl bg-fill-subtle p-4">
             <p className="a-subheadline mb-3 text-label">
               Restam {pendingCount} {pendingCount === 1 ? "tarefa pendente" : "tarefas pendentes"}.
             </p>
@@ -134,8 +143,11 @@ export function DailyShutdown({ date }: { date: string }) {
 
         <button
           type="button"
-          onClick={() => dispatch({ type: "SHUTDOWN_DAY", date })}
-          className="a-btn a-btn-primary w-full min-h-[50px]"
+          disabled={reflection === null}
+          onClick={() =>
+            dispatch({ type: "SHUTDOWN_DAY", date, reflection: reflection!, obstacle })
+          }
+          className="a-btn a-btn-primary w-full min-h-[50px] disabled:opacity-40"
         >
           Encerrar Dia
         </button>

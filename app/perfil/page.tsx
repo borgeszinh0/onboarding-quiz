@@ -6,20 +6,24 @@ import { usePlanner } from "@/lib/planner-store";
 import { useAuth } from "@/lib/auth-context";
 import { useUserProfile } from "@/lib/user-profile";
 import { Card, Button } from "@/components/apple/ui";
-import { LifeAreasPanel } from "@/components/planner/LifeAreasPanel";
-import { Camera, Trophy, CheckCircle2, Timer, UserCircle2 } from "lucide-react";
+import { getActiveGoals, quarterKey, getGoalDelivery } from "@/lib/planner-store";
+import { Camera, Target, UserCircle2 } from "lucide-react";
 
 export default function PerfilPage() {
   const { state } = usePlanner();
   const { user, signOut, configured, signIn, signUp } = useAuth();
   const profileState = useUserProfile(user);
 
-  // Métricas
-  const tasksDone = state.tasks.filter((t) => t.status === "done").length;
-  const habitsDone = state.habitLogs.filter((l) => l.done).length;
-  const focusMs = state.focusSessions.reduce((acc, s) => acc + s.elapsedMs, 0);
-  const focusHours = Math.floor(focusMs / (1000 * 60 * 60));
-  const focusMins = Math.floor((focusMs % (1000 * 60 * 60)) / (1000 * 60));
+  const now = new Date();
+  const currentQuarter = quarterKey(
+    now.getFullYear(),
+    `Q${Math.floor(now.getMonth() / 3) + 1}` as "Q1" | "Q2" | "Q3" | "Q4"
+  );
+  const goals = getActiveGoals(state).filter((g) => g.quarter === currentQuarter);
+  const delivery = goals.map((goal) => getGoalDelivery(state, goal.id));
+  const delivered = delivery.reduce((sum, d) => sum + d.delivered, 0);
+  const committed = delivery.reduce((sum, d) => sum + d.committed, 0);
+  const deliveryRate = committed > 0 ? Math.round((delivered / committed) * 100) : null;
 
   return (
     <main className="page-shell page-with-dock mx-auto w-full max-w-5xl px-5">
@@ -46,34 +50,48 @@ export default function PerfilPage() {
         </div>
 
         <section className="mb-8">
-          <h2 className="a-headline mb-4 text-label">Estatísticas Vitalícias</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="flex flex-col items-center justify-center p-5 text-center">
-              <CheckCircle2 size={28} className="mb-2 text-accent" />
-              <span className="a-large-title tabular">{tasksDone}</span>
-              <span className="a-caption text-label-secondary">Tarefas Concluídas</span>
+          <h2 className="a-headline mb-4 text-label">Metas do trimestre</h2>
+          {goals.length === 0 ? (
+            <Card className="p-5">
+              <p className="a-subheadline text-label-secondary">
+                Nenhuma meta ativa neste trimestre. Defina suas metas em Objetivos.
+              </p>
             </Card>
-            
-            <Card className="flex flex-col items-center justify-center p-5 text-center">
-              <Trophy size={28} className="mb-2 text-[#fbbc04]" />
-              <span className="a-large-title tabular">{habitsDone}</span>
-              <span className="a-caption text-label-secondary">Hábitos Marcados</span>
-            </Card>
-
-            <Card className="col-span-2 flex flex-col items-center justify-center p-5 text-center">
-              <Timer size={28} className="mb-2 text-[#9b72cb]" />
-              <span className="a-large-title tabular">
-                {focusHours > 0 ? `${focusHours}h ${focusMins}m` : `${focusMins}m`}
-              </span>
-              <span className="a-caption text-label-secondary">Tempo em Foco Profundo</span>
-            </Card>
-          </div>
+          ) : (
+            <div className="space-y-3">
+              <Card className="flex items-center justify-between p-5">
+                <div className="flex items-center gap-3">
+                  <Target size={22} className="text-accent" />
+                  <div>
+                    <p className="a-subheadline text-label">Taxa de entrega</p>
+                    <p className="a-caption text-label-secondary">
+                      Pedras da semana concluídas vs. comprometidas
+                    </p>
+                  </div>
+                </div>
+                <span className="a-large-title tabular text-accent">
+                  {deliveryRate === null ? "—" : `${deliveryRate}%`}
+                </span>
+              </Card>
+              {goals.map((goal) => (
+                <Card key={goal.id} className="p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="a-subheadline text-label">{goal.title}</p>
+                      <p className="a-caption mt-1 text-label-secondary">
+                        {goal.outcome || "Sem resultado mensurável definido."}
+                      </p>
+                    </div>
+                    <span className="a-caption rounded-full bg-fill-subtle px-3 py-1 text-label-secondary">
+                      Ativa
+                    </span>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
-      </div>
-
-      <section className="mb-8">
-        <LifeAreasPanel state={state} />
-      </section>
+        </div>
 
       <section className="mx-auto w-full max-w-xl">
         <h2 className="a-headline mb-4 text-label">Conta e Sincronização</h2>

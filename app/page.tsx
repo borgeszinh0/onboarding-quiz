@@ -9,6 +9,7 @@ import { DailyProgress } from "@/components/planner/DailyProgress";
 import { DailyPlanning } from "@/components/planner/DailyPlanning";
 import { DailyShutdown } from "@/components/planner/DailyShutdown";
 import { ScheduleRuler } from "@/components/planner/ScheduleRuler";
+import { PhaseCard } from "@/components/planner/PhaseCard";
 
 import { FocusMode } from "@/components/planner/FocusMode";
 
@@ -47,6 +48,8 @@ export default function Home() {
         </header>
 
         <DailyPlanning date={date} />
+
+        <PhaseCard />
 
         <DailySummary date={date} />
 

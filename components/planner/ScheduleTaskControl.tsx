@@ -91,7 +91,7 @@ export function ScheduleForm({
   const dayMode = getDayMode(state, date);
   const taskCategory = task ? inferTaskFitCategory(task) : "medium";
   const suggestedDuration = DAY_MODE_RULES[dayMode].defaultBlockMinutes[taskCategory];
-  const isProtectedFocus = dayMode === "high" && taskCategory === "big";
+  const isProtectedFocus = dayMode === "focus" && taskCategory === "big";
   
   const [start, setStart] = useState("09:00");
   const [duration, setDuration] = useState<number>(task?.estimatedMinutes || suggestedDuration);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { BottomSheet } from "@/components/apple/ui";
 import { usePlanner, getTimeBlockForTask } from "@/lib/planner-store";
 import { LifeAreaMenu } from "./LifeAreaField";
@@ -35,15 +35,19 @@ export function TaskDetailModal({
   // Título e notas ficam em estado local e só gravam no store (e no
   // localStorage) depois de uma pausa na digitação — evita serializar o
   // planner inteiro a cada tecla.
+  // Ajuste de estado durante o render (padrão do React para "loops de
+  // informação de render anterior") sincroniza os rascunhos quando a tarefa
+  // aberta muda, sem efeito + setState síncrono.
+  const [activeTaskId, setActiveTaskId] = useState(taskId);
   const [titleDraft, setTitleDraft] = useState(task?.title ?? "");
   const [notesDraft, setNotesDraft] = useState(task?.notes ?? "");
-  const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
+  if (taskId !== activeTaskId) {
+    setActiveTaskId(taskId);
     setTitleDraft(task?.title ?? "");
     setNotesDraft(task?.notes ?? "");
-  }, [task?.id]);
+  }
+  const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const commitTitle = (value: string) => {
     if (task) dispatch({ type: "UPDATE_TASK", id: task.id, title: value });

@@ -6,23 +6,16 @@ import {
   getInboxTasks,
   getTasksForSlot,
   canPlanTask,
+  getGoal,
+  getWeekRocks,
+  mondayOf,
 } from "@/lib/planner-store";
 import { CATEGORY_LABEL, CATEGORY_ORDER, SLOT_LIMITS } from "@/lib/planner-data";
 import type { Task, TaskCategory } from "@/lib/planner-types";
-import {
-  DAY_MODE_RULES,
-  getDayMode,
-  getFitGroup,
-  getFitLabel,
-  getRecommendedBudgetCopy,
-  getTaskFitScore,
-  sortTasksForMode,
-} from "@/lib/day-mode";
 import { Card, SectionLabel } from "@/components/apple/ui";
 import { ScheduleTaskControl, ScheduleForm } from "./ScheduleTaskControl";
-import { LifeAreaBadge } from "./LifeAreaField";
 import { TaskDetailModal } from "./TaskDetailModal";
-import { Inbox } from "lucide-react";
+import { Inbox, Mountain, Target } from "lucide-react";
 
 /** Mesmas cores, mas seguras como cor de TEXTO (ver --accent-text em globals.css). */
 const CATEGORY_TEXT_ACCENT: Record<Exclude<TaskCategory, "inbox">, string> = {
@@ -33,7 +26,8 @@ const CATEGORY_TEXT_ACCENT: Record<Exclude<TaskCategory, "inbox">, string> = {
 
 /**
  * O funil 1-3-5: 1 tarefa grande, 3 médias, 5 pequenas por dia. Vaga cheia é
- * vaga cheia — o resto fica no Inbox até amanhã.
+ * vaga cheia — o resto fica no Inbox até amanhã. Tarefas ligadas a uma meta
+ * do trimestre ganham o badge META — são as que movem a agulha.
  */
 export function DailyFunnel({
   date,
@@ -47,19 +41,20 @@ export function DailyFunnel({
     null
   );
   const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
-  const dayMode = getDayMode(state, date);
-  const modeRules = DAY_MODE_RULES[dayMode];
-  const hasBigTask = getTasksForSlot(state, date, "big").length > 0;
+
+  // Pedras da semana desta data: tarefas do funil ligadas a um rock comprometido
+  // ficam pinadas no topo do slot — são as que movem a meta.
+  const rockTaskIds = new Set(
+    getWeekRocks(state, mondayOf(date))
+      .filter((rock) => rock.taskId)
+      .map((rock) => rock.taskId as string)
+  );
 
   return (
     <section className="space-y-4">
-      <p className="a-caption text-label-secondary" role="status">
-        {modeRules.summary}
-      </p>
       {CATEGORY_ORDER.map((category) => {
         const tasks = getTasksForSlot(state, date, category);
         const limit = SLOT_LIMITS[category];
-        const recommended = modeRules.recommendedTasks[category];
 
         return (
           <Card
@@ -70,38 +65,34 @@ export function DailyFunnel({
             <div className="mb-3 flex items-baseline justify-between">
               <h2 className="a-headline">
                 {CATEGORY_LABEL[category]}
+                {category === "big" && rockTaskIds.size > 0 && (
+                  <span className="a-caption ml-2 align-middle text-label-secondary">
+                    · {rockTaskIds.size} {rockTaskIds.size === 1 ? "pedra" : "pedras"} da semana
+                  </span>
+                )}
               </h2>
               <span className="a-caption tabular text-label-secondary">
                 {tasks.length}/{limit}
               </span>
             </div>
-            <p className="a-caption mb-3 text-label-secondary">
-              Recomendado hoje: {recommended}. {getRecommendedBudgetCopy(state, date, dayMode, category)}
-            </p>
-
-            {dayMode === "high" && category === "big" && !hasBigTask && (
-              <p className="a-caption mb-3 text-accent" role="status">
-                Escolha sua tarefa grande antes de preencher o resto.
-              </p>
-            )}
-
-            {dayMode === "high" && category === "small" && !hasBigTask && (
-              <p className="a-caption mb-3 text-label-secondary">
-                Pequenas cabem melhor depois do bloco principal.
-              </p>
-            )}
 
             {tasks.length > 0 ? (
               <ul className="mb-2 space-y-1">
-                {tasks.map((task) => (
-                  <SlotTaskRow
-                    key={task.id}
-                    task={task}
-                    date={date}
-                    onFocus={onFocus}
-                    onOpenDetail={setDetailTaskId}
-                  />
-                ))}
+                {[...tasks]
+                  .sort((a, b) =>
+                    Number(rockTaskIds.has(b.id)) - Number(rockTaskIds.has(a.id)) ||
+                    a.createdAt - b.createdAt
+                  )
+                  .map((task) => (
+                    <SlotTaskRow
+                      key={task.id}
+                      task={task}
+                      date={date}
+                      isRock={rockTaskIds.has(task.id)}
+                      onFocus={onFocus}
+                      onOpenDetail={setDetailTaskId}
+                    />
+                  ))}
               </ul>
             ) : (
               <p className="a-subheadline mb-2 text-label-secondary">
@@ -114,7 +105,6 @@ export function DailyFunnel({
                 <SlotPicker
                   date={date}
                   category={category}
-                  mode={dayMode}
                   onDone={() => setOpenSlot(null)}
                 />
               ) : (
@@ -140,14 +130,29 @@ export function DailyFunnel({
   );
 }
 
+export function GoalBadge({ task }: { task: Task }) {
+  const { state } = usePlanner();
+  const goal = task.goalId ? getGoal(state, task.goalId) : undefined;
+  if (!goal || goal.status !== "active") return null;
+  const short = goal.title.length > 26 ? `${goal.title.slice(0, 26)}…` : goal.title;
+  return (
+    <span className="a-caption mt-0.5 inline-flex max-w-full items-center gap-1 text-accent">
+      <Target size={13} className="shrink-0" />
+      <span className="truncate">META · {short}</span>
+    </span>
+  );
+}
+
 function SlotTaskRow({
   task,
   date,
+  isRock,
   onFocus,
   onOpenDetail,
 }: {
   task: Task;
   date: string;
+  isRock: boolean;
   onFocus: (taskId: string) => void;
   onOpenDetail: (taskId: string) => void;
 }) {
@@ -199,9 +204,11 @@ function SlotTaskRow({
           >
             {task.title}
           </span>
-          {task.lifeArea && (
-            <span className="mt-0.5 block">
-              <LifeAreaBadge area={task.lifeArea} />
+          <GoalBadge task={task} />
+          {isRock && (
+            <span className="a-caption mt-0.5 inline-flex items-center rounded-full bg-fill-subtle px-2 py-0.5 text-label">
+              <Mountain size={12} className="mr-1 shrink-0 text-accent" />
+              Pedra da semana
             </span>
           )}
         </button>
@@ -241,29 +248,19 @@ function MoveToInboxButton({ task }: { task: Task }) {
 function SlotPicker({
   date,
   category,
-  mode,
   onDone,
 }: {
   date: string;
   category: Exclude<TaskCategory, "inbox">;
-  mode: ReturnType<typeof getDayMode>;
   onDone: () => void;
 }) {
   const { state, dispatch } = usePlanner();
-  const [overrideTaskId, setOverrideTaskId] = useState<string | null>(null);
-  const inbox = getInboxTasks(state);
-  const sortedInbox = sortTasksForMode(inbox, state, date, mode, category);
+  const inbox = [...getInboxTasks(state)].sort(
+    (a, b) => a.createdAt - b.createdAt
+  );
 
-  const place = (taskId: string, force = false) => {
+  const place = (taskId: string) => {
     if (!canPlanTask(state, date, category)) return;
-    const task = inbox.find((item) => item.id === taskId);
-    if (task && !force) {
-      const score = getTaskFitScore({ state, date, mode, task, category });
-      if (getFitGroup(score) === "saveForLater") {
-        setOverrideTaskId(taskId);
-        return;
-      }
-    }
     dispatch({ type: "MOVE_TASK", id: taskId, category, date });
     onDone();
   };
@@ -274,45 +271,18 @@ function SlotPicker({
         <div>
           <SectionLabel>Do Inbox</SectionLabel>
           <ul className="mt-1.5 space-y-1">
-            {sortedInbox.map(({ task, group }) => (
+            {inbox.map((task) => (
               <li key={task.id}>
-                {overrideTaskId === task.id ? (
-                  <div className="rounded-xl bg-fill-subtle p-3">
-                    <p className="a-caption mb-2 text-label-secondary">
-                      Essa tarefa foge do modo de hoje, mas você pode planejá-la.
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => place(task.id, true)}
-                        className="a-caption min-h-[36px] rounded-lg bg-system-accent px-3 text-white"
-                      >
-                        Planejar mesmo
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setOverrideTaskId(null)}
-                        className="a-caption min-h-[36px] rounded-lg px-3 text-label-secondary"
-                      >
-                        Guardar no Inbox
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => place(task.id)}
-                    className="min-h-[44px] w-full rounded-lg px-2 py-2 text-left transition-colors hover-bg-fill-subtle"
-                  >
-                    <span className="a-subheadline block text-label">{task.title}</span>
-                    <span className="a-caption text-label-secondary">
-                      {getFitLabel(mode, group)}
-                    </span>
-                    <span className="mt-1 block">
-                      <LifeAreaBadge area={task.lifeArea} />
-                    </span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => place(task.id)}
+                  className="min-h-[44px] w-full rounded-lg px-2 py-2 text-left transition-colors hover-bg-fill-subtle"
+                >
+                  <span className="a-subheadline block text-label">{task.title}</span>
+                  <span className="mt-0.5 block">
+                    <GoalBadge task={task} />
+                  </span>
+                </button>
               </li>
             ))}
           </ul>

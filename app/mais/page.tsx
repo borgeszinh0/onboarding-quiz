@@ -4,8 +4,9 @@ import Link from "next/link";
 import { PageTitle } from "@/components/apple/ui";
 
 const MORE_ITEMS = [
+  { href: "/inbox", label: "Inbox" },
+  { href: "/habitos", label: "Hábitos" },
   { href: "/primeiros-passos", label: "Primeiros passos" },
-  { href: "/objetivos", label: "Objetivos" },
   { href: "/perfil", label: "Perfil" },
   { href: "/historico", label: "Histórico dos Dias" },
   { href: "/dados", label: "Dados" },

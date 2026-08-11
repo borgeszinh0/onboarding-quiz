@@ -42,8 +42,7 @@ function isPlannerEmpty(planner: ReturnType<typeof buildBackup>["planner"]): boo
     (planner.habitLogs?.length ?? 0) === 0 &&
     (planner.dayLogs?.length ?? 0) === 0 &&
     (planner.focusSessions?.length ?? 0) === 0 &&
-    isEmptyObj(planner.yearFocus) &&
-    isEmptyObj(planner.lifeAreaTargets)
+    (planner.goals?.length ?? 0) === 0
   );
 }
 

@@ -8,7 +8,8 @@ export type FirstStepId =
   | "timeblocks"
   | "habits"
   | "life-areas"
-  | "shutdown";
+  | "shutdown"
+  | "review";
 
 export type FirstStep = {
   id: FirstStepId;
@@ -87,8 +88,8 @@ export function getFirstSteps(state: PlannerState, date = todayISO()): FirstStep
       title: "Classifique uma área da vida",
       actionLabel: "Ir para Objetivos",
       href: "/objetivos",
-      what: "Áreas da vida mostram para onde suas ações estão indo.",
-      why: "Isso alimenta o radar em Objetivos. Não é uma nota da sua vida; é uma bússola.",
+      what: "Área da vida é uma etiqueta opcional que agrupa tarefas e hábitos por tema.",
+      why: "Serve para ver, no trimestre, para onde suas ações estão indo. Não é uma nota da sua vida; é uma bússola.",
       how: "Classifique tarefas e hábitos como Corpo, Mente, Social, Espiritual, Financeiro ou Profissional.",
       done: hasLifeArea,
     },
@@ -101,6 +102,16 @@ export function getFirstSteps(state: PlannerState, date = todayISO()): FirstStep
       why: "O fechamento compara o modo escolhido com o que aconteceu e ajuda a decidir o ritmo de amanhã.",
       how: "Volte para Hoje no fim do expediente e use o card Encerrar o dia.",
       done: state.dayLogs.some((dayLog) => !!dayLog.shutdownAt),
+    },
+    {
+      id: "review",
+      title: "Revise a semana",
+      actionLabel: "Ir para Revisão",
+      href: "/revisao",
+      what: "Na Revisão, compare o que foi prometido com o que foi entregue e decida o destino de cada meta.",
+      why: "Obstáculos que se repetem aparecem somados. Decidir manter, reduzir ou abandonar por meta evita carregar planos mortos.",
+      how: "Depois de planejar e executar sua primeira semana, abra Revisão e registre a decisão de cada meta.",
+      done: state.weekLogs.length > 0,
     },
   ];
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useState } from "react";
 import {
   usePlanner,
   weekDates,
@@ -11,15 +12,22 @@ import {
   isPerfectDay,
   getActiveHabits,
   isHabitDone,
+  getCurrentQuarterGoals,
+  getWeekRocks,
+  mondayOf,
 } from "@/lib/planner-store";
+import type { WeekRock } from "@/lib/planner-types";
 import { Card, PageTitle } from "@/components/apple/ui";
+import Link from "next/link";
 import {
   Activity,
   CalendarCheck2,
   CheckCircle2,
   Clock3,
   ListChecks,
+  Target,
   Timer,
+  Trash2,
 } from "lucide-react";
 
 const WEEKDAY_LABEL = ["S", "T", "Q", "Q", "S", "S", "D"];
@@ -105,6 +113,10 @@ export default function SemanaPage() {
   return (
     <main className="page-shell page-with-dock mx-auto w-full max-w-xl px-5 sm:max-w-3xl">
       <PageTitle eyebrow="Esta semana" title="Ritmo" />
+
+      <RocksSection weekStart={dates[0]} />
+
+      <WeekCloseCard today={today} />
 
       <p className="a-body -mt-5 mb-6 text-label-secondary">
         Cada card mostra um dado diferente: tendência, volume, comparação, recorrência,
@@ -578,4 +590,239 @@ function formatMinutes(minutes: number): string {
 
 function formatDays(days: number): string {
   return `${days} ${days === 1 ? "dia" : "dias"}`;
+}
+
+/**
+ * Pedras da semana: a tarefa única que mais move cada meta ativa. Comprometer
+ * uma pedra cria a tarefa grande do dia escolhido, já ligada à meta — ela fica
+ * pinada no topo do slot Grande do funil.
+ */
+function RocksSection({ weekStart }: { weekStart: string }) {
+  const { state } = usePlanner();
+  const goals = getCurrentQuarterGoals(state);
+  const rocks = getWeekRocks(state, weekStart);
+
+  if (goals.length === 0) {
+    return (
+      <Card className="mb-6 p-5">
+        <p className="a-subheadline text-label-secondary">
+          Sem metas ativas neste trimestre. Defina até 3 em Objetivos para planejar
+          a pedra da semana de cada uma.
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <section className="mb-6 space-y-3">
+      <div className="flex items-center gap-2">
+        <Target size={18} style={{ color: "var(--accent)" }} />
+        <h2 className="a-headline text-label">Pedras da semana</h2>
+      </div>
+      <p className="a-caption -mt-1 mb-1 text-label-secondary">
+        Uma pedra por meta: a única coisa que, se feita, move mais a meta esta semana.
+      </p>
+      {goals.map((goal) => {
+        const rock = rocks.find((r) => r.goalId === goal.id);
+        return (
+          <RockRow
+            key={goal.id}
+            goal={goal}
+            rock={rock}
+            weekStart={weekStart}
+          />
+        );
+      })}
+    </section>
+  );
+}
+
+function RockRow({
+  goal,
+  rock,
+  weekStart,
+}: {
+  goal: { id: string; title: string };
+  rock: WeekRock | undefined;
+  weekStart: string;
+}) {
+  const { state, dispatch } = usePlanner();
+  const dates = weekDates(weekStart);
+  const [text, setText] = useState("");
+  const [day, setDay] = useState(todayISO());
+  const task = rock?.taskId ? state.tasks.find((t) => t.id === rock.taskId) : undefined;
+
+  const commit = () => {
+    if (!text.trim()) return;
+    const id = `task_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    dispatch({
+      type: "ADD_TASK",
+      id,
+      title: text.trim(),
+      category: "big",
+      date: day,
+      goalId: goal.id,
+    });
+    dispatch({
+      type: "ADD_WEEK_ROCK",
+      goalId: goal.id,
+      weekStart,
+      text: text.trim(),
+      taskId: id,
+    });
+    setText("");
+  };
+
+  if (rock) {
+    return (
+      <Card className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="a-caption text-accent">{goal.title}</p>
+            <p className="a-body text-label">{task?.title ?? rock.text}</p>
+            {task && (
+              <p className="a-caption mt-1 text-label-secondary">
+                {task.status === "done" ? "✓ Concluída" : "Pendente"}
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              dispatch({ type: "REMOVE_WEEK_ROCK", id: rock.id });
+              if (task) dispatch({ type: "REMOVE_TASK", id: task.id });
+            }}
+            aria-label="Remover pedra"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-label-secondary transition-colors hover-text-danger"
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="p-5">
+      <p className="a-caption mb-2 text-accent">{goal.title}</p>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && commit()}
+          placeholder="A única coisa que mais move essa meta..."
+          className="a-body min-h-[44px] min-w-0 flex-1 rounded-xl bg-fill-subtle px-3"
+        />
+        <button
+          type="button"
+          onClick={commit}
+          disabled={!text.trim()}
+          className="a-subheadline shrink-0 rounded-xl px-4 text-accent disabled:opacity-30"
+        >
+          Comprometer
+        </button>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {dates.map((date) => {
+          const selected = day === date;
+          return (
+            <button
+              key={date}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => setDay(date)}
+              className="a-caption min-h-[36px] rounded-full border px-3"
+              style={{
+                borderColor: selected
+                  ? "color-mix(in oklab, var(--accent) 42%, transparent)"
+                  : "var(--separator)",
+                color: selected ? "var(--label)" : "var(--label-secondary)",
+              }}
+            >
+              {date === todayISO()
+                ? "Hoje"
+                : WEEKDAY_FULL_LABEL[new Date(`${date}T12:00:00`).getDay()]}
+            </button>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+/**
+ * Fechamento do ciclo semanal. A partir de quinta (ou com a semana anterior
+ * aberta), a Semana propõe a rodada de Revisão. Sem pedra comprometida,
+ * não há rodada a fechar — o usuário pode pular e o banner some.
+ */
+function WeekCloseCard({ today }: { today: string }) {
+  const { state, dispatch } = usePlanner();
+  const weekStart = mondayOf(today);
+  const dates = weekDates(weekStart);
+  const dayIndex = dates.indexOf(today);
+  const currentRocks = getWeekRocks(state, weekStart).filter((r) => r.committed);
+  const currentReviewed = state.weekLogs.some((w) => w.weekStart === weekStart);
+
+  const lastWeekDate = new Date(`${today}T12:00:00`);
+  lastWeekDate.setDate(lastWeekDate.getDate() - 7);
+  const lastWeekStart = mondayOf(
+    `${lastWeekDate.getFullYear()}-${String(lastWeekDate.getMonth() + 1).padStart(2, "0")}-${String(lastWeekDate.getDate()).padStart(2, "0")}`
+  );
+  const lastRocks = getWeekRocks(state, lastWeekStart).filter((r) => r.committed);
+  const lastReviewed = state.weekLogs.some((w) => w.weekStart === lastWeekStart);
+
+  const doneOf = (rocks: WeekRock[]) =>
+    rocks.filter(
+      (r) => r.taskId && state.tasks.find((t) => t.id === r.taskId)?.status === "done"
+    ).length;
+
+  let variant: { kind: "current" | "lastweek"; weekStart: string; rocks: WeekRock[] } | null =
+    null;
+  if (dayIndex >= 4 && !currentReviewed) {
+    variant = { kind: "current", weekStart, rocks: currentRocks };
+  } else if (lastRocks.length > 0 && !lastReviewed) {
+    variant = { kind: "lastweek", weekStart: lastWeekStart, rocks: lastRocks };
+  }
+  if (!variant) return null;
+
+  const done = doneOf(variant.rocks);
+  const hasRocks = variant.rocks.length > 0;
+
+  const summary = hasRocks
+    ? variant.kind === "current"
+      ? `${done} de ${variant.rocks.length} ${variant.rocks.length === 1 ? "pedra concluída" : "pedras concluídas"} esta semana. A Revisão decide o destino de cada meta.`
+      : `${done} de ${variant.rocks.length} ${variant.rocks.length === 1 ? "pedra concluída" : "pedras concluídas"} na semana passada, sem revisão registrada.`
+    : "Nenhuma pedra comprometida esta semana — não há rodada de revisão a fazer.";
+
+  return (
+    <Card className="mb-6 p-5">
+      <div className="flex items-start gap-3">
+        <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-accent" />
+        <div className="min-w-0 flex-1">
+          <h2 className="a-headline text-label">
+            {variant.kind === "current" ? "Encerrar a semana" : "Revisão da semana passada"}
+          </h2>
+          <p className="a-caption mt-1 text-label-secondary">{summary}</p>
+        </div>
+      </div>
+      <div className="mt-4">
+        {hasRocks ? (
+          <Link href="/revisao" className="a-btn a-btn-primary flex min-h-[44px] w-full items-center justify-center">
+            Ir para Revisão
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() =>
+              dispatch({ type: "COMPLETE_WEEK_REVIEW", weekStart: variant.weekStart, decisions: [] })
+            }
+            className="a-btn a-btn-secondary min-h-[44px] w-full"
+          >
+            Pular revisão
+          </button>
+        )}
+      </div>
+    </Card>
+  );
 }

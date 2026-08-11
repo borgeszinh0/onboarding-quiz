@@ -10,12 +10,13 @@ Planejador diário local-first. Regra **1 tarefa grande, 3 médias, 5 pequenas**
 
 | Módulo | Rota | O que é |
 |---|---|---|
-| **Hoje** | `/` | Funil 1-3-5 (Grande/Média/Pequena), cronograma do dia, barra de hábitos, ponto de entrada do Modo Foco |
+| **Hoje** | `/` | Funil 1-3-5 (Grande/Média/Pequena), cronograma do dia, barra de hábitos, card de fase do trimestre, ponto de entrada do Modo Foco |
 | **Inbox** | `/inbox` | Captura rápida de ideias/tarefas sem categoria nem data |
-| **Semana** | `/semana` | Ocupação de horário por dia da semana + conclusão do funil |
+| **Semana** | `/semana` | Pedras da semana (1 por meta) + ocupação de horário e conclusão do funil por dia |
+| **Objetivos** | `/objetivos` | Metas ativas do trimestre, texto livre de porquê/resultado, encerramento |
+| **Revisão** | `/revisao` | Fechamento semanal: entrega das pedras, obstáculos repetidos, decisão por meta (manter/reduzir/abandonar/concluir) |
 | **Mês** | `/mes` | Grade mensal com destaque de dias "perfeitos" (todos os hábitos cumpridos) |
 | **Ano / Calendário** | `/ano` | Visão anual em formato de calendário de pontos |
-| **Objetivos** | `/objetivos` | Mural de foco trimestral (Q1–Q4), texto livre para o "Norte" e radar de Áreas da vida |
 | **Primeiros passos** | `/primeiros-passos` | Checklist permanente que ensina o fluxo básico do Planner |
 | **Perfil** | `/perfil` | Métricas vitalícias (foco, tarefas e hábitos concluídos) e conta |
 | **Dados** | `/dados` | Export/import de backup JSON, status de sync com Supabase, backups automáticos locais |
@@ -28,8 +29,11 @@ Planejador diário local-first. Regra **1 tarefa grande, 3 médias, 5 pequenas**
 - **TimeBlock**: uma tarefa tem no máximo um bloco de horário ativo. Agendar de novo substitui o anterior.
 - **Modo Foco**: cronômetro regressivo baseado na duração do bloco (ou 25min padrão se a tarefa não tem bloco). Pausa de verdade — acumula tempo decorrido em vez de reiniciar. Ao bater o alvo, passa a contar tempo extra em vez de zerar.
 - **Hábitos**: lista simples com toggle diário. "Dia perfeito" = todos os hábitos ativos marcados naquela data — é o que acende o destaque verde no Mês.
-- **Áreas da vida**: tarefas e hábitos podem receber uma área opcional (`Corpo`, `Mente`, `Social`, `Espiritual`, `Financeiro`, `Profissional`). Itens sem área não entram no radar. A tela `/objetivos` usa execução real dos últimos 30 dias para mostrar distribuição por área, sem comunicar isso como nota ou julgamento.
-- **Primeiros passos**: `/primeiros-passos` é uma checklist acionável de 7 etapas, acessível pelo quinto menu da dock. O progresso é derivado do uso real sempre que possível: modo escolhido, tarefa criada, tarefa planejada, timeblock, hábito marcado, área classificada e dia encerrado.
+- **Áreas da vida**: tarefas e hábitos podem receber uma área opcional (`Corpo`, `Mente`, `Social`, `Espiritual`, `Financeiro`, `Profissional`). É uma etiqueta de análise em `/objetivos`, não um campo obrigatório. O radar de áreas foi removido do produto; a área vira tag opcional em tarefa/hábito.
+- **Pedras da semana**: uma pedra por meta ativa do trimestre, na tela Semana. Comprometer uma pedra cria a tarefa grande do dia escolhido (ligada à meta) e pinada no funil. Tarefas de pedra "pulariam" metas sem pedra da semana e foram removidas da captura.
+- **Revisão semanal**: na tela Revisão, o app soma entrega (pedras concluídas), obstáculos repetidos do fechamento diário e pede uma decisão por meta (manter / reduzir / abandonar / concluir). "Abandonar" arquiva a meta; "concluir" marca como feita. A data da revisão soma ao histórico.
+- **Fase do trimestre**: `/` mostra o card de fase (Estabelecer semanas 1–3, Consolidar 4–7, Execução 8–13), derivado da data atual — mesmo ritmo das três fases da Revisão.
+- **Primeiros passos**: `/primeiros-passos` é uma checklist acionável de 8 etapas, acessível pelo quinto menu da dock. O progresso é derivado do uso real sempre que possível: modo escolhido, tarefa criada, tarefa planejada, timeblock, hábito marcado, área classificada, dia encerrado e semana revisada.
 
 ---
 
@@ -103,11 +107,11 @@ Onde isso aparece hoje:
 
 Compatibilidade de dados: `DayLog` agora usa `mode`, mas ainda aceita o campo legado `energy` para não quebrar dados já salvos no `localStorage` ou em backup. Sempre que escrever dia novo, grave `mode` e mantenha `energy` apenas como compatibilidade enquanto existirem usuários com estado antigo.
 
-O que **ainda não existe**: aprendizado histórico real, replanejamento automático, divisão automática de tarefas grandes, integração com calendário externo, perguntas de reflexão no fechamento ("sim / mais ou menos / não") e ações explícitas para pendências ("Enviar ao Inbox / Mover para amanhã / Manter planejado"). Esses pontos dependem de especificação de UX/produto antes de virar código.
+O que **ainda não existe**: aprendizado histórico real, replanejamento automático, divisão automática de tarefas grandes, integração com calendário externo, notificações e metas por mês/ano (hoje os objetivos são só trimestrais).
 
 ### Áreas da vida
 
-As áreas são uma camada estratégica, não operacional. Elas aparecem em `/objetivos`, porque a tela representa o Norte do usuário. A tela Hoje continua focada em execução.
+As áreas são uma etiqueta opcional de análise, não uma camada operacional. Elas aparecem em `/objetivos`, porque a tela representa o Norte do usuário. A tela Hoje continua focada em execução.
 
 Áreas fixas:
 
@@ -120,22 +124,20 @@ As áreas são uma camada estratégica, não operacional. Elas aparecem em `/obj
 | `financial` | Financeiro |
 | `professional` | Profissional |
 
-Onde classificar:
+Onde classificar (sempre opcional):
 
-- `InboxCapture.tsx`: tarefa nova capturada e tarefas já no Inbox.
-- `DailyFunnel.tsx`: tarefa nova criada no slot e menu de tarefa planejada.
+- `TaskDetailModal.tsx`: tarefa existente.
 - `CommandBar.tsx`: tarefa criada via command bar.
 - `HabitTracker.tsx`: hábito novo e edição de hábito existente.
 
-Cálculo atual do radar (`lib/life-areas.ts`):
+A captura (Inbox) e o funil do dia deixaram de pedir área para manter a entrada de dados mínima — área hoje é etiqueta tardia, aplicada quando convém.
 
-- Conta somente execução real: tarefas concluídas, sessões de foco concluídas e hábitos concluídos.
-- Ignora tarefas apenas criadas/planejadas e hábitos pausados.
-- Área explícita vence sempre. Quando uma tarefa antiga ainda não tem área salva, o radar tenta inferir a área pelo título apenas para cálculo visual; essa inferência não altera o dado salvo nem aparece como categoria da tarefa. Hábitos sem área explícita não entram no radar.
+Cálculo de distribuição em `/objetivos` (`lib/life-areas.ts`):
+
+- Conta somente execução real: tarefas concluídas, sessões de foco concluídas e hábitos concluídos, nos últimos 30 dias.
+- Área explícita vence sempre. Quando uma tarefa antiga ainda não tem área, o app tenta inferir pelo título apenas para o cálculo visual; a inferência não altera o dado salvo.
 - Pontos: pequena `+1`, média `+2`, grande `+3`, foco `+1` por 25 minutos completos, hábito concluído `+1`.
-- `Atual` = últimos 30 dias; `Anterior` = 30 dias anteriores, escondido quando não há dados.
 - Valores são normalizados relativamente ao maior volume do período para mostrar distribuição/concentração. Não tratar como nota de vida.
-- `Meta` usa `state.lifeAreaTargets`, editável no botão `Gerenciar` do painel. Sem valor salvo, cai no padrão visual discreto (`75`).
 
 ### Sync e backup
 
@@ -231,21 +233,22 @@ Este repositório passou por **duas reescritas completas** na mesma sessão:
 
 ## Estado atual para o próximo dev
 
-Última frente concluída: transformar energia em **modo do dia** com efeito prático na experiência. A UI agora explica a consequência do modo, recomenda tarefas conforme a estratégia escolhida, sugere durações de blocos, marca foco protegido e avalia o fechamento do dia.
+Última frente concluída: ciclo semanal de **entrega e revisão**. Objetivos deixaram de ser mural estático e viraram metas ativas do trimestre; cada meta ativa tem uma pedra na Semana, e a Revisão vira a rodada onde o app soma entrega, expõe obstáculos repetidos e aplica status (abandonar arquiva, concluir fecha). A navegação foi compactada em 5 itens (Hoje · Semana · Objetivos · Revisão · Mais) e a dock mobile reflete a mesma estrutura.
 
 Verificações feitas nesta entrega:
 
 - `npm run build` passou em produção.
-- ESLint passou nos arquivos tocados do motor de modo do dia e componentes do planner.
-- Validação visual/funcional via navegador no dev server: cards de modo aparecem, funil mostra orçamento recomendado, Inbox agrupa por aderência, agendamento sugere duração correta e fechamento exibe insight do modo.
+- `tsc --noEmit` e ESLint limpos nos arquivos tocados.
+- Todas as rotas responderam 200 no dev server (Hoje, Semana, Objetivos, Revisão, Mais, e as subpáginas de Mais).
+- Migração de estado: `yearFocus` e `lifeAreaTargets` legados continuam sendo consumidos e limpos no `loadState` e também no `HYDRATE` (dados vindos do Supabase passam pela mesma normalização).
 
 Pendências de produto/UX antes de implementar mais lógica:
 
-- Definir se o app pode sugerir rebaixar/promover tarefas entre Grande/Média/Pequena ou se só recomenda sem alterar categoria.
-- Definir como o usuário encerra o dia: reflexão simples, motivo de desalinhamento, ações sobre pendências e se isso alimenta histórico.
-- Definir se `overrideCount` deve virar métrica visível, regra de aprendizado ou só telemetria local.
-- Definir algoritmo de seleção para dias futuros: manter 1-3-5 rígido, adaptar por modo ou criar exceções explícitas.
-- Definir se duração estimada por tarefa entra no modelo (`estimatedMinutes`) ou continua derivada de categoria + modo.
+Nenhuma em aberto — as três foram decididas e implementadas:
+
+- "Reduzir" na Revisão pede o novo alvo: quando a decisão é reduzir, a meta mostra um campo para o novo resultado mensurável; vazio, registra só a intenção (sem mexer no alvo).
+- A Semana propõe o fechamento do ciclo — a partir de quinta-feira aparece o card "Encerrar a semana" levando à Revisão (e a semana anterior com pedras pendentes de revisão também é sinalizada); sem pedra comprometida, não há rodada a fechar e o usuário pode pular a revisão.
+- Tarefas de metas arquivadas/concluídas permanecem no histórico sem ação automática: a tarefa continua onde está (a entrega passada não é apagada), o badge META some, e novas pedras param de nascer porque a meta sai do grupo ativo. O Histórico mostra as revisões de semana e a reflexão/obstáculo de cada dia.
 
 ---
 

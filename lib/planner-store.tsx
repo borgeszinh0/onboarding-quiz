@@ -19,6 +19,10 @@ import {
   TaskCategory,
   TimeBlock,
   DayLog,
+  Goal,
+  MotivationReflection,
+  Obstacle,
+  WeekRock,
   initialPlannerState,
 } from "./planner-types";
 import { SLOT_LIMITS } from "./planner-data";
@@ -27,19 +31,105 @@ export type { Quarter } from "./planner-types";
 
 export const PLANNER_STORAGE_KEY = "onboarding-quiz-planner";
 
-function loadState(): PlannerState {
-  if (typeof window === "undefined") return initialPlannerState;
+/** "2026-Q3" */
+export function quarterKey(year: number, quarter: Quarter): string {
+  return `${year}-${quarter}`;
+}
+
+export type QuarterPhase = "estabelecer" | "consolidar" | "execucao";
+
+/**
+ * Progresso dentro do trimestre. As três fases batem com a roda de Revisão:
+ * semanas 1–3 estabelecem, 4–7 consolidam, 8–13 executam.
+ */
+export function getQuarterInfo(
+  date = todayISO()
+): {
+  year: number;
+  quarter: Quarter;
+  key: string;
+  weekOfQuarter: number;
+  totalWeeks: number;
+  phase: QuarterPhase;
+} {
+  const [y, m, d] = date.split("-").map(Number);
+  const quarterIndex = Math.floor((m - 1) / 3);
+  const quarter = `Q${quarterIndex + 1}` as Quarter;
+  const quarterStart = new Date(y, quarterIndex * 3, 1);
+  const quarterEnd = new Date(y, quarterIndex * 3 + 3, 0);
+  const dayMs = 86_400_000;
+  const elapsedDays = Math.floor(
+    (new Date(y, m - 1, d).getTime() - quarterStart.getTime()) / dayMs
+  );
+  const totalDays = Math.round((quarterEnd.getTime() - quarterStart.getTime()) / dayMs) + 1;
+  const weekOfQuarter = Math.floor(elapsedDays / 7) + 1;
+  const totalWeeks = Math.ceil(totalDays / 7);
+  const phase: QuarterPhase =
+    weekOfQuarter <= 3 ? "estabelecer" : weekOfQuarter <= 7 ? "consolidar" : "execucao";
+  return { year: y, quarter, key: quarterKey(y, quarter), weekOfQuarter, totalWeeks, phase };
+}
+
+function makeId(prefix: string): string {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+}
+
+/**
+ * Normaliza qualquer estado parcial (localStorage legado ou sync na nuvem):
+ *  - `yearFocus` (frases livres por trimestre) vira `Goal` (não perder dado).
+ *  - `lifeAreaTargets` é ignorado — radar de áreas saiu do produto.
+ */
+function normalizeState(parsed: unknown): PlannerState {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- estado legado/desserializado, formato histórico não tipável
+  const p = parsed as any;
+  const legacyGoals: Goal[] = [];
+  const yearFocus = p?.yearFocus as
+    | Record<string, Partial<Record<Quarter, string>>>
+    | undefined;
+  if (yearFocus) {
+    for (const [year, byQuarter] of Object.entries(yearFocus)) {
+      if (!byQuarter) continue;
+      for (const quarter of ["Q1", "Q2", "Q3", "Q4"] as const) {
+        const text = byQuarter[quarter]?.trim();
+        if (!text) continue;
+        legacyGoals.push({
+          id: makeId("goal"),
+          title: text,
+          quarter: quarterKey(Number(year), quarter),
+          why: "",
+          outcome: "",
+          status: "archived",
+          createdAt: Date.now(),
+        });
+      }
+    }
+  }
+
+  delete p?.yearFocus;
+  delete p?.lifeAreaTargets;
+
+  return {
+    ...initialPlannerState,
+    ...p,
+    goals: [...legacyGoals, ...(Array.isArray(p?.goals) ? p.goals : [])],
+    weekRocks: Array.isArray(p?.weekRocks) ? p.weekRocks : [],
+    weekLogs: Array.isArray(p?.weekLogs) ? p.weekLogs : [],
+  };
+}
+
+function migrateState(raw: string): PlannerState {
   try {
-    const raw = localStorage.getItem(PLANNER_STORAGE_KEY);
-    if (!raw) return initialPlannerState;
-    return { ...initialPlannerState, ...JSON.parse(raw) };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- parse de estado legado, formato histórico não tipável
+    return normalizeState(JSON.parse(raw) as any);
   } catch {
     return initialPlannerState;
   }
 }
 
-function makeId(prefix: string): string {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+function loadState(): PlannerState {
+  if (typeof window === "undefined") return initialPlannerState;
+  const raw = localStorage.getItem(PLANNER_STORAGE_KEY);
+  if (!raw) return initialPlannerState;
+  return migrateState(raw);
 }
 
 function endOfLocalDayTimestamp(date: string): number {
@@ -100,10 +190,12 @@ type Action =
       date?: string | null;
       estimatedMinutes?: number;
       lifeArea?: LifeArea | null;
+      goalId?: string | null;
     }
   | { type: "MOVE_TASK"; id: string; category: TaskCategory; date: string | null }
   | { type: "UPDATE_TASK"; id: string; title?: string; notes?: string }
   | { type: "SET_TASK_AREA"; id: string; lifeArea: LifeArea | null }
+  | { type: "SET_TASK_GOAL"; id: string; goalId: string | null }
   | { type: "TOGGLE_TASK_DONE"; id: string }
   | { type: "REMOVE_TASK"; id: string }
   | { type: "ADD_SUBTASK"; taskId: string; title: string }
@@ -124,11 +216,44 @@ type Action =
   | { type: "TOGGLE_HABIT_ACTIVE"; id: string }
   | { type: "REMOVE_HABIT"; id: string }
   | { type: "TOGGLE_HABIT_LOG"; habitId: string; date: string }
-  | { type: "SET_LIFE_AREA_TARGET"; area: LifeArea; target: number }
-  | { type: "SET_YEAR_FOCUS"; year: number; quarter: Quarter; text: string }
+  | {
+      type: "ADD_GOAL";
+      title: string;
+      quarter: string;
+      why: string;
+      outcome: string;
+    }
+  | {
+      type: "UPDATE_GOAL";
+      id: string;
+      patch: Partial<Pick<Goal, "title" | "why" | "outcome" | "status">>;
+    }
   | { type: "PLAN_DAY"; date: string; payload: Omit<DayLog, "date" | "plannedAt" | "shutdownAt"> }
-  | { type: "SHUTDOWN_DAY"; date: string }
+  | {
+      type: "SHUTDOWN_DAY";
+      date: string;
+      reflection?: MotivationReflection;
+      obstacle?: Obstacle | null;
+    }
   | { type: "MOVE_UNFINISHED_TO_INBOX"; date: string }
+  | {
+      type: "ADD_WEEK_ROCK";
+      goalId: string;
+      weekStart: string;
+      text: string;
+      taskId?: string | null;
+    }
+  | {
+      type: "UPDATE_WEEK_ROCK";
+      id: string;
+      patch: Partial<Pick<WeekRock, "text" | "committed" | "taskId">>;
+    }
+  | { type: "REMOVE_WEEK_ROCK"; id: string }
+  | {
+      type: "COMPLETE_WEEK_REVIEW";
+      weekStart: string;
+      decisions: { goalId: string; action: "keep" | "reduce" | "abandon" | "done" }[];
+    }
   | { type: "SAVE_FOCUS_SESSION"; session: Omit<import("@/lib/planner-types").FocusSession, "id"> }
   | { type: "ROLLOVER"; today: string }
   | { type: "RESET" };
@@ -136,7 +261,7 @@ type Action =
 function reducer(state: PlannerState, action: Action): PlannerState {
   switch (action.type) {
     case "HYDRATE":
-      return { ...initialPlannerState, ...action.state };
+      return normalizeState(action.state);
 
     case "PLAN_DAY": {
       const existingIdx = state.dayLogs.findIndex((l) => l.date === action.date);
@@ -161,6 +286,8 @@ function reducer(state: PlannerState, action: Action): PlannerState {
       const newLog: DayLog = {
         date: action.date,
         ...getDaySnapshot(state, action.date),
+        ...(action.reflection !== undefined ? { reflection: action.reflection } : {}),
+        ...(action.obstacle !== undefined ? { obstacle: action.obstacle } : {}),
         shutdownAt: Date.now(),
         shutdownSource: "manual",
       };
@@ -187,6 +314,48 @@ function reducer(state: PlannerState, action: Action): PlannerState {
       };
     }
 
+    case "ADD_WEEK_ROCK": {
+      const rock: WeekRock = {
+        id: makeId("rock"),
+        goalId: action.goalId,
+        weekStart: action.weekStart,
+        text: action.text,
+        taskId: action.taskId ?? null,
+        committed: true,
+      };
+      return { ...state, weekRocks: [...state.weekRocks, rock] };
+    }
+
+    case "UPDATE_WEEK_ROCK":
+      return {
+        ...state,
+        weekRocks: state.weekRocks.map((r) =>
+          r.id === action.id ? { ...r, ...action.patch } : r
+        ),
+      };
+
+    case "REMOVE_WEEK_ROCK":
+      return {
+        ...state,
+        weekRocks: state.weekRocks.filter((r) => r.id !== action.id),
+      };
+
+    case "COMPLETE_WEEK_REVIEW": {
+      const existing = state.weekLogs.find((w) => w.weekStart === action.weekStart);
+      const log = {
+        id: existing?.id ?? makeId("week"),
+        weekStart: action.weekStart,
+        reviewedAt: Date.now(),
+        decisions: action.decisions,
+      };
+      return {
+        ...state,
+        weekLogs: existing
+          ? state.weekLogs.map((w) => (w.id === existing.id ? log : w))
+          : [...state.weekLogs, log],
+      };
+    }
+
     case "SAVE_FOCUS_SESSION": {
       return {
         ...state,
@@ -206,6 +375,7 @@ function reducer(state: PlannerState, action: Action): PlannerState {
         date: action.category && action.category !== "inbox" ? action.date ?? null : null,
         estimatedMinutes: action.estimatedMinutes,
         lifeArea: action.lifeArea ?? null,
+        ...(action.goalId !== undefined ? { goalId: action.goalId } : {}),
         createdAt: Date.now(),
       };
       return { ...state, tasks: [...state.tasks, task] };
@@ -290,6 +460,35 @@ function reducer(state: PlannerState, action: Action): PlannerState {
         ...state,
         tasks: state.tasks.map((t) =>
           t.id === action.id ? { ...t, lifeArea: action.lifeArea } : t
+        ),
+      };
+
+    case "SET_TASK_GOAL":
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.id === action.id ? { ...t, goalId: action.goalId } : t
+        ),
+      };
+
+    case "ADD_GOAL": {
+      const goal: Goal = {
+        id: makeId("goal"),
+        title: action.title,
+        quarter: action.quarter,
+        why: action.why,
+        outcome: action.outcome,
+        status: "active",
+        createdAt: Date.now(),
+      };
+      return { ...state, goals: [...state.goals, goal] };
+    }
+
+    case "UPDATE_GOAL":
+      return {
+        ...state,
+        goals: state.goals.map((g) =>
+          g.id === action.id ? { ...g, ...action.patch } : g
         ),
       };
 
@@ -390,26 +589,6 @@ function reducer(state: PlannerState, action: Action): PlannerState {
         habitLogs: state.habitLogs.map((l) =>
           l.id === existing.id ? { ...l, done: !l.done } : l
         ),
-      };
-    }
-
-    case "SET_LIFE_AREA_TARGET":
-      return {
-        ...state,
-        lifeAreaTargets: {
-          ...state.lifeAreaTargets,
-          [action.area]: clampTarget(action.target),
-        },
-      };
-
-    case "SET_YEAR_FOCUS": {
-      const yearMap = state.yearFocus[action.year] ?? {};
-      return {
-        ...state,
-        yearFocus: {
-          ...state.yearFocus,
-          [action.year]: { ...yearMap, [action.quarter]: action.text },
-        },
       };
     }
 
@@ -552,9 +731,12 @@ export function todayISO(): string {
   return toISODate(new Date());
 }
 
-function clampTarget(value: number): number {
-  if (!Number.isFinite(value)) return 75;
-  return Math.min(100, Math.max(0, Math.round(value)));
+/** Segunda-feira da semana de uma data. */
+export function mondayOf(anchor: string = todayISO()): string {
+  const base = new Date(`${anchor}T12:00:00`);
+  const dow = base.getDay();
+  base.setDate(base.getDate() - (dow === 0 ? 6 : dow - 1));
+  return toISODate(base);
 }
 
 export function weekDates(anchor: string = todayISO()): string[] {
@@ -568,6 +750,46 @@ export function weekDates(anchor: string = todayISO()): string[] {
     d.setDate(monday.getDate() + i);
     return toISODate(d);
   });
+}
+
+// ====== Leitura — Goals e Rocks (motores de entrega) ======
+
+export function getGoal(state: PlannerState, goalId: string | null | undefined): Goal | undefined {
+  if (!goalId) return undefined;
+  return state.goals.find((g) => g.id === goalId);
+}
+
+export function getActiveGoals(state: PlannerState): Goal[] {
+  return state.goals.filter((g) => g.status === "active");
+}
+
+/** Metas ativas do trimestre atual (aquelas que mandam nos rocks da semana). */
+export function getCurrentQuarterGoals(state: PlannerState): Goal[] {
+  const now = new Date();
+  const year = now.getFullYear();
+  const q = (`Q${Math.floor(now.getMonth() / 3) + 1}`) as Quarter;
+  return getActiveGoals(state).filter((g) => g.quarter === quarterKey(year, q));
+}
+
+export function getWeekRocks(state: PlannerState, weekStart: string): WeekRock[] {
+  return state.weekRocks.filter((r) => r.weekStart === weekStart);
+}
+
+/**
+ * Taxa de entrega de rocks por meta: pedras comprometidas × concluídas
+ * (a tarefa ligada precisa estar com status "done"). É o KPI do app.
+ */
+export function getGoalDelivery(
+  state: PlannerState,
+  goalId: string
+): { delivered: number; committed: number; rate: number | null } {
+  const rocks = state.weekRocks.filter((r) => r.goalId === goalId);
+  const committed = rocks.filter((r) => r.committed).length;
+  const delivered = rocks.filter(
+    (r) => r.committed && r.taskId !== null &&
+      state.tasks.find((t) => t.id === r.taskId)?.status === "done"
+  ).length;
+  return { delivered, committed, rate: committed > 0 ? Math.round((delivered / committed) * 100) : null };
 }
 
 // ====== Leitura — Tasks ======

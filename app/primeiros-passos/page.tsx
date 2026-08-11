@@ -24,6 +24,7 @@ const STEP_ICONS: Record<FirstStepId, React.ComponentType<{ size?: number }>> = 
   habits: Trophy,
   "life-areas": Map,
   shutdown: MoonStar,
+  review: CheckCircle2,
 };
 
 export default function PrimeirosPassosPage() {

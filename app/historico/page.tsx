@@ -3,12 +3,31 @@
 import { useMemo } from "react";
 import {
   dayCompletion,
+  getGoal,
   habitCompletion,
   minutesBetween,
   usePlanner,
 } from "@/lib/planner-store";
 import { DAY_MODE_RULES, getDayMode } from "@/lib/day-mode";
 import { Card, PageTitle } from "@/components/apple/ui";
+import type { Obstacle } from "@/lib/planner-types";
+
+const REFLECTION_LABEL = { yes: "Sim", partial: "Parcial", no: "Não" } as const;
+
+const OBSTACLE_LABEL: Record<Obstacle, string> = {
+  interrupted: "Fui interrompido",
+  misestimated: "Estimei mal o esforço",
+  notImportant: "Não era o importante",
+  unclear: "Faltou clareza do próximo passo",
+  other: "Outro motivo",
+};
+
+const DECISION_LABEL = {
+  keep: "Manter",
+  reduce: "Reduzida",
+  abandon: "Abandonada",
+  done: "Concluída",
+} as const;
 
 function formatDate(date: string): string {
   return new Intl.DateTimeFormat("pt-BR", {
@@ -51,6 +70,48 @@ export default function HistoricoPage() {
         title="Registro dos dias"
         subtitle="Energia, intenção, fechamento e o que ficou registrado em cada dia."
       />
+
+      {state.weekLogs.length > 0 && (
+        <section className="mb-8 space-y-3">
+          <h2 className="a-headline text-label">Revisões de semana</h2>
+          {[...state.weekLogs]
+            .sort((a, b) => b.weekStart.localeCompare(a.weekStart))
+            .map((week) => (
+              <Card key={week.id} className="p-5">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="a-caption text-label-secondary">
+                    Semana de {formatDate(week.weekStart)}
+                  </p>
+                  <span className="a-caption rounded-full bg-fill-subtle px-3 py-1 text-label-secondary">
+                    {week.decisions.length === 0
+                      ? "Revisão pulada"
+                      : `${week.decisions.length} ${week.decisions.length === 1 ? "decisão" : "decisões"}`}
+                  </span>
+                </div>
+                {week.decisions.length > 0 && (
+                  <ul className="space-y-1">
+                    {week.decisions.map((decision) => {
+                      const goal = getGoal(state, decision.goalId);
+                      return (
+                        <li
+                          key={decision.goalId}
+                          className="flex items-center justify-between gap-3"
+                        >
+                          <span className="a-subheadline truncate text-label">
+                            {goal?.title ?? "Meta removida"}
+                          </span>
+                          <span className="a-caption shrink-0 tabular text-label-secondary">
+                            {DECISION_LABEL[decision.action]}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </Card>
+            ))}
+        </section>
+      )}
 
       {dates.length === 0 ? (
         <Card className="p-5">
@@ -121,6 +182,17 @@ export default function HistoricoPage() {
                     }
                   />
                 </div>
+
+                {dayLog?.reflection && (
+                  <p className="a-caption mt-3 text-label-secondary">
+                    Essencial do dia: {REFLECTION_LABEL[dayLog.reflection]}
+                    {dayLog.obstacle && (
+                      <>
+                        {" "}· O que atrapalhou: {OBSTACLE_LABEL[dayLog.obstacle]}
+                      </>
+                    )}
+                  </p>
+                )}
 
                 {movedCount > 0 && (
                   <p className="a-caption mt-3 text-label-secondary">
